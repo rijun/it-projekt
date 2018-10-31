@@ -1,10 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lastgangsanzeige</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
+    <link href="dashboard.css" rel="stylesheet">
+    <style>
+        .menu {
+            width: 25%;
+            float: left;
+        }
+
+        .main {
+            width: 75%;
+            float: left;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+    </style>
 </head>
 <body>
+<div class="menu">
+    <ul>
+        <li>
+            <form>
+                <input type="date" id="date-selector">
+            </form>
+        </li>
+        <li>
+            <form>
+                <button class="nav-link btn btn-outline-primary btn-sm" type="button" onclick=plotData()>Get
+                    values
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>
+<div class="main">
+    <canvas id="myChart" width="400" height="200"></canvas>
+</div>
 
+<script>
+    function getChartData() {
+        var xhttp = new XMLHttpRequest();
+        var selectedDate = document.getElementById("date-selector").value;
+        console.log(selectedDate);
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.response);
+                var jsonData = JSON.parse(this.response);
+                console.log(jsonData);
+                plotData(jsonData);
+            }
+        };
+        xhttp.open("GET", "http://localhost:8000/api/chart/data/?date=" + selectedDate, true);
+        xhttp.send();
+    }
+
+    function plotData() {
+        var ctx = document.getElementById("myChart").getContext('2d');
+        var dates = ["00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"];
+        var energy = [18075.73,18075.89,18076.02,18076.16,18076.32,18076.46,18076.74,18077.28,18077.75,18078.05,18079.93,18080.35,18082.23,18083.75,18084.79,18084.98,18086.29,18087.68,18088.44,18088.92,18089.79,18090.16,18090.4,18090.61,18090.76];
+        var load = [0.16,0.13,0.14,0.16,0.14,0.28,0.54,0.47,0.3,1.88,0.42,1.88,1.52,1.04,0.19,1.31,1.39,0.76,0.48,0.87,0.37,0.24,0.21,0.15];
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                // labels: data.dates,
+                labels: dates,
+                datasets: [{
+                    label: 'Load',
+                    // data: data.load,
+                    data: load,
+                    backgroundColor: 'rgba(255, 150, 10, 0.5)',
+                    borderColor: 'rgb(255, 200, 10)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    }
+</script>
 </body>
 </html>
