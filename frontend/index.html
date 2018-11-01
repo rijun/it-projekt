@@ -7,8 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <link href="https://fonts.googleapis.com/css?family=Titillium+Web" rel="stylesheet">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns"
-    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
   <!--<script src="main.js"></script>-->
@@ -18,43 +17,38 @@
 
   <!-- Header -->
   <header class="w3-bar w3-top w3-black w3-large" style="z-index:4">
-    <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i
-        class="fa fa-bars"></i> &nbsp;Menu</button>
-    <span class="w3-bar-item w3-left">Lastgang</span>
+    <span class="w3-bar-item w3-left">Lastgangsanzeige</span>
+    <span class="w3-bar-item w3-right">IT Projekt [Richard Jung / Michel Ferdinand]</span>
   </header>
 
-  <!-- Sidebar/menu -->
-  <nav class="w3-sidebar w3-collapse w3-white w3-animate-left w3-border-right w3-border-orange" style="z-index: 3; width: 200px;"
-    id="mySidebar"><br>
-    <div class="w3-container">
-      <h5>Menü</h5>
+  <!-- Menu -->
+  <nav class="w3-row-padding" style="margin-top: 43px;">
+    <div class="w3-bar w3-white w3-round">
+      <button class="w3-bar-item w3-button" onclick="openCity('London')">Tagesansicht</button>
+      <button class="w3-bar-item w3-button" onclick="openCity('Paris')">Wochenansicht</button>
+      <button class="w3-bar-item w3-button" onclick="openCity('Tokyo')">Benutzerdefiniert</button>
     </div>
-    <div class="w3-bar-block">
-      <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
-        title="close menu"><i class="fa fa-remove fa-fw"></i>&nbsp; Close Menu</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding w3-blue"><i class="fa fa-users fa-fw"></i>&nbsp; Overview</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-eye fa-fw"></i>&nbsp; Views</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-users fa-fw"></i>&nbsp; Traffic</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bullseye fa-fw"></i>&nbsp; Geo</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-diamond fa-fw"></i>&nbsp; Orders</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bell fa-fw"></i>&nbsp; News</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-bank fa-fw"></i>&nbsp; General</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-history fa-fw"></i>&nbsp; History</a>
-      <a href="#" class="w3-bar-item w3-button w3-padding"><i class="fa fa-cog fa-fw"></i>&nbsp; Settings</a><br><br>
+    <div id="London" class="w3-container w3-white city">
+      <button type="button"class="w3-button w3-border w3-border-blue">Daten anzeigen</button>
     </div>
-  </nav>
-
-  <!-- Overlay effect when opening sidebar on small screens -->
-  <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu"
-    id="myOverlay"></div>
+    
+    <div id="Paris" class="w3-container w3-white city" style="display:none">
+      <h2>Paris</h2>
+    </div>
+    
+    <div id="Tokyo" class="w3-container w3-white city" style="display:none">
+      <h2>Tokyo</h2>
+    </div>
+  </nav>   
 
   <!-- !PAGE CONTENT! -->
-  <div class="w3-main" style="margin-left: 200px; margin-top: 43px;">
+  <!--<div class="w3-main" style="margin-left: 200px; margin-top: 43px;">-->
+  <div class="w3-main">
 
     <!-- Header -->
-    <header class="w3-row w3-margin w3-border-bottom w3-border-blue-gray">
+    <div class="w3-row w3-margin-bottom w3-margin-left w3-margin-right w3-border-bottom w3-border-blue-gray">
       <h2><i class="far fa-chart-bar"></i> Lastgang vom {...}</h2>
-    </header>
+    </div>
 
     <div class="w3-row-padding w3-margin-left w3-margin-right w3-margin-bottom w3-card w3-white">
       <canvas id="myChart" width="100%" height="50%"></canvas>
@@ -70,28 +64,14 @@
   </div>
 
   <script>
-    // Get the Sidebar
-    var mySidebar = document.getElementById("mySidebar");
-
-    // Get the DIV with overlay effect
-    var overlayBg = document.getElementById("myOverlay");
-
-    // Toggle between showing and hiding the sidebar, and add overlay effect
-    function w3_open() {
-      if (mySidebar.style.display === 'block') {
-        mySidebar.style.display = 'none';
-        overlayBg.style.display = "none";
-      } else {
-        mySidebar.style.display = 'block';
-        overlayBg.style.display = "block";
-      }
+    function openCity(cityName) {
+    var i;
+    var x = document.getElementsByClassName("city");
+    for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
     }
-
-    // Close the sidebar with the close button
-    function w3_close() {
-      mySidebar.style.display = "none";
-      overlayBg.style.display = "none";
-    }
+    document.getElementById(cityName).style.display = "block";
+}
 
     // Chart.js script
     var ctx = document.getElementById("myChart").getContext('2d');
