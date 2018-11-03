@@ -1,3 +1,65 @@
 * {
+    box-sizing: border-box;
     font-family: 'Titillium Web', sans-serif;
+}
+
+html {
+    font-family: 'Titillium Web', sans-serif;
+}
+
+header {
+    width: 100%;
+    z-index: 1;
+    position: fixed;
+    top: 0;
+    background-color: #524e53;
+    color: #ffffff;
+    padding: 8px;
+}
+
+body {
+    margin: 0px;
+}
+
+ /* The sidebar menu */
+ .sidebar {
+    height: 100%; /* Full-height: remove this if you want "auto" height */
+    width: 160px; /* Set the width of the sidebar */
+    position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+    z-index: 0; /* Stay on top */
+    margin-top: 40px;
+    top: 0; /* Stay at the top */
+    left: 0;
+    padding-top: 2px;
+}
+
+.sidebar-item {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Style page content */
+.content {
+    margin-left: 160px; /* Same as the width of the sidebar */
+    padding: 0px 10px;
+}
+
+/* Button style */
+.button {
+    background-color: white;
+    color: black;
+    padding: 4px 8px;
+    border: 1px solid orange;
+    border-radius: 4px;
+    text-decoration: none;
+    /* Animation */
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: orange;
+    color: white;
 }
