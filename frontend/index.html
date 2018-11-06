@@ -2,92 +2,139 @@
 <html>
 
 <head>
-  <meta charset="utf-8" />
-  <title>Lastgangsanzeige</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css?family=Titillium+Web" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
-  <!--<script src="main.js"></script>-->
+    <meta charset="utf-8"/>
+    <title>Lastgangsanzeige</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
 </head>
 
 <body>
-  <!-- Header -->
-  <header class="row">
+<!-- Header -->
+<header class="row">
     <div>
-      Lastgangsanzeige
+        Lastgangsanzeige
     </div>
-  </header>
+</header>
 
-  <!-- Menu -->
-  <div class="sidebar" style="border: 2px dashed red;">
-    <input type="date" class="sidebar-item button">
-    <button type="button" class="sidebar-item button">Abrufen</button>
-  </div>
+<!-- Menu -->
+<div class="sidebar">
+    <select class="sidebar-item selector" style="margin-top: 43px;">
+        <option value="max_mustermann">Max Mustermann</option>
+        <option value="maxine_musterfrau">Maxine Musterfrau</option>
+    </select>
+    <select onchange="modeChanged()" id="mode-selector" class="sidebar-item selector">
+        <option value="day">Tagesansicht</option>
+        <option value="week">Wochenansicht</option>
+        <option value="custom">Benutzerdefiniert</option>
+    </select>
+    <input type="date" id="first-date" class="sidebar-item button">
+    <input type="date" id="second-date" class="sidebar-item button" style="display: none">
+    <button type="button" onclick="plotChart()" class="sidebar-item button">Abrufen</button>
+</div>
 
-  <!-- Main -->
-  <main class="content" style="margin-top: 40px; border: 2px dashed red;">
-    <h2>Lastgang vom {...}</h2>
+<!-- Main -->
+<main class="content" style="margin-top: 50px;">
+    <h2 id="title" style="text-align: center">Lastgang vom {...}</h2>
     <hr>
     <canvas id="myChart" width="100%" height="50%"></canvas>
-  </main>
+    <br>
+    <div id="data-table"></div>
+</main>
 
-  <!-- Footer -->
-  <footer class="content" style="border: 2px dashed red;">
+<!-- Footer -->
+<footer class="content">
     <h4>FOOTER</h4>
-  </footer>
+</footer>
 
-  <script>
+<script>
+    function modeChanged() {
+        sel = document.getElementById("mode-selector");
+
+        if (sel.value != "day") {
+            document.getElementById("second-date").style.display = "block"
+        }
+        else {
+            document.getElementById("second-date").style.display = "none"
+        }
+    }
+
     // Chart.js script
     var dates = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00",
-      "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",
-      "23:00"
+        "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",
+        "23:00"
     ];
     var energy = [18075.73, 18075.89, 18076.02, 18076.16, 18076.32, 18076.46, 18076.74, 18077.28, 18077.75, 18078.05,
-      18079.93, 18080.35, 18082.23, 18083.75, 18084.79, 18084.98, 18086.29, 18087.68, 18088.44, 18088.92, 18089.79,
-      18090.16, 18090.4, 18090.61, 18090.76
+        18079.93, 18080.35, 18082.23, 18083.75, 18084.79, 18084.98, 18086.29, 18087.68, 18088.44, 18088.92, 18089.79,
+        18090.16, 18090.4, 18090.61, 18090.76
     ];
     var load = [0.16, 0.13, 0.14, 0.16, 0.14, 0.28, 0.54, 0.47, 0.3, 1.88, 0.42, 1.88, 1.52, 1.04, 0.19, 1.31, 1.39,
-      0.76, 0.48, 0.87, 0.37, 0.24, 0.21, 0.15
+        0.76, 0.48, 0.87, 0.37, 0.24, 0.21, 0.15
     ];
-    var ctx = document.getElementById("myChart").getContext('2d');
-    var myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: dates,
-        datasets: [{
-          label: 'Load',
-          data: load,
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
-          ],
-          borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          yAxes: [{
-            ticks: {
-              beginAtZero: true
+    var myChart;
+
+    var firstLoad = [];
+    for (var i = 0; i < dates.length; i++) {
+        firstLoad.push(0);
+    }
+
+    window.onload = function() {
+        var ctx = document.getElementById("myChart").getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Last',
+                    data: firstLoad,
+                    backgroundColor: "rgba(255, 128, 0, 0.2)",
+                    borderColor: "rgb(255, 128, 0)",
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                },
+                tooltips: {
+                    callbacks: {
+                        label: (item) => item.yLabel + " kW"
+                    }
+                }
             }
-          }]
+        });
+        console.log(myChart.data.datasets.data)
+    }
+
+    function plotChart() {
+        var d = new Date(document.getElementById("first-date").value);
+        document.getElementById("title").innerText = "Lastgang vom " + d.getDate() + "." + d.getMonth() + "." + d.getFullYear();
+
+        var rndLoad = [];
+        for (var i = 0; i < myChart.data.datasets[0].data.length; i++) {
+            rndLoad.push(Math.round(Math.random() * 200) / 100);
         }
-      }
-    });
-  </script>
+
+        for (var i = 0; i < rndLoad.length; i++) {
+            myChart.data.datasets[0].data[i] = rndLoad[i];
+        }
+
+        myChart.update();
+
+        var tableData = "<table class=\"table\"><tr><th>Uhrzeit</th><th>Lastgang / kW </th></tr>";
+        for (var x in rndLoad) {
+            tableData += "<tr><td>" +  myChart.data.labels[x] + "</td><td>" + rndLoad[x] + "</td></tr>";
+        }
+        tableData += "</table>"
+        document.getElementById("data-table").innerHTML = tableData;
+    }
+
+</script>
 </body>
 
 </html>
