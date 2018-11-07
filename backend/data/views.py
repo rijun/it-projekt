@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 
+def weekday_selected():
+    return data
+
 # Create your views here.
 def get_data(request, *args, **kwargs):
-    response = {
-        "dates": [1, 2, 3, 4],
-        "energy": [10, 20, 30, 40],
-        "load": [100, 200, 300, 400],
-    }
+    user_date = request.GET['date']
+    user_name = request.GET['name']
+
+    response = weekday_selected
+
     return JsonResponse(response)

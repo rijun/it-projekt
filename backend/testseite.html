@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h1>Verks!</h1>
+    <form action="http://localhost:8000/data">
+        Date:<br>
+        <input type="date" name="date"><br>
+        Name:<br>
+        <input type="text" name="name">
+        <button type="submit">Button</button>
+    </form>       
+    <hr />
+    <h1>Verks not!</h1>
+    Date:<br>
+    <input type="date" id="date"><br>
+    Name:<br>
+    <input type="text" id="name">
+    <button type="button" onclick="sendData()">Button</button>
+    <hr />
+    <div id="response">Hier könnte Ihre Werbung stehen!</div>
+
+    <script>
+        function sendData() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("response").innerHTML =
+                        this.responseText;
+                }
+                else if (this.readyState == 4 && this.status == 404) {
+                    document.getElementById("response").innerHTML =
+                        "Zu Blöd eine richtige Adresse einzugeben!!!";
+                }
+            };
+
+            var date = document.getElementById("date").value;
+            var name = document.getElementById("name").value;
+            var url = "http://localhost:8000/data?date=" + date + "&name=" + name;
+
+            xhttp.open("GET", url, true);
+            xhttp.send();
+        }
+    </script>
+
+</body>
+</html>

@@ -45,6 +45,7 @@
   <ItemGroup>
     <Content Include="data\templates\data\index.html" />
     <Content Include="requirements.txt" />
+    <Content Include="testseite.html" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="backend\" />
