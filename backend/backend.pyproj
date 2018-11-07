@@ -29,6 +29,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="data\admin.py" />
+    <Compile Include="data\apps.py" />
+    <Compile Include="data\migrations\__init__.py" />
+    <Compile Include="data\models.py" />
+    <Compile Include="data\tests.py" />
+    <Compile Include="data\views.py" />
+    <Compile Include="data\__init__.py" />
     <Compile Include="manage.py" />
     <Compile Include="backend\__init__.py" />
     <Compile Include="backend\settings.py" />
@@ -36,10 +43,15 @@
     <Compile Include="backend\wsgi.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="data\templates\data\index.html" />
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="backend\" />
+    <Folder Include="data\" />
+    <Folder Include="data\migrations\" />
+    <Folder Include="data\templates\" />
+    <Folder Include="data\templates\data\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Django.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 
