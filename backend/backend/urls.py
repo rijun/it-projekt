@@ -18,6 +18,6 @@ urlpatterns = [
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     # Uncomment the next line to enable the admin:
-    path('admin/', admin.site.urls),
+    path('admin', admin.site.urls),
     path('data', get_data, name='data'),
 ]
