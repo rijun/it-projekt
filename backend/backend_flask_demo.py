@@ -20,12 +20,9 @@ CORS(app)
 # Define the API endpoint for "/data"
 @app.route('/data')
 def get_meter_data():
-    print(request.args)
     # Assign GET parameters to variables
     selection = request.args['s']
-    print(type(selection))
     begin = request.args['b']
-    print(begin)
     end = request.args['e']
     resolution = request.args['r']
 
@@ -35,7 +32,6 @@ def get_meter_data():
 
 
 def get_day_data(begin, end, resolution):
-
     try:
         size = int(24 * 60 / float(resolution))
         x_value = datetime.datetime(2000, 1, 1, 0, 0)
