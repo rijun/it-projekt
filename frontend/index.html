@@ -5,7 +5,6 @@
     <meta charset="utf-8"/>
     <title>Lastgangsanzeige</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
     <style>
@@ -14,7 +13,7 @@
         }
 
         html {
-            font-family: 'Raleway', sans-serif;
+            font-family: sans-serif;
         }
 
         header {
@@ -103,19 +102,35 @@
     <span class="sidebar-item" style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Modus</span>
     <select onchange="modeChanged()" id="mode-selector" class="sidebar-item input">
         <option value="day">Tagesansicht</option>
-        <option value="week">Wochenansicht</option>
-        <option value="custom">Benutzerdefiniert</option>
+        <option value="interval">Intervall</option>
+        <option value="month">Monat</option>
+        <option value="year">Jahr</option>
     </select>
-    <!-- Date selection -->
-    <span class="sidebar-item" style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Datum</span>
-    <input type="date" id="first-date" class="sidebar-item input">
-    <input type="date" id="last-date" class="sidebar-item input" style="display: none">
-    <!-- Resolution selection -->
-    <span class="sidebar-item" style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Auflösung</span>
-    <select id="resolution-selector" class="sidebar-item input">
-        <option value="15">Viertelstunde</option>
-        <option value="60">Stunde</option>
-    </select>
+    <!-- Date selections -->
+    <div id="day-options">
+        <span style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Datum</span>
+        <input type="date" id="date-selector" class="sidebar-item input">
+        <!-- Resolution selection -->
+        <span class="sidebar-item" style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Auflösung</span>
+        <select id="resolution-selector" class="sidebar-item input">
+            <option value="15">Viertelstunde</option>
+            <option value="60">Stunde</option>
+        </select>
+    </div>
+    <div id="interval-options" style="display: none">
+        <span style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Start Datum</span>
+        <input type="date" id="first-date-selector" class="sidebar-item input">
+        <span style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">End Datum</span>
+        <input type="date" id="last-date-selector" class="sidebar-item input">
+    </div>
+    <div id="month-options" style="display: none">
+        <span style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Monat</span>
+        <input type="month" id="month-selector" class="sidebar-item input">
+    </div>
+    <div id="year-options" style="display: none">
+        <span style="margin-left: 12px; font-size: 14px; margin-bottom: 2px;">Jahr</span>
+        <input type="number" id="year-selector" min="1900" max="2099" step="1" class="sidebar-item input">
+    </div>
     <!-- Submit button -->
     <button type="button" onclick="getData()" class="sidebar-item input" style="margin-top: 20px">Abrufen</button>
 </div>
@@ -138,10 +153,7 @@
 
 <script>
     var myChart;
-    var modeSelector = document.getElementById('mode-selector')
-    var firstDateSelector = document.getElementById("first-date");
-    var lastDateSelector = document.getElementById("last-date");
-    var resolutionSelector = document.getElementById("resolution-selector");
+    let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
 
     window.onload = function () {
         // Default chart labels
@@ -172,7 +184,12 @@
                 scales: {
                     yAxes: [{
                         ticks: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            callback: function (value, index, values) {
+                                return value + " kWh";
+                            },
+                            display: true,
+                            label: "Lastgang",
                         }
                     }]
                 },
@@ -183,11 +200,6 @@
                 }
             }
         });
-
-        let currentDate = new Date();
-        currentDate = currentDate.getFullYear() + "-" + currentDate.getMonth() + "-" + currentDate.getDate();
-        firstDateSelector.value = currentDate;
-        lastDateSelector.value = currentDate;
     };
 
     function getData() {
@@ -195,17 +207,39 @@
 
         http.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-                plotChart(JSON.parse(this.responseText));
+                updateView(JSON.parse(this.responseText));
             }
         };
 
-        var arguments = "s=" + modeSelector.value + "&b=" + firstDateSelector.value + "&e=" + lastDateSelector.value + "&r=" + resolutionSelector.value;
+        // var arguments = "s=" + document.getElementById("mode-selector").value + "&b=" + document.getElementById("first-date-selector").value + "&e=" + document.getElementById("last-date-selector").value + "&r=" + document.getElementById("resolution-selector".value);
+        var arguments = "s=day&b=2018-10-23&e=2018-10-27&r=60";
         http.open("GET", "http://localhost:5000/data?" + arguments, true);
         http.send();
     }
 
     // Update and plot chart
-    function plotChart(response) {
+    function updateView(response) {
+        // Update header
+        switch (state) {
+            case 1:
+                let date = new Date(document.getElementById("date-selector").value);
+                document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + "." + date.getMonth() + "." + date.getFullYear();
+                break;
+            case 2:
+                let firstDate = new Date(document.getElementById("first-date-selector").value);
+                let lastDate = new Date(document.getElementById("last-date-selector").value);
+                document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + "." + firstDate.getMonth() + "." + firstDate.getFullYear() + " - " + lastDate.getDate() + "." + lastDate.getMonth() + "." + lastDate.getFullYear();
+                break;
+            case 3:
+                let month = new Date(document.getElementById("month-selector").value);
+                document.getElementById("title").innerText = "Lastgang vom " + month.getMonth() + "." + month.getFullYear();
+                break;
+            case 4:
+                let year = new Date(document.getElementById("year-selector").value);
+                document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
+                break;
+        }
+
         // Update chart
         myChart.data.labels = response['x_values'];
         myChart.data.datasets[0].data = response['y_values'];
@@ -218,21 +252,39 @@
         }
         tableData += "</table>"
         document.getElementById("data-table").innerHTML = tableData;
-
-        // Update header
-        var d = new Date(document.getElementById("first-date").value);
-        document.getElementById("title").innerText = "Lastgang vom " + d.getDate() + "." + d.getMonth() + "." + d.getFullYear();
     }
 
     // Adjust UI depending on selected mode
     function modeChanged() {
-        var modeSelector = document.getElementById("mode-selector");
+        const modeSelector = document.getElementById('mode-selector');
 
-        if (modeSelector.value != "day") {
-            document.getElementById("last-date").style.display = "block"
+        if (modeSelector.value == "day") {
+            document.getElementById("day-options").style.display = "block";
+            document.getElementById("interval-options").style.display = "none";
+            document.getElementById("month-options").style.display = "none";
+            document.getElementById("year-options").style.display = "none";
+            state = 1; // Set state to day
+        }
+        else if (modeSelector.value == "interval") {
+            document.getElementById("day-options").style.display = "none";
+            document.getElementById("interval-options").style.display = "block";
+            document.getElementById("month-options").style.display = "none";
+            document.getElementById("year-options").style.display = "none";
+            state = 2; // Set state to custom
+        }
+        else if (modeSelector.value == "month") {
+            document.getElementById("day-options").style.display = "none";
+            document.getElementById("interval-options").style.display = "none";
+            document.getElementById("month-options").style.display = "block";
+            document.getElementById("year-options").style.display = "none";
+            state = 3; // Set state to month
         }
         else {
-            document.getElementById("last-date").style.display = "none"
+            document.getElementById("day-options").style.display = "none";
+            document.getElementById("interval-options").style.display = "none";
+            document.getElementById("month-options").style.display = "none";
+            document.getElementById("year-options").style.display = "block";
+            state = 4; // Set state to year
         }
     }
 </script>
