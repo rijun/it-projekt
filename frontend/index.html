@@ -79,6 +79,69 @@
             margin-left: 200px; /* Same as the width of the sidebar */
             padding: 0px 10px;
         }
+
+        /* The switch - the box around the slider */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* The slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #ff7f00;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #ff7f00;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
     </style>
 </head>
 
@@ -133,6 +196,14 @@
     </div>
     <!-- Submit button -->
     <button type="button" onclick="getData()" class="sidebar-item input" style="margin-top: 20px">Abrufen</button>
+
+    <div>
+        <span style="margin: 10px">Zählerstand</span>
+        <label class="sidebar-item switch" style="float: right; margin-right: 16px">
+            <input type="checkbox" id="energy-view">
+            <span class="slider round"></span>
+        </label>
+    </div>
 </div>
 
 <!-- Main -->
@@ -157,17 +228,17 @@
 
     window.onload = function () {
         // Default chart labels
-        var hours = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00",
+        let hours = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00",
             "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",
             "23:00"
         ];
         // First data is always 0
-        var firstLoad = [];
+        let firstLoad = [];
         for (var i = 0; i < hours.length; i++) {
             firstLoad.push(0);
         }
         // Chart initialization
-        var ctx = document.getElementById("myChart").getContext('2d');
+        let ctx = document.getElementById("myChart").getContext('2d');
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -177,26 +248,29 @@
                     data: firstLoad,
                     backgroundColor: "rgba(255, 128, 0, 0.2)",
                     borderColor: "rgb(255, 128, 0)",
-                    borderWidth: 1
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-load',
                 }]
             },
             options: {
                 scales: {
                     yAxes: [{
-                        ticks: {
-                            beginAtZero: true,
-                            callback: function (value, index, values) {
-                                return value + " kWh";
-                            },
-                            display: true,
-                            label: "Lastgang",
+                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                        display: true,
+                        position: 'left',
+                        id: 'y-axis-load',
+                    }, {
+                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                        display: true,
+                        position: 'right',
+                        id: 'y-axis-energy',
+
+                        // grid line settings
+                        gridLines: {
+                            drawOnChartArea: false, // only want the grid lines for one axis to show up
                         }
+
                     }]
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (item) => item.yLabel + " kW"
-                    }
                 }
             }
         });
@@ -219,20 +293,22 @@
 
     // Update and plot chart
     function updateView(response) {
+        // Array for storing month names
+        let months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "December"];
         // Update header
         switch (state) {
             case 1:
                 let date = new Date(document.getElementById("date-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + "." + date.getMonth() + "." + date.getFullYear();
+                document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + ". " + months[date.getMonth()] + " " + date.getFullYear();
                 break;
             case 2:
                 let firstDate = new Date(document.getElementById("first-date-selector").value);
                 let lastDate = new Date(document.getElementById("last-date-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + "." + firstDate.getMonth() + "." + firstDate.getFullYear() + " - " + lastDate.getDate() + "." + lastDate.getMonth() + "." + lastDate.getFullYear();
+                document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + ". " + months[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + lastDate.getDate() + ". " + months[lastDate.getMonth()] + " " + lastDate.getFullYear();
                 break;
             case 3:
                 let month = new Date(document.getElementById("month-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + month.getMonth() + "." + month.getFullYear();
+                document.getElementById("title").innerText = "Lastgang vom " + months[month.getMonth()] + " " + month.getFullYear();
                 break;
             case 4:
                 let year = new Date(document.getElementById("year-selector").value);
@@ -243,12 +319,33 @@
         // Update chart
         myChart.data.labels = response['x_values'];
         myChart.data.datasets[0].data = response['y_values'];
+        if (document.getElementById("energy-view").checked == true) {
+            if (myChart.data.datasets.length == 1) {
+                myChart.data.datasets.push(
+                    {
+                        label: 'Zählerstand',
+                        data: response['energy'],
+                        backgroundColor: "rgba(0, 0, 255, 0.2)",
+                        borderColor: "rgb(0, 0, 255)",
+                        borderWidth: 1,
+                        type: "line",
+                        yAxisID: 'y-axis-energy',
+                    }
+                )
+            }
+            else {
+                myChart.data.datasets[1].data = response['energy'];
+            }
+        }
+        else if (myChart.data.datasets.length == 2) {
+            myChart.data.datasets.pop();
+        }
         myChart.update();
 
         // Update table
-        var tableData = "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th></tr>";
-        for (var i in response['x_values']) {
-            tableData += "<tr><td>" + response['x_values'][i] + "</td><td>" + response['y_values'][i] + "</td></tr>";
+        let tableData = "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th></tr>";
+        for (let i in response['x_values']) {
+            tableData += "<tr><td>" + response['x_values'][i] + "</td><td>" + response['y_values'][i] + "</td><td>" + response['energy'][i] + "</td></tr>";
         }
         tableData += "</table>"
         document.getElementById("data-table").innerHTML = tableData;
