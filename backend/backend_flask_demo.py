@@ -33,19 +33,28 @@ def get_meter_data():
 
 def get_day_data(begin, end, resolution):
     try:
-        size = int(24 * 60 / float(resolution))
+        # size = int(24 * 60 / float(resolution))
+        size = 25
         x_value = datetime.datetime(2000, 1, 1, 0, 0)
         response_x = []
         response_y = []
+        response_energy = []
+        start_energy = 321.0
 
         for i in range(size):
             response_x.append(x_value.strftime('%H:%M'))
-            x_value += datetime.timedelta(minutes=int(resolution))
-            response_y.append(floor(random.uniform(0, 2) * 100)/100)
+            x_value += datetime.timedelta(minutes=int(60))
+            start_energy += floor(random.uniform(0, 2) * 100)/100
+            response_energy.append(start_energy)
+
+        response_x.pop()
+        for i in range(size - 1):
+            response_y.append(response_energy[i+1] - response_energy[i])
 
         response = {
             'x_values': response_x,
-            'y_values': response_y
+            'y_values': response_y,
+            'energy': response_energy,
         }
 
         return response
