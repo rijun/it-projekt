@@ -40,7 +40,7 @@
 
             var date = document.getElementById("date").value;
             var name = document.getElementById("name").value;
-            var url = "http://localhost:8000/data?date=" + date + "&name=" + name;
+            var url = "http://localhost:53660/?m=days&t=12" + date + "&name=" + name;
 
             xhttp.open("GET", url, true);
             xhttp.send();

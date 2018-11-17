@@ -1,17 +1,19 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 import json
-import mysql.connector
+import pymysql
 
 
-my_Database = mysql.connector.connect(
+my_Database = pymysql.connect(
     host="127.0.0.1",
     user="root",
     passwd="root",
     database= "itp2",
             )
 
-request = input()                       # just for demonstration
+
+
+#request = input()                       # just for demonstration
 
 def get_data(request, *args, **kwargs):
     user_date = request.GET['date']
@@ -55,4 +57,3 @@ def weekday_selected():
     return data
 
     return JsonResponse(response)
-
