@@ -5,13 +5,11 @@ It contains the definition of routes and views for the application.
 
 import simplejson as json
 import pymysql
-#from datetime import datetime
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, make_response
 app = Flask(__name__)
 
 # Make the WSGI interface available at the top level so wfastcgi can get it.
 wsgi_app = app.wsgi_app
-
 
 my_Database = pymysql.connect(
     host="127.0.0.1",
@@ -23,7 +21,6 @@ my_Database = pymysql.connect(
 date = []
 energy =[]
 diff =[]
-
 
 def get_day_values (time, res):
     mycursor = my_Database.cursor()
@@ -92,10 +89,10 @@ def get_data():
         end_time = request.args['et']
         response = get_custom_values(start_time, end_time)
     else:
-        return Response(status=404)
-
+        #return make_response(('not_found.html'),404)
+        #def http_404_handler():
+            return make_response("<h2>404 Error</h2>", 400)
     return jsonify (response)
-
 
 if __name__ == '__main__':
     import os
