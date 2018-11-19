@@ -21,7 +21,9 @@ my_Database = pymysql.connect(
     )
 
 date = []
-energy = []
+energy =[]
+diff =[]
+
 
 def get_day_values (time, res):
     mycursor = my_Database.cursor()
@@ -29,44 +31,46 @@ def get_day_values (time, res):
     mycursor.execute (query)
     for result in mycursor:          
          date.append(result[0])
-         energy.append(result[1])  
-         data = [date, energy]
+         energy.append(result[1])
+    for i in range(0, len(energy) - 1):
+        diff.append(energy[i+1] - energy[i]) 
+    data = [date, energy, diff]
     return(data)
 
 def get_month_values (year, month):
     mycursor = my_Database.cursor()
     query = ("SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE YEAR (datum_zeit) = '{0}' AND MONTH (datum_zeit) = '{1}' AND DATE_FORMAT(datum_zeit, '%T') = '00:01:00'").format(year, month )
     mycursor.execute (query)
-    #for result in mycursor:
-    #    return ('%s %s'  %(result[0], result[1]))
-    for result in mycursor:          
+    for result in mycursor:  
          date.append(result[0])
-         energy.append(result[1])  
-         data = [date, energy]
+         energy.append(result[1])
+    for i in range(0, len(energy) - 1):
+        diff.append(energy[i+1] - energy[i]) 
+    data = [date, energy, diff] 
     return(data)
 
 def get_year_values (time):
     mycursor = my_Database.cursor()
     query = ("SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE YEAR (datum_zeit) = '{0}' AND DATE_FORMAT(datum_zeit, '%e') = 1 AND DATE_FORMAT(datum_zeit, '%T') = '00:01:00'").format(time)
     mycursor.execute (query)
-    #for result in mycursor:
-    #    return ('%s %s'  %(result[0], result[1]))
     for result in mycursor:          
          date.append(result[0])
          energy.append(result[1])  
-         data = [date, energy]
+    for i in range(0, len(energy) - 1):
+        diff.append(energy[i+1] - energy[i]) 
+    data = [date, energy, diff]
     return(data)
 
 def get_custom_values (start_time, end_time):
     mycursor =my_Database.cursor()
     query = ("SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' AND DATE_FORMAT(datum_zeit, '%T') = '00:01:00'").format(start_time, end_time)
     mycursor.execute (query)
-    #for result in mycursor:
-    #    return ('%s %s'  %(result[0], result[1]))
     for result in mycursor:          
          date.append(result[0])
          energy.append(result[1])  
-         data = [date, energy]
+    for i in range(0, len(energy) - 1):
+        diff.append(energy[i+1] - energy[i]) 
+    data = [date, energy, diff]
     return(data)
 
 @app.route('/')
