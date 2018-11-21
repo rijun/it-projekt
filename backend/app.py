@@ -5,14 +5,13 @@ It contains the definition of routes and views for the application.
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
+from math import floor
+from datetime import datetime, timedelta
 import pymysql
-import datetime
+
 
 app = Flask(__name__)
 CORS(app)
-
-# Make the WSGI interface available at the top level so wfastcgi can get it.
-wsgi_app = app.wsgi_app
 
 my_Database = pymysql.connect(
     host="127.0.0.1",
@@ -26,16 +25,22 @@ def get_day_values(time, res):
     date = []
     energy = []
     diff = []
-    mycursor = my_Database.cursor()
-    query = "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE (DATE_FORMAT (datum_zeit, '%Y-%m-%d')) = '{0}' AND MINUTE (datum_zeit) % {1} = 0 ".format(
-        time, res)
-    mycursor.execute(query)
-    for result in mycursor:
-        date.append(datetime.datetime.strftime(result[0], "%H:%M"))
+    next_day = datetime.strptime(time, "%Y-%m-%d") + timedelta(days=1)
+    cursor = my_Database.cursor()
+    query = "SELECT DATE_FORMAT(datum_zeit, '%H:%i') AS dzf, obis_180 FROM zaehlwerte " \
+            "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND MINUTE (datum_zeit) % {2} = 0 " \
+            "ORDER BY datum_zeit ASC".format(time, next_day, res)
+    cursor.execute(query)
+
+    for result in cursor:
+        date.append(result[0])
         energy.append(float(result[1]))
 
-    for i in range(0, len(energy) - 1):
-        diff.append(float(energy[i + 1] - energy[i]))
+    date.pop()
+
+    for i in range(0, len(date)):
+        diff.append((floor(energy[i + 1] * 100) - floor(energy[i] * 100)) / 100)
+
     data = {
         'dates': date,
         'diff': diff,
@@ -98,9 +103,9 @@ def get_year_values(time):
     mycursor.execute(query)
     for result in mycursor:
         date.append(result[0])
-        energy.append(result[1])
+        energy.append(float(result[1]))
     for i in range(0, len(energy) - 1):
-        diff.append(energy[i + 1] - energy[i])
+        diff.append((floor(energy[i + 1] * 100) - floor(energy[i] * 100)) / 100)
     data = {
         'dates': date,
         'diff': diff,
@@ -132,6 +137,15 @@ def get_data():
         # def http_404_handler():
         return make_response("<h2>404 Error</h2>", 400)
     return jsonify(response)
+
+
+@app.route('/boot')
+def boot():
+    mycursor = my_Database.cursor()
+    query = "SELECT DISTINCT * FROM zaehlpunkte"
+    mycursor.execute(query)
+    test = mycursor.row
+    print(type(test))
 
 
 if __name__ == '__main__':

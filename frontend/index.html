@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="utf-8"/>
-    <title>Lastgangsanzeige</title>
+    <title>Lastgangsvisualisierungsschnitstelle</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
@@ -98,11 +99,10 @@
 <!-- Header -->
 <header class="header">
     <!-- User selection -->
-    <select style="float: right; height: 19px">
-        <option value="max_mustermann">Max Mustermann</option>
-        <option value="maxine_musterfrau">Maxine Musterfrau</option>
+    <select id="user-selector" style="float: right; height: 19px">
+        <option value="default">Auswählen...</option>
     </select>
-    <div>Lastgangsanzeige</div>
+    <div>Lastgangsvisualisierungsschnitstelle</div>
 </header>
 
 
@@ -148,6 +148,10 @@
     <div>
         <label for="energy-view">Zählerstand</label>
         <input type="checkbox" id="energy-view" style="float: left">
+    </div>
+    <div>
+        <label for="money-view">Preis pro kWh</label>
+        <input type="number" id="money-view" onchange="calculateMoney()" class="menu-item input">
     </div>
 </nav>
 
@@ -224,6 +228,10 @@
         }]
             }
         });
+
+        var http = new XMLHttpRequest();
+
+
     };
 
     function getData() {
@@ -316,7 +324,7 @@
         // Update table
         let tableData = "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th></tr>";
         for (let i in response['dates']) {
-            tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + response['diff'][i] + "</td><td>" + response['energy'][i] + "</td></tr>";
+            tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + formatNumber(response['diff'][i]) + "</td><td>" + formatNumber(response['energy'][i]) + "</td></tr>";
         }
         tableData += "</table>";
         document.getElementById("data-table").innerHTML = tableData;
@@ -354,6 +362,31 @@
             document.getElementById("year-options").style.display = "block";
             state = 4; // Set state to year
         }
+    }
+
+    function formatNumber(number) {
+        return Number.parseFloat(number).toFixed(2);
+    }
+
+    function calculateMoney() {
+        let price = document.getElementById("money-view").value;
+        console.log(price);
+    }
+
+    function loadUsers() {
+        http.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let response = JSON.parse(this.responseText);
+                let userListHtml = "<option value=\"default\">Auswählen...</option>";
+                for (let i in response['users']) {
+                    userListHtml += "<option value=\"default\">Auswählen...</option>"
+                }
+                document.getElementById("user-selector").innerText
+            }
+        };
+
+        http.open("GET", "http://localhost:5000/boot", true);
+        http.send();
     }
 </script>
 </body>
