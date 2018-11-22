@@ -2,13 +2,14 @@
 This script runs the application using a development server.
 It contains the definition of routes and views for the application.
 """
+from collections import namedtuple
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from math import floor
 from datetime import datetime, timedelta
 import pymysql
-
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +24,7 @@ my_Database = pymysql.connect(
 date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
 
+meter_dict = {}
 
 def get_db_values(query):
     date = []
@@ -105,11 +107,18 @@ def get_data():
 
 @app.route('/boot')
 def boot():
-    mycursor = my_Database.cursor()
+    cursor = my_Database.cursor()
     query = "SELECT DISTINCT * FROM zaehlpunkte"
-    mycursor.execute(query)
-    test = mycursor.row
-    print(type(test))
+    cursor.execute(query)
+    for result in cursor:
+        meter_dict[result[0]] = {
+            'number': result[0],
+            'lastname': result[1],
+            'firstname': result[2],
+            'zipcode': result[3],
+            'city': result[4]
+        }
+    return jsonify(meter_dict)
 
 
 if __name__ == '__main__':
