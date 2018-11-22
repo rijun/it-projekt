@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8"/>
-    <title>Lastgangsvisualisierungsschnitstelle</title>
+    <title>LaViSch</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/> -->
@@ -59,11 +59,7 @@
         /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
         @media (max-width: 600px) {
             .grid-container {
-                grid-template-areas:
-                        'header'
-                        'menu'
-                        'content'
-                        'footer';
+                grid-template-areas: 'header' 'menu' 'content' 'footer';
             }
         }
 
@@ -92,17 +88,23 @@
             background-color: #f2f2f2
         }
 
+        .flex-container {
+            display: flex;
+            align-items: stretch;
+        }
+
     </style>
 </head>
 
 <body class="grid-container">
 <!-- Header -->
-<header class="header">
+<header class="header flex-container">
+    <span style="flex-grow: 3;">Lastgangsvisualisierungsschnitstelle</span>
+    <span id="user-info" style="flex-grow: 3;"></span>
     <!-- User selection -->
-    <select id="user-selector" style="float: right; height: 19px">
-        <option value="default">Auswählen...</option>
+    <select id="user-selector" onchange="updateUser()" style="float: right; height: 19px; max-width: 140px; flex-grow: 3;">
+        <option value="default">Zähler auswählen...</option>
     </select>
-    <div>Lastgangsvisualisierungsschnitstelle</div>
 </header>
 
 
@@ -114,7 +116,7 @@
     <label for="mode-selector">Modus</label>
     <select onchange="modeChanged()" id="mode-selector" class="menu-item input">
         <option value="day">Tagesansicht</option>
-        <option value="interval">Intervall</option> <--! TODO: rename backend -->
+        <option value="interval">Intervall</option>
         <option value="month">Monat</option>
         <option value="year">Jahr</option>
     </select>
@@ -172,8 +174,9 @@
 </footer>
 
 <script>
-    var myChart;
+    let myChart;
     let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
+    let userList = [];
 
     window.onload = function () {
         // Default chart labels
@@ -218,20 +221,12 @@
                         gridLines: {
                             drawOnChartArea: false, // only want the grid lines for one axis to show up
                         }
-
-                    }],
-                },
-                xAxes: [{
-            gridLines: {
-                offsetGridLines: false
-            }
-        }]
+                    }]
+                }
             }
         });
 
-        var http = new XMLHttpRequest();
-
-
+        loadUsers();
     };
 
     function getData() {
@@ -241,14 +236,18 @@
             if (this.readyState == 4 && this.status == 200) {
                 updateView(JSON.parse(this.responseText));
             }
+            else if (this.status == 400) {
+                window.alert("Eingabefehler!"); // TODO: Fix multiple appearances
+            }
         };
 
         let arguments = "";
 
+        // Generate query
         switch (state) {
             case 1: // Day query
                 arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&d=" + document.getElementById("date-selector").value +
+                    "&d=" + "2018-09-10" + // document.getElementById("date-selector").value +
                     "&r=" + document.getElementById("resolution-selector").value;
                 break;
             case 2: // Interval query
@@ -311,12 +310,10 @@
                         yAxisID: 'y-axis-energy',
                     }
                 )
-            }
-            else {
+            } else {
                 myChart.data.datasets[1].data = response['energy'];
             }
-        }
-        else if (myChart.data.datasets.length === 2) {
+        } else if (myChart.data.datasets.length === 2) {
             myChart.data.datasets.pop();
         }
         myChart.update();
@@ -340,22 +337,19 @@
             document.getElementById("month-options").style.display = "none";
             document.getElementById("year-options").style.display = "none";
             state = 1; // Set state to day
-        }
-        else if (modeSelector.value === "interval") {
+        } else if (modeSelector.value === "interval") {
             document.getElementById("day-options").style.display = "none";
             document.getElementById("interval-options").style.display = "block";
             document.getElementById("month-options").style.display = "none";
             document.getElementById("year-options").style.display = "none";
             state = 2; // Set state to custom
-        }
-        else if (modeSelector.value === "month") {
+        } else if (modeSelector.value === "month") {
             document.getElementById("day-options").style.display = "none";
             document.getElementById("interval-options").style.display = "none";
             document.getElementById("month-options").style.display = "block";
             document.getElementById("year-options").style.display = "none";
             state = 3; // Set state to month
-        }
-        else {
+        } else {
             document.getElementById("day-options").style.display = "none";
             document.getElementById("interval-options").style.display = "none";
             document.getElementById("month-options").style.display = "none";
@@ -374,19 +368,35 @@
     }
 
     function loadUsers() {
+        let http = new XMLHttpRequest();
         http.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 let response = JSON.parse(this.responseText);
-                let userListHtml = "<option value=\"default\">Auswählen...</option>";
-                for (let i in response['users']) {
-                    userListHtml += "<option value=\"default\">Auswählen...</option>"
-                }
-                document.getElementById("user-selector").innerText
+                response.forEach(u => userList.push(u));
+                let userSelector = document.getElementById("user-selector");
+                userList.forEach(u =>
+                    userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>"
+                )
             }
         };
 
         http.open("GET", "http://localhost:5000/boot", true);
         http.send();
+    }
+
+    function updateUser() {
+        let meterNumber = document.getElementById("user-selector").value;
+        if (meterNumber === "default") {   // Do nothing if no user is selected
+            document.getElementById("user-info").innerHTML = "";
+            return;
+        }
+        let user = null;
+        userList.forEach(u => {
+            if (u["number"] === meterNumber) {
+                user = u;
+            }
+        });
+        document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
     }
 </script>
 </body>
