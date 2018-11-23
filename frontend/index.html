@@ -143,7 +143,7 @@
     </div>
     <div id="year-options" style="display: none">
         <label for="year-selector">Jahr</label>
-        <input type="number" id="year-selector" min="1900" max="2099" step="1" class="menu-item input">
+        <select id="year-selector" class="menu-item input"></select>
     </div>
     <!-- Submit button -->
     <button type="button" onclick="getData()" class="menu-item input">Abrufen</button>
@@ -152,7 +152,7 @@
         <input type="checkbox" id="energy-view" style="float: left">
     </div>
     <div>
-        <label for="money-view">Preis pro kWh</label>
+        <label for="money-view">Preis pro kWh in €</label>
         <input type="number" id="money-view" onchange="calculateMoney()" class="menu-item input">
     </div>
 </nav>
@@ -164,8 +164,17 @@
     <!-- Chart -->
     <canvas id="myChart" width="100%" height="50%"></canvas>
     <br>
-    <!-- Table -->
-    <div id="data-table"></div>
+    <!-- Data -->
+    <div class="flex-container">
+        <!-- Table -->
+        <div id="data-table" style="flex-grow: 2; padding: 8px;"></div>
+        <!-- Statistics -->
+        <div id="stat-container" style="flex-grow: 1; padding: 8px;">
+            <div>Statistiche Daten</div>
+            <ul id="stat-data" style="list-style-type: none; list-style-position: outside"></ul>
+        </div>
+    </div>
+
 </main>
 
 <!-- Footer -->
@@ -247,7 +256,7 @@
         switch (state) {
             case 1: // Day query
                 arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&d=" + "2018-09-10" + // document.getElementById("date-selector").value +
+                    "&d=" + document.getElementById("date-selector").value + // "2018-09-10" +
                     "&r=" + document.getElementById("resolution-selector").value;
                 break;
             case 2: // Interval query
@@ -325,6 +334,11 @@
         }
         tableData += "</table>";
         document.getElementById("data-table").innerHTML = tableData;
+
+        // Update statistics
+        document.getElementById("stat-data").innerHTML = "<li>Durchschnittsverbrauch: " + response['avg'] + " kWh</li>";
+        document.getElementById("stat-data").innerHTML += "<li>Maximalverbrauch: " + response['max'] + " kWh</li>";
+        document.getElementById("stat-data").innerHTML += "<li>Minimalverbrauch: " + response['min'] + " kWh</li>";
     }
 
     // Adjust UI depending on selected mode
@@ -372,11 +386,24 @@
         http.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 let response = JSON.parse(this.responseText);
-                response.forEach(u => userList.push(u));
+                response['users'].forEach(u => userList.push(u));
                 let userSelector = document.getElementById("user-selector");
                 userList.forEach(u =>
                     userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>"
                 )
+                let maxDate = response['max_date'];
+                let minDate = response['min_date'];
+                console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
+                document.getElementById('date-selector').max = maxDate;
+                document.getElementById('date-selector').min = minDate;
+                document.getElementById('first-date-selector').max = maxDate;
+                document.getElementById('first-date-selector').min = minDate;
+                document.getElementById('last-date-selector').max = maxDate;
+                document.getElementById('last-date-selector').min = minDate;
+                document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
+                document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
+                document.getElementById('year-selector').innerHTML = "<option value=\"" +
+                    maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) + "</option>";
             }
         };
 

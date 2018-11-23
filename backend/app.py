@@ -9,7 +9,7 @@ from flask_cors import CORS
 from math import floor
 from datetime import datetime, timedelta
 import pymysql
-import json
+from statistics import mean
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +24,6 @@ my_Database = pymysql.connect(
 date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
 
-meter_dict = []
 
 def get_db_values(query):
     date = []
@@ -45,7 +44,10 @@ def get_db_values(query):
     data = {
         'dates': date,
         'diff': diff,
-        'energy': energy
+        'energy': energy,
+        'min': min(diff),
+        'max': max(diff),
+        'avg': round(mean(diff), 3)
     }
     return data
 
@@ -109,19 +111,34 @@ def get_data():
 
 @app.route('/boot')
 def boot():
-    meter_dict.clear()
+    meter_list = []
     cursor = my_Database.cursor()
-    query = "SELECT DISTINCT * FROM zaehlpunkte"
-    cursor.execute(query)
+    cursor.execute("SELECT DISTINCT * FROM zaehlpunkte")
     for result in cursor:
-        meter_dict.append({
+        meter_list.append({
             'number': result[0],
             'lastname': result[1],
             'firstname': result[2],
             'zipcode': result[3],
             'city': result[4]
         })
-    return jsonify(meter_dict)
+
+    max_date = ""
+    min_date = ""
+    cursor.execute("SELECT MAX(datum_zeit) FROM zaehlwerte")
+    for result in cursor:
+        max_date = datetime.strftime(result[0], date_format)
+    cursor.execute("SELECT MIN(datum_zeit) FROM zaehlwerte")
+    for result in cursor:
+        min_date = datetime.strftime(result[0], date_format)
+
+    response_dict = {
+        'users': meter_list,
+        'max_date': max_date,
+        'min_date': min_date
+    }
+
+    return jsonify(response_dict)
 
 
 if __name__ == '__main__':
