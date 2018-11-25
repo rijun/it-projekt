@@ -66,7 +66,7 @@ def generate_template(filename):
     return data_dict
 
 
-def generate_load_profile(template, start="2018-01-01", end="2018-02-01", meter_start_val=1234, meter_number="1ESY1312000449"):
+def generate_load_profile(template, start="2018-01-01", end="2019-01-01", meter_start_val=1234, meter_number="1ESY1312000000"):
     random.seed()
     START_DATE = datetime.strptime(start, "%Y-%m-%d")
     END_DATE = datetime.strptime(end, "%Y-%m-%d")
@@ -78,7 +78,7 @@ def generate_load_profile(template, start="2018-01-01", end="2018-02-01", meter_
     while current_datetime <= END_DATE:
 
         if current_datetime is START_DATE:
-            csv_entry = [current_datetime, meter_start_val]
+            csv_entry = [current_datetime, meter_number, meter_start_val, 0]
             csv_entry_list.append(csv_entry)
             current_datetime += timedelta(minutes=15)
             continue
@@ -88,7 +88,7 @@ def generate_load_profile(template, start="2018-01-01", end="2018-02-01", meter_
         current_time_data = template[current_weekday][current_time]
         current_load = random.triangular(current_time_data[0], current_time_data[1], current_time_data[2])
         current_meter_val += current_load
-        csv_entry = [current_datetime, meter_number, round(current_meter_val, 2)]
+        csv_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
         csv_entry_list.append(csv_entry)
         current_datetime += timedelta(minutes=15)
 
