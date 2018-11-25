@@ -67,6 +67,7 @@ def add_month(date):
 def get_data():
     try:
         mode = request.args['mode']
+        user = request.args['u']
 
         if mode == 'day':
             day = datetime.strptime(request.args['d'], date_format)
@@ -74,7 +75,7 @@ def get_data():
             res = request.args['r']
             query = "SELECT DATE_FORMAT(datum_zeit, '%H:%i'), obis_180 FROM zaehlwerte " \
                     "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND MINUTE (datum_zeit) % {2} = 0 " \
-                    "ORDER BY datum_zeit ASC".format(day.date(), next_day.date(), res)
+                    "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC".format(day.date(), next_day.date(), res, user)
             response = get_db_values(query)
 
         elif mode == 'interval':
@@ -83,7 +84,8 @@ def get_data():
             next_day = end_day + timedelta(days=1)
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
-                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'".format(start_day.date(), next_day.date())
+                    "AND zaehler_id = '{2}' AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' ORDER BY datum_zeit ASC"\
+                .format(start_day.date(), next_day.date(), user)
             response = get_db_values(query)
 
         elif mode == 'month':
@@ -92,8 +94,8 @@ def get_data():
             # year = request.args['y']
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
-                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'"\
-                .format(month.strftime(date_format), next_month.strftime(date_format))
+                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
+                .format(month.strftime(date_format), next_month.strftime(date_format), user)
             response = get_db_values(query)
         # TODO: not fully implemented yet
         elif mode == 'year':

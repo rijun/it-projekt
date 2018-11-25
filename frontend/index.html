@@ -250,26 +250,26 @@
             }
         };
 
-        let arguments = "";
+        let arguments = "u=" + document.getElementById("user-selector").value;
 
         // Generate query
         switch (state) {
             case 1: // Day query
-                arguments = "mode=" + document.getElementById("mode-selector").value +
+                arguments += "&mode=" + document.getElementById("mode-selector").value +
                     "&d=" + document.getElementById("date-selector").value + // "2018-09-10" +
                     "&r=" + document.getElementById("resolution-selector").value;
                 break;
             case 2: // Interval query
-                arguments = "mode=" + document.getElementById("mode-selector").value +
+                arguments += "&mode=" + document.getElementById("mode-selector").value +
                     "&sd=" + document.getElementById("first-date-selector").value +
                     "&ed=" + document.getElementById("last-date-selector").value;
                 break;
             case 3:
-                arguments = "mode=" + document.getElementById("mode-selector").value +
+                arguments += "&mode=" + document.getElementById("mode-selector").value +
                     "&m=" + document.getElementById("month-selector").value;
                 break;
             case 4:
-                arguments = "mode=" + document.getElementById("mode-selector").value +
+                arguments += "&mode=" + document.getElementById("mode-selector").value +
                     "&y=" + document.getElementById("year-selector").value;
                 break;
         }
