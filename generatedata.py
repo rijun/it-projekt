@@ -1,6 +1,8 @@
 import csv
-import datetime
+from datetime import datetime, timedelta
 import json
+from statistics import mean
+import random
 
 
 def generate_template(filename):
@@ -13,19 +15,20 @@ def generate_template(filename):
 
         for row in csv_reader:
             if line_count != 0:
-                row_date = datetime.datetime.strptime(row[0], "%Y-%m-%d %H:%M")
+                row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M")
                 if row_date.minute % 15 == 0:
                     csv_data.append([row_date, float(row[2])])
             line_count += 1
         csv_file.close()
 
     # Convert energy to load
-    for i in range(len(csv_data) - 1):
+    for i in range(len(csv_data)-1):
         current_data = csv_data[i][1]
         next_data = csv_data[i + 1][1]
         diff = round(next_data - current_data, 2)
         csv_data[i][1] = diff
 
+    csv_data.pop()
     week_dict = {}
 
     # Build week dictionary
@@ -53,7 +56,8 @@ def generate_template(filename):
                 weekday_dict[time] = ()
             min_load = min(value[time])
             max_load = max(value[time])
-            weekday_dict[time] = (min_load, max_load)
+            avg_load = mean(value[time])
+            weekday_dict[time] = (min_load, max_load, avg_load)
 
     f = open("load_statistics.json", 'w')
     f.write(json.dumps(data_dict))
@@ -62,12 +66,41 @@ def generate_template(filename):
     return data_dict
 
 
-def generate_load_profile(template):
-    return
+def generate_load_profile(template, start="2018-01-01", end="2018-02-01", meter_start_val=1234, meter_number="1ESY1312000449"):
+    random.seed()
+    START_DATE = datetime.strptime(start, "%Y-%m-%d")
+    END_DATE = datetime.strptime(end, "%Y-%m-%d")
+    current_datetime = START_DATE
+
+    csv_entry_list = []
+    current_meter_val = meter_start_val
+
+    while current_datetime <= END_DATE:
+
+        if current_datetime is START_DATE:
+            csv_entry = [current_datetime, meter_start_val]
+            csv_entry_list.append(csv_entry)
+            current_datetime += timedelta(minutes=15)
+            continue
+
+        current_weekday = current_datetime.weekday()
+        current_time = current_datetime.time().strftime("%H:%M")
+        current_time_data = template[current_weekday][current_time]
+        current_load = random.triangular(current_time_data[0], current_time_data[1], current_time_data[2])
+        current_meter_val += current_load
+        csv_entry = [current_datetime, meter_number, round(current_meter_val, 2)]
+        csv_entry_list.append(csv_entry)
+        current_datetime += timedelta(minutes=15)
+
+    with open('meter_data.csv', mode='w') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in csv_entry_list:
+            csv_writer.writerow(row)
+        csv_file.close()
 
 
 def main(*args, **kwargs):
-    input_file = input("Enter CSV file path: ")
+    # input_file = input("Enter CSV file path: ")
     data_template = generate_template("zaehlwerte.csv")
     generate_load_profile(data_template)
 
