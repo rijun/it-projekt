@@ -125,17 +125,26 @@ def boot():
             'city': result[4]
         })
 
-    max_date = ""
-    min_date = ""
-    cursor.execute("SELECT MAX(datum_zeit) FROM zaehlwerte")
-    for result in cursor:
-        max_date = datetime.strftime(result[0], date_format)
-    cursor.execute("SELECT MIN(datum_zeit) FROM zaehlwerte")
-    for result in cursor:
-        min_date = datetime.strftime(result[0], date_format)
-
     response_dict = {
         'users': meter_list,
+    }
+
+    return jsonify(response_dict)
+
+
+@app.route('/users')
+def users():
+    user = request.args['u']
+    cursor = my_Database.cursor()
+    max_date = ""
+    min_date = ""
+    cursor.execute("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
+    for result in cursor:
+        max_date = datetime.strftime(result[0], date_format)
+    cursor.execute("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
+    for result in cursor:
+        min_date = datetime.strftime(result[0], date_format)
+    response_dict = {
         'max_date': max_date,
         'min_date': min_date
     }

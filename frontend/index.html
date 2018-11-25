@@ -424,6 +424,29 @@
             }
         });
         document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
+
+        let http = new XMLHttpRequest();
+        http.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let response = JSON.parse(this.responseText);
+                let maxDate = response['max_date'];
+                let minDate = response['min_date'];
+                console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
+                document.getElementById('date-selector').max = maxDate;
+                document.getElementById('date-selector').min = minDate;
+                document.getElementById('first-date-selector').max = maxDate;
+                document.getElementById('first-date-selector').min = minDate;
+                document.getElementById('last-date-selector').max = maxDate;
+                document.getElementById('last-date-selector').min = minDate;
+                document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
+                document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
+                document.getElementById('year-selector').innerHTML = "<option value=\"" +
+                    maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) + "</option>";
+            }
+        };
+
+        http.open("GET", "http://localhost:5000/users?u=" + meterNumber, true);
+        http.send();
     }
 </script>
 </body>
