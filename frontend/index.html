@@ -15,7 +15,7 @@
     <!-- Header -->
     <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
         <!-- Title -->
-        <span class="navbar-brand pl-1">Lastgangsvisualisierungsschnitstelle</span>
+        <span class="navbar-brand pl-3">Lastgangsvisualisierungsschnitstelle</span>
         <!-- <span id="user-info" class="navbar-nav px-3"></span>     -->
         <!-- Menu button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
@@ -70,7 +70,8 @@
                         <select id="year-selector" class="form-control form-control-sm"></select>
                     </div>
                     <!-- Submit button -->
-                    <button type="button" onclick="getData()" class="form-control form-control-sm btn btn-outline-primary btn-sm" style="margin-top: 1rem">Abrufen</button>
+                    <button type="button" onclick="getData()" class="form-control form-control-sm btn btn-outline-primary btn-sm"
+                        style="margin-top: 1rem">Abrufen</button>
                     <hr>
                     <!-- Show meter value anzeigen -->
                     <div class="custom-control custom-checkbox">
@@ -80,30 +81,25 @@
                     <!-- Set price per kWh -->
                     <div class="custom-control custom-range" style="margin-top: 1rem">
                         <label for="money-select">Preis pro kWh: <span id="money-val">0.30</span>€</label>
-                        <input type="range" id="money-select" oninput="calculateMoney()" class="form-control-range form-control-sm" min="10" max="50" value="30">
+                        <input type="range" id="money-select" oninput="calculateMoney()" class="form-control-range form-control-sm"
+                            min="10" max="50" value="30">
                     </div>
                 </form>
+                <hr>
+                <!-- Statistics -->
+                <h5 class="mb-3">Statistische Daten</h5>
+                <ul id="stat-data" class="list-unstyled"></ul>
             </nav>
 
             <!-- Main -->
-            <main class="col-md-2 ml-sm-auto col-lg-10 px-4">
+            <main class="col-md-2 ml-sm-auto mr-sm-auto col-lg-10 px-4">
                 <!-- Title -->
-                <h2 id="title" class="mt-2 text-center">Lastgang vom {...}</h2>
+                <h3 id="title" class="mt-2 text-center">Lastgang vom {...}</h3>
                 <hr>
                 <!-- Chart -->
                 <canvas id="myChart" class="my-4 w-100" width="900" height="380"></canvas>
                 <br>
-                <!-- Data -->
-                <div class="flex-container">
-                    <!-- Table -->
-                    <div id="data-table" style="flex-grow: 2; padding: 8px;"></div>
-                    <!-- Statistics -->
-                    <div id="stat-container" style="flex-grow: 1; padding: 8px;">
-                        <div>Statistiche Daten</div>
-                        <ul id="stat-data" style="list-style-type: none; list-style-position: outside"></ul>
-                    </div>
-                </div>
-
+                <div id="data-table" class="table-responsive"></div>
             </main>
         </div>
 
@@ -162,13 +158,6 @@
                         }
                     }
                 });
-
-        /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
-        @media (max-width: 600px) {
-            .grid-container {
-                grid-template-areas: 'header' 'menu' 'content' 'footer';
-            }
-        }
                 loadUsers();
             };
 
@@ -178,31 +167,31 @@
                 http.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         updateView(JSON.parse(this.responseText));
-                    } else if (this.status == 400) {
-                        window.alert("Eingabefehler!"); // TODO: Fix multiple appearances
+                    } else if (this.readyState == 4 && this.status == 400) {
+                        window.alert("Fehler!");
                     }
                 };
 
-                let arguments = "";
+                let arguments = "u=" + document.getElementById("user-selector").value;
 
                 // Generate query
                 switch (state) {
                     case 1: // Day query
-                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                        arguments += "&mode=" + document.getElementById("mode-selector").value +
                             "&d=" + document.getElementById("date-selector").value + // "2018-09-10" +
                             "&r=" + document.getElementById("resolution-selector").value;
                         break;
                     case 2: // Interval query
-                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                        arguments += "&mode=" + document.getElementById("mode-selector").value +
                             "&sd=" + document.getElementById("first-date-selector").value +
                             "&ed=" + document.getElementById("last-date-selector").value;
                         break;
                     case 3:
-                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                        arguments += "&mode=" + document.getElementById("mode-selector").value +
                             "&m=" + document.getElementById("month-selector").value;
                         break;
                     case 4:
-                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                        arguments += "&mode=" + document.getElementById("mode-selector").value +
                             "&y=" + document.getElementById("year-selector").value;
                         break;
                 }
@@ -269,21 +258,23 @@
                 myChart.update();
 
                 // Update table
+                let price = document.getElementById("money-select").value
                 let tableData =
-                    "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th></tr>";
+                    "<table class=\"table table-striped table-sm\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th><th>Kosten / € </th></tr>";
                 for (let i in response['dates']) {
                     tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + formatNumber(response['diff'][i]) +
-                        "</td><td>" + formatNumber(response['energy'][i]) + "</td></tr>";
+                        "</td><td>" + formatNumber(response['energy'][i]) + "</td><td>" + (formatNumber(response[
+                            'energy'][i]) * price / 100).toFixed(2) + "</td></tr>";
                 }
                 tableData += "</table>";
                 document.getElementById("data-table").innerHTML = tableData;
 
                 // Update statistics
-                document.getElementById("stat-data").innerHTML = "<li>Durchschnittsverbrauch: " + response['avg'] +
+                document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" + response['avg'] +
                     " kWh</li>";
-                document.getElementById("stat-data").innerHTML += "<li>Maximalverbrauch: " + response['max'] +
+                document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" + response['max'] +
                     " kWh</li>";
-                document.getElementById("stat-data").innerHTML += "<li>Minimalverbrauch: " + response['min'] +
+                document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" + response['min'] +
                     " kWh</li>";
             }
 
@@ -339,20 +330,6 @@
                             userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
                             "</option>"
                         )
-                        let maxDate = response['max_date'];
-                        let minDate = response['min_date'];
-                        console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
-                        document.getElementById('date-selector').max = maxDate;
-                        document.getElementById('date-selector').min = minDate;
-                        document.getElementById('first-date-selector').max = maxDate;
-                        document.getElementById('first-date-selector').min = minDate;
-                        document.getElementById('last-date-selector').max = maxDate;
-                        document.getElementById('last-date-selector').min = minDate;
-                        document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
-                        document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
-                        document.getElementById('year-selector').innerHTML = "<option value=\"" +
-                            maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) +
-                            "</option>";
                     }
                 };
 
@@ -372,9 +349,31 @@
                         user = u;
                     }
                 });
-                document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " +
-                    user[
-                        "city"] + " (" + user["zipcode"] + ")";
+                // document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
+
+                let http = new XMLHttpRequest();
+                http.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let response = JSON.parse(this.responseText);
+                        let maxDate = response['max_date'];
+                        let minDate = response['min_date'];
+                        console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
+                        document.getElementById('date-selector').max = maxDate;
+                        document.getElementById('date-selector').min = minDate;
+                        document.getElementById('first-date-selector').max = maxDate;
+                        document.getElementById('first-date-selector').min = minDate;
+                        document.getElementById('last-date-selector').max = maxDate;
+                        document.getElementById('last-date-selector').min = minDate;
+                        document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
+                        document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
+                        document.getElementById('year-selector').innerHTML = "<option value=\"" +
+                            maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) +
+                            "</option>";
+                    }
+                };
+
+                http.open("GET", "http://localhost:5000/users?u=" + meterNumber, true);
+                http.send();
             }
         </script>
         <!-- Optional JavaScript -->
