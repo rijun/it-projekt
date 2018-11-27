@@ -5,12 +5,12 @@ from statistics import mean
 import random
 
 
-def generate_template(filename):
+def generate_template(filename="zaehlwerte.csv"):
     csv_data = []
 
     # Open file
     with open(filename, mode='r') as csv_file:
-        csv_reader = csv.reader(csv_file)
+        csv_reader = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
         line_count = 0
 
         for row in csv_reader:
@@ -66,7 +66,20 @@ def generate_template(filename):
     return data_dict
 
 
-def generate_load_profile(template, start="2018-01-01", end="2019-01-01", meter_start_val=1234, meter_number="1ESY1312000000"):
+def generate_load_profile(template):
+    start = input("Start date (YYYY-MM-DD): ")
+    if not start:
+        start = "2018-01-01"
+    end = input("End date (YYYY-MM-DD): ")
+    if not end:
+        end = "2019-01-01"
+    meter_start_val = input("Start value: ")
+    if not meter_start_val:
+        meter_start_val = 1000
+    meter_number = input("Start value: ")
+    if not meter_number:
+        meter_number = "1ESY1312000000"
+
     random.seed()
     START_DATE = datetime.strptime(start, "%Y-%m-%d")
     END_DATE = datetime.strptime(end, "%Y-%m-%d")
@@ -93,15 +106,18 @@ def generate_load_profile(template, start="2018-01-01", end="2019-01-01", meter_
         current_datetime += timedelta(minutes=15)
 
     with open('meter_data.csv', mode='w') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
         for row in csv_entry_list:
             csv_writer.writerow(row)
         csv_file.close()
 
 
-def main(*args, **kwargs):
-    # input_file = input("Enter CSV file path: ")
-    data_template = generate_template("zaehlwerte.csv")
+def main():
+    template = input("Template file path:")
+    if not template:
+        data_template = generate_template()
+    else:
+        data_template = generate_template(template)
     generate_load_profile(data_template)
 
 
