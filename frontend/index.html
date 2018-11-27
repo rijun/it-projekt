@@ -2,430 +2,384 @@
 <html>
 
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <title>LaViSch</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        /* Style the header */
-        .header {
-            grid-area: header;
-            background-color: #f1f1f1;
-            padding: 8px;
-        }
-
-        /* The grid container */
-        .grid-container {
-            display: grid;
-            grid-template-areas: 'header header header header header header' 'menu content content content content content' 'footer footer footer footer footer footer';
-            /* grid-column-gap: 10px; */
-        }
-
-        .menu,
-        .content {
-            padding: 10px;
-        }
-
-        /* Style the menu column */
-        .menu {
-            grid-area: menu;
-            border: red 1px dashed;
-            min-width: 180px;
-        }
-
-        /* Style the content column */
-        .content {
-            grid-area: content;
-            border: green 1px dashed;
-        }
-
-        /* Style the footer */
-        .footer {
-            grid-area: footer;
-            background-color: #f1f1f1;
-            text-align: center;
-        }
-
-        /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
-        @media (max-width: 600px) {
-            .grid-container {
-                grid-template-areas: 'header' 'menu' 'content' 'footer';
-            }
-        }
-
-        .menu-item {
-            display: block;
-            margin: 4px auto;
-            width: 100%;
-            height: 30px;
-            font-family: inherit;
-            font-size: inherit;
-        }
-
-        table {
-            border-collapse: collapse;
-            border-spacing: 0;
-            width: 100%;
-            border: 1px solid #dddddd;
-        }
-
-        th, td {
-            text-align: center;
-            padding: 4px;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2
-        }
-
-        .flex-container {
-            display: flex;
-            align-items: stretch;
-        }
-
-    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+        crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css" />
 </head>
 
-<body class="grid-container">
-<!-- Header -->
-<header class="header flex-container">
-    <span style="flex-grow: 3;">Lastgangsvisualisierungsschnitstelle</span>
-    <span id="user-info" style="flex-grow: 3;"></span>
-    <!-- User selection -->
-    <select id="user-selector" onchange="updateUser()" style="float: right; height: 19px; max-width: 140px; flex-grow: 3;">
-        <option value="default">Zähler auswählen...</option>
-    </select>
-</header>
+<body>
+    <!-- Header -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
+        <!-- Title -->
+        <span class="navbar-brand pl-1">Lastgangsvisualisierungsschnitstelle</span>
+        <!-- <span id="user-info" class="navbar-nav px-3"></span>     -->
+        <!-- Menu button -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
+            aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </header>
 
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar" id="sidebar">
+                <h5>Abfrageoptionen</h5>
+                <!-- Menu items -->
+                <form class="form-group">
+                    <!-- User selection -->
+                    <label for="user-selector" class="col-form-label-sm">Zählernummer</label>
+                    <select id="user-selector" onchange="updateUser()" class="form-control form-control-sm">
+                        <option value="default"></option>
+                    </select>
+                    <!-- Mode selection -->
+                    <label for="mode-selector" class="col-form-label-sm">Modus</label>
+                    <select onchange="modeChanged()" id="mode-selector" class="form-control form-control-sm form-control-dark">
+                        <option value="day">Tagesansicht</option>
+                        <option value="interval">Intervall</option>
+                        <option value="month">Monat</option>
+                        <option value="year">Jahr</option>
+                    </select>
+                    <!-- Date selections -->
+                    <div id="day-options" class="mb-8">
+                        <label for="date-selector" class="col-form-label-sm">Datum</label>
+                        <input type="date" id="date-selector" class="form-control form-control-sm">
+                        <!-- Resolution selection -->
+                        <label for="resolution-selector" class="col-form-label-sm">Auslösung</label>
+                        <select id="resolution-selector" class="form-control form-control-sm">
+                            <option value="15">Viertelstunde</option>
+                            <option value="60">Stunde</option>
+                        </select>
+                    </div>
+                    <div id="interval-options" style="display: none">
+                        <label for="first-date-selector">Start Datum</label>
+                        <input type="date" id="first-date-selector" class="form-control form-control-sm">
+                        <label for="last-date-selector" class="col-form-label-sm">End Datum</label>
+                        <input type="date" id="last-date-selector" class="form-control form-control-sm">
+                    </div>
+                    <div id="month-options" style="display: none">
+                        <label for="month-selector" class="col-form-label-sm">Monat</label>
+                        <input type="month" id="month-selector" class="form-control form-control-sm">
+                    </div>
+                    <div id="year-options" style="display: none">
+                        <label for="year-selector" class="col-form-label-sm">Jahr</label>
+                        <select id="year-selector" class="form-control form-control-sm"></select>
+                    </div>
+                    <!-- Submit button -->
+                    <button type="button" onclick="getData()" class="form-control form-control-sm btn btn-outline-primary btn-sm" style="margin-top: 1rem">Abrufen</button>
+                    <hr>
+                    <!-- Show meter value anzeigen -->
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="energy-view">
+                        <label class="custom-control-label " for="energy-view">Zählerstand</label>
+                    </div>
+                    <!-- Set price per kWh -->
+                    <div class="custom-control custom-range" style="margin-top: 1rem">
+                        <label for="money-select">Preis pro kWh: <span id="money-val">0.30</span>€</label>
+                        <input type="range" id="money-select" oninput="calculateMoney()" class="form-control-range form-control-sm" min="10" max="50" value="30">
+                    </div>
+                </form>
+            </nav>
 
-<!-- Menu -->
-<nav class="menu">
-    <h5 class="menu-item">Abfrageoptionen</h5>
-    <!-- Menu items -->
-    <!-- Mode selection -->
-    <label for="mode-selector">Modus</label>
-    <select onchange="modeChanged()" id="mode-selector" class="menu-item input">
-        <option value="day">Tagesansicht</option>
-        <option value="interval">Intervall</option>
-        <option value="month">Monat</option>
-        <option value="year">Jahr</option>
-    </select>
-    <!-- Date selections -->
-    <div id="day-options">
-        <label for="date-selector">Datum</label>
-        <input type="date" id="date-selector" class="menu-item input">
-        <!-- Resolution selection -->
-        <label for="resolution-selector">Auslösung</label>
-        <select id="resolution-selector" class="menu-item input">
-            <option value="15">Viertelstunde</option>
-            <option value="60">Stunde</option>
-        </select>
-    </div>
-    <div id="interval-options" style="display: none">
-        <label for="first-date-selector">Start Datum</label>
-        <input type="date" id="first-date-selector" class="menu-item input">
-        <label for="last-date-selector">End Datum</label>
-        <input type="date" id="last-date-selector" class="menu-item input">
-    </div>
-    <div id="month-options" style="display: none">
-        <label for="month-selector">Monat</label>
-        <input type="month" id="month-selector" class="menu-item input">
-    </div>
-    <div id="year-options" style="display: none">
-        <label for="year-selector">Jahr</label>
-        <select id="year-selector" class="menu-item input"></select>
-    </div>
-    <!-- Submit button -->
-    <button type="button" onclick="getData()" class="menu-item input">Abrufen</button>
-    <div>
-        <label for="energy-view">Zählerstand</label>
-        <input type="checkbox" id="energy-view" style="float: left">
-    </div>
-    <div>
-        <label for="money-view">Preis pro kWh in €</label>
-        <input type="number" id="money-view" onchange="calculateMoney()" class="menu-item input">
-    </div>
-</nav>
+            <!-- Main -->
+            <main class="col-md-2 ml-sm-auto col-lg-10 px-4">
+                <!-- Title -->
+                <h2 id="title" class="mt-2 text-center">Lastgang vom {...}</h2>
+                <hr>
+                <!-- Chart -->
+                <canvas id="myChart" class="my-4 w-100" width="900" height="380"></canvas>
+                <br>
+                <!-- Data -->
+                <div class="flex-container">
+                    <!-- Table -->
+                    <div id="data-table" style="flex-grow: 2; padding: 8px;"></div>
+                    <!-- Statistics -->
+                    <div id="stat-container" style="flex-grow: 1; padding: 8px;">
+                        <div>Statistiche Daten</div>
+                        <ul id="stat-data" style="list-style-type: none; list-style-position: outside"></ul>
+                    </div>
+                </div>
 
-<!-- Main -->
-<main class="content">
-    <!-- Title -->
-    <h2 id="title" style="text-align: center">Lastgang vom {...}</h2>
-    <!-- Chart -->
-    <canvas id="myChart" width="100%" height="50%"></canvas>
-    <br>
-    <!-- Data -->
-    <div class="flex-container">
-        <!-- Table -->
-        <div id="data-table" style="flex-grow: 2; padding: 8px;"></div>
-        <!-- Statistics -->
-        <div id="stat-container" style="flex-grow: 1; padding: 8px;">
-            <div>Statistiche Daten</div>
-            <ul id="stat-data" style="list-style-type: none; list-style-position: outside"></ul>
+            </main>
         </div>
-    </div>
 
-</main>
+        <script>
+            let myChart;
+            let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
+            let userList = [];
 
-<!-- Footer -->
-<footer class="footer">
-    <h4>FOOTER</h4>
-</footer>
+            window.onload = function () {
+                // Default chart labels
+                let hours = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00",
+                    "09:00",
+                    "10:00",
+                    "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
+                    "21:00", "22:00",
+                    "23:00"
+                ];
+                // First data is always 0
+                let firstLoad = [];
+                for (var i = 0; i < hours.length; i++) {
+                    firstLoad.push(0);
+                }
+                // Chart initialization
+                let ctx = document.getElementById("myChart").getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: hours,
+                        datasets: [{
+                            label: 'Last',
+                            data: firstLoad,
+                            backgroundColor: "rgba(255, 128, 0, 0.2)",
+                            borderColor: "rgb(255, 128, 0)",
+                            borderWidth: 1,
+                            yAxisID: 'y-axis-load',
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                                display: true,
+                                position: 'left',
+                                id: 'y-axis-load',
+                            }, {
+                                type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                                display: true,
+                                position: 'right',
+                                id: 'y-axis-energy',
 
-<script>
-    let myChart;
-    let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
-    let userList = [];
-
-    window.onload = function () {
-        // Default chart labels
-        let hours = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00",
-            "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00",
-            "23:00"
-        ];
-        // First data is always 0
-        let firstLoad = [];
-        for (var i = 0; i < hours.length; i++) {
-            firstLoad.push(0);
-        }
-        // Chart initialization
-        let ctx = document.getElementById("myChart").getContext('2d');
-        myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: hours,
-                datasets: [{
-                    label: 'Last',
-                    data: firstLoad,
-                    backgroundColor: "rgba(255, 128, 0, 0.2)",
-                    borderColor: "rgb(255, 128, 0)",
-                    borderWidth: 1,
-                    yAxisID: 'y-axis-load',
-                }]
-            },
-            options: {
-                scales: {
-                    yAxes: [{
-                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-                        display: true,
-                        position: 'left',
-                        id: 'y-axis-load',
-                    }, {
-                        type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-                        display: true,
-                        position: 'right',
-                        id: 'y-axis-energy',
-
-                        // grid line settings
-                        gridLines: {
-                            drawOnChartArea: false, // only want the grid lines for one axis to show up
+                                // grid line settings
+                                gridLines: {
+                                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                                }
+                            }]
                         }
-                    }]
+                    }
+                });
+
+                loadUsers();
+            };
+
+            function getData() {
+                var http = new XMLHttpRequest();
+
+                http.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        updateView(JSON.parse(this.responseText));
+                    } else if (this.status == 400) {
+                        window.alert("Eingabefehler!"); // TODO: Fix multiple appearances
+                    }
+                };
+
+                let arguments = "";
+
+                // Generate query
+                switch (state) {
+                    case 1: // Day query
+                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                            "&d=" + document.getElementById("date-selector").value + // "2018-09-10" +
+                            "&r=" + document.getElementById("resolution-selector").value;
+                        break;
+                    case 2: // Interval query
+                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                            "&sd=" + document.getElementById("first-date-selector").value +
+                            "&ed=" + document.getElementById("last-date-selector").value;
+                        break;
+                    case 3:
+                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                            "&m=" + document.getElementById("month-selector").value;
+                        break;
+                    case 4:
+                        arguments = "mode=" + document.getElementById("mode-selector").value +
+                            "&y=" + document.getElementById("year-selector").value;
+                        break;
+                }
+
+                http.open("GET", "http://localhost:5000/data?" + arguments, true);
+                http.send();
+            }
+
+            // Update and plot chart
+            function updateView(response) {
+                // Array for storing month names
+                let months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September",
+                    "Oktober",
+                    "November", "December"
+                ];
+                // Update header
+                switch (state) {
+                    case 1:
+                        let date = new Date(document.getElementById("date-selector").value);
+                        document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + ". " + months[
+                                date.getMonth()] +
+                            " " + date.getFullYear();
+                        break;
+                    case 2:
+                        let firstDate = new Date(document.getElementById("first-date-selector").value);
+                        let lastDate = new Date(document.getElementById("last-date-selector").value);
+                        document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + ". " +
+                            months[
+                                firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + lastDate.getDate() +
+                            ". " +
+                            months[lastDate.getMonth()] + " " + lastDate.getFullYear();
+                        break;
+                    case 3:
+                        let month = new Date(document.getElementById("month-selector").value);
+                        document.getElementById("title").innerText = "Lastgang vom " + months[month.getMonth()] + " " +
+                            month.getFullYear();
+                        break;
+                    case 4:
+                        let year = new Date(document.getElementById("year-selector").value);
+                        document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
+                        break;
+                }
+
+                // Update chart
+                myChart.data.labels = response['dates'];
+                myChart.data.datasets[0].data = response['diff'];
+                if (document.getElementById("energy-view").checked === true) {
+                    if (myChart.data.datasets.length === 1) {
+                        myChart.data.datasets.push({
+                            label: 'Zählerstand',
+                            data: response['energy'],
+                            backgroundColor: "rgba(0, 0, 255, 0.2)",
+                            borderColor: "rgb(0, 0, 255)",
+                            borderWidth: 1,
+                            type: "line",
+                            yAxisID: 'y-axis-energy',
+                        })
+                    } else {
+                        myChart.data.datasets[1].data = response['energy'];
+                    }
+                } else if (myChart.data.datasets.length === 2) {
+                    myChart.data.datasets.pop();
+                }
+                myChart.update();
+
+                // Update table
+                let tableData =
+                    "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th></tr>";
+                for (let i in response['dates']) {
+                    tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + formatNumber(response['diff'][i]) +
+                        "</td><td>" + formatNumber(response['energy'][i]) + "</td></tr>";
+                }
+                tableData += "</table>";
+                document.getElementById("data-table").innerHTML = tableData;
+
+                // Update statistics
+                document.getElementById("stat-data").innerHTML = "<li>Durchschnittsverbrauch: " + response['avg'] +
+                    " kWh</li>";
+                document.getElementById("stat-data").innerHTML += "<li>Maximalverbrauch: " + response['max'] +
+                    " kWh</li>";
+                document.getElementById("stat-data").innerHTML += "<li>Minimalverbrauch: " + response['min'] +
+                    " kWh</li>";
+            }
+
+            // Adjust UI depending on selected mode
+            function modeChanged() {
+                const modeSelector = document.getElementById('mode-selector');
+
+                if (modeSelector.value === "day") {
+                    document.getElementById("day-options").style.display = "block";
+                    document.getElementById("interval-options").style.display = "none";
+                    document.getElementById("month-options").style.display = "none";
+                    document.getElementById("year-options").style.display = "none";
+                    state = 1; // Set state to day
+                } else if (modeSelector.value === "interval") {
+                    document.getElementById("day-options").style.display = "none";
+                    document.getElementById("interval-options").style.display = "block";
+                    document.getElementById("month-options").style.display = "none";
+                    document.getElementById("year-options").style.display = "none";
+                    state = 2; // Set state to custom
+                } else if (modeSelector.value === "month") {
+                    document.getElementById("day-options").style.display = "none";
+                    document.getElementById("interval-options").style.display = "none";
+                    document.getElementById("month-options").style.display = "block";
+                    document.getElementById("year-options").style.display = "none";
+                    state = 3; // Set state to month
+                } else {
+                    document.getElementById("day-options").style.display = "none";
+                    document.getElementById("interval-options").style.display = "none";
+                    document.getElementById("month-options").style.display = "none";
+                    document.getElementById("year-options").style.display = "block";
+                    state = 4; // Set state to year
                 }
             }
-        });
 
-        loadUsers();
-    };
-
-    function getData() {
-        var http = new XMLHttpRequest();
-
-        http.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                updateView(JSON.parse(this.responseText));
+            function formatNumber(number) {
+                return Number.parseFloat(number).toFixed(2);
             }
-            else if (this.status == 400) {
-                window.alert("Eingabefehler!"); // TODO: Fix multiple appearances
+
+            function calculateMoney() {
+                let price = document.getElementById("money-select").value / 100;
+                document.getElementById("money-val").innerText = price.toFixed(2);
+                console.log(price);
             }
-        };
 
-        let arguments = "";
-
-        // Generate query
-        switch (state) {
-            case 1: // Day query
-                arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&d=" + document.getElementById("date-selector").value + // "2018-09-10" +
-                    "&r=" + document.getElementById("resolution-selector").value;
-                break;
-            case 2: // Interval query
-                arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&sd=" + document.getElementById("first-date-selector").value +
-                    "&ed=" + document.getElementById("last-date-selector").value;
-                break;
-            case 3:
-                arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&m=" + document.getElementById("month-selector").value;
-                break;
-            case 4:
-                arguments = "mode=" + document.getElementById("mode-selector").value +
-                    "&y=" + document.getElementById("year-selector").value;
-                break;
-        }
-
-        http.open("GET", "http://localhost:5000/data?" + arguments, true);
-        http.send();
-    }
-
-    // Update and plot chart
-    function updateView(response) {
-        // Array for storing month names
-        let months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "December"];
-        // Update header
-        switch (state) {
-            case 1:
-                let date = new Date(document.getElementById("date-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + ". " + months[date.getMonth()] + " " + date.getFullYear();
-                break;
-            case 2:
-                let firstDate = new Date(document.getElementById("first-date-selector").value);
-                let lastDate = new Date(document.getElementById("last-date-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + ". " + months[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + lastDate.getDate() + ". " + months[lastDate.getMonth()] + " " + lastDate.getFullYear();
-                break;
-            case 3:
-                let month = new Date(document.getElementById("month-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom " + months[month.getMonth()] + " " + month.getFullYear();
-                break;
-            case 4:
-                let year = new Date(document.getElementById("year-selector").value);
-                document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
-                break;
-        }
-
-        // Update chart
-        myChart.data.labels = response['dates'];
-        myChart.data.datasets[0].data = response['diff'];
-        if (document.getElementById("energy-view").checked === true) {
-            if (myChart.data.datasets.length === 1) {
-                myChart.data.datasets.push(
-                    {
-                        label: 'Zählerstand',
-                        data: response['energy'],
-                        backgroundColor: "rgba(0, 0, 255, 0.2)",
-                        borderColor: "rgb(0, 0, 255)",
-                        borderWidth: 1,
-                        type: "line",
-                        yAxisID: 'y-axis-energy',
+            function loadUsers() {
+                let http = new XMLHttpRequest();
+                http.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let response = JSON.parse(this.responseText);
+                        response['users'].forEach(u => userList.push(u));
+                        let userSelector = document.getElementById("user-selector");
+                        userList.forEach(u =>
+                            userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
+                            "</option>"
+                        )
+                        let maxDate = response['max_date'];
+                        let minDate = response['min_date'];
+                        console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
+                        document.getElementById('date-selector').max = maxDate;
+                        document.getElementById('date-selector').min = minDate;
+                        document.getElementById('first-date-selector').max = maxDate;
+                        document.getElementById('first-date-selector').min = minDate;
+                        document.getElementById('last-date-selector').max = maxDate;
+                        document.getElementById('last-date-selector').min = minDate;
+                        document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
+                        document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
+                        document.getElementById('year-selector').innerHTML = "<option value=\"" +
+                            maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) +
+                            "</option>";
                     }
-                )
-            } else {
-                myChart.data.datasets[1].data = response['energy'];
+                };
+
+                http.open("GET", "http://localhost:5000/boot", true);
+                http.send();
             }
-        } else if (myChart.data.datasets.length === 2) {
-            myChart.data.datasets.pop();
-        }
-        myChart.update();
 
-        // Update table
-        let tableData = "<table class=\"table\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th></tr>";
-        for (let i in response['dates']) {
-            tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + formatNumber(response['diff'][i]) + "</td><td>" + formatNumber(response['energy'][i]) + "</td></tr>";
-        }
-        tableData += "</table>";
-        document.getElementById("data-table").innerHTML = tableData;
-
-        // Update statistics
-        document.getElementById("stat-data").innerHTML = "<li>Durchschnittsverbrauch: " + response['avg'] + " kWh</li>";
-        document.getElementById("stat-data").innerHTML += "<li>Maximalverbrauch: " + response['max'] + " kWh</li>";
-        document.getElementById("stat-data").innerHTML += "<li>Minimalverbrauch: " + response['min'] + " kWh</li>";
-    }
-
-    // Adjust UI depending on selected mode
-    function modeChanged() {
-        const modeSelector = document.getElementById('mode-selector');
-
-        if (modeSelector.value === "day") {
-            document.getElementById("day-options").style.display = "block";
-            document.getElementById("interval-options").style.display = "none";
-            document.getElementById("month-options").style.display = "none";
-            document.getElementById("year-options").style.display = "none";
-            state = 1; // Set state to day
-        } else if (modeSelector.value === "interval") {
-            document.getElementById("day-options").style.display = "none";
-            document.getElementById("interval-options").style.display = "block";
-            document.getElementById("month-options").style.display = "none";
-            document.getElementById("year-options").style.display = "none";
-            state = 2; // Set state to custom
-        } else if (modeSelector.value === "month") {
-            document.getElementById("day-options").style.display = "none";
-            document.getElementById("interval-options").style.display = "none";
-            document.getElementById("month-options").style.display = "block";
-            document.getElementById("year-options").style.display = "none";
-            state = 3; // Set state to month
-        } else {
-            document.getElementById("day-options").style.display = "none";
-            document.getElementById("interval-options").style.display = "none";
-            document.getElementById("month-options").style.display = "none";
-            document.getElementById("year-options").style.display = "block";
-            state = 4; // Set state to year
-        }
-    }
-
-    function formatNumber(number) {
-        return Number.parseFloat(number).toFixed(2);
-    }
-
-    function calculateMoney() {
-        let price = document.getElementById("money-view").value;
-        console.log(price);
-    }
-
-    function loadUsers() {
-        let http = new XMLHttpRequest();
-        http.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
-                let response = JSON.parse(this.responseText);
-                response['users'].forEach(u => userList.push(u));
-                let userSelector = document.getElementById("user-selector");
-                userList.forEach(u =>
-                    userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>"
-                )
-                let maxDate = response['max_date'];
-                let minDate = response['min_date'];
-                console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
-                document.getElementById('date-selector').max = maxDate;
-                document.getElementById('date-selector').min = minDate;
-                document.getElementById('first-date-selector').max = maxDate;
-                document.getElementById('first-date-selector').min = minDate;
-                document.getElementById('last-date-selector').max = maxDate;
-                document.getElementById('last-date-selector').min = minDate;
-                document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
-                document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
-                document.getElementById('year-selector').innerHTML = "<option value=\"" +
-                    maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) + "</option>";
+            function updateUser() {
+                let meterNumber = document.getElementById("user-selector").value;
+                if (meterNumber === "default") { // Do nothing if no user is selected
+                    document.getElementById("user-info").innerHTML = "";
+                    return;
+                }
+                let user = null;
+                userList.forEach(u => {
+                    if (u["number"] === meterNumber) {
+                        user = u;
+                    }
+                });
+                document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " +
+                    user[
+                        "city"] + " (" + user["zipcode"] + ")";
             }
-        };
-
-        http.open("GET", "http://localhost:5000/boot", true);
-        http.send();
-    }
-
-    function updateUser() {
-        let meterNumber = document.getElementById("user-selector").value;
-        if (meterNumber === "default") {   // Do nothing if no user is selected
-            document.getElementById("user-info").innerHTML = "";
-            return;
-        }
-        let user = null;
-        userList.forEach(u => {
-            if (u["number"] === meterNumber) {
-                user = u;
-            }
-        });
-        document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
-    }
-</script>
+        </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
 </body>
 
 </html>
