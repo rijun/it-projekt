@@ -8,7 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+        crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css" />
 </head>
 
@@ -71,33 +72,35 @@
                         <select id="year-selector" class="form-control form-control-sm"></select>
                     </div>
                     <!-- Submit button -->
-                    <button type="button" onclick="getData()" class="form-control form-control-sm btn btn-outline-primary btn-sm"
-                        style="margin-top: 1rem">Abrufen</button>
+                    <button type="button" onclick="getData()" class="form-control form-control-sm btn btn-outline-primary btn-sm my-3">Abrufen</button>
                     <!-- Show meter value -->
                     <div class="custom-control custom-checkbox">
                         <input type="checkbox" class="custom-control-input" id="energy-view">
-                        <label class="custom-control-label " for="energy-view">Zählerstand</label>
+                        <label class="custom-control-label " for="energy-view">Zählerstand anzeigen</label>
                     </div>
-                    <hr>
                     <!-- Set price per kWh -->
-                    <div class="custom-control custom-range" style="margin-top: 1rem">
+                    <div class="custom-control custom-range my-3">
                         <label for="money-select">Preis pro kWh: <span id="money-val">0.30</span>€</label>
-                        <input type="range" id="money-select" oninput="calculateMoney()" class="form-control-range form-control-sm"
+                        <input type="range" id="money-select" oninput="priceChanged()" class="form-control-range form-control-sm"
                             min="10" max="50" value="30">
                     </div>
                 </form>
                 <hr>
                 <!-- Statistics -->
-                <h5 class="mb-3">Statistische Daten</h5>
-                <ul id="stat-data" class="list-unstyled"></ul>
+                <div id="stat" style="display: none">
+                    <h5 class="mb-3">Statistische Daten</h5>
+                    <ul id="stat-data" class="list-unstyled"></ul>
+                </div>
             </nav>
 
             <!-- Main -->
             <main class="col-md-2 ml-sm-auto mr-sm-auto col-lg-10 px-4">
                 <!-- Title -->
                 <div class="card card-body p-2">
-                    <h4 id="title" class="card-text text-center">
-                        <a><i class="fas fa-angle-left pr-4"></i></a>Lastgang vom {...}<a><i class="fas fa-angle-right pl-4"></i></a>
+                    <h4 class="card-text text-center">
+                        <a><i class="fas fa-angle-left pr-4"></i></a>
+                        <span id="title">Lastgang vom {...}</span>
+                        <a><i class="fas fa-angle-right pl-4"></i></a>
                     </h4>
                 </div>
                 <!-- Chart -->
@@ -119,28 +122,18 @@
             let userList = [];
 
             window.onload = function () {
-                // Default chart labels
-                let hours = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00",
-                    "09:00",
-                    "10:00",
-                    "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
-                    "21:00", "22:00",
-                    "23:00"
-                ];
-                // First data is always 0
-                let firstLoad = [];
-                for (var i = 0; i < hours.length; i++) {
-                    firstLoad.push(0);
-                }
                 // Chart initialization
+                setupChart()
+                loadUsers();
+            };
+
+            function setupChart() {
                 let ctx = document.getElementById("myChart").getContext('2d');
                 myChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: hours,
                         datasets: [{
-                            label: 'Last',
-                            data: firstLoad,
+                            label: 'Lastgang',
                             backgroundColor: "rgba(255, 128, 0, 0.2)",
                             borderColor: "rgb(255, 128, 0)",
                             borderWidth: 1,
@@ -149,18 +142,30 @@
                     },
                     options: {
                         scales: {
+                            xAxes: [{
+                                scaleLabel: {
+							        display: true,
+							        labelString: 'Zeitpunkt'
+						        }
+                            }],
                             yAxes: [{
                                 type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                                 display: true,
                                 position: 'left',
                                 id: 'y-axis-load',
+                                scaleLabel: {
+							        display: true,
+							        labelString: 'Last / kWh/h'
+						        }
                             }, {
                                 type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
                                 display: true,
                                 position: 'right',
                                 id: 'y-axis-energy',
-
-                                // grid line settings
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Zählerstand / kWh'
+                                },
                                 gridLines: {
                                     drawOnChartArea: false, // only want the grid lines for one axis to show up
                                 }
@@ -168,8 +173,7 @@
                         }
                     }
                 });
-                loadUsers();
-            };
+            }
 
             function getData() {
                 var http = new XMLHttpRequest();
@@ -267,19 +271,22 @@
                 }
                 myChart.update();
 
+                let price = document.getElementById("money-select").value / 100;
+                
                 // Update table
-                let price = document.getElementById("money-select").value / 100
                 let tableData =
                     "<table class=\"table table-striped table-sm\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th><th>Kosten / € </th></tr>";
                 for (let i in response['dates']) {
-                    tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + formatNumber(response['diff'][i]) +
-                        "</td><td>" + formatNumber(response['energy'][i]) + "</td><td>" + (formatNumber(response[
-                            'energy'][i]) * price).toFixed(2) + "</td></tr>";
+                    tableData += "<tr><td>" + response['dates'][i] + "</td><td>" + 
+                    formatNumber(response['diff'][i]) + "</td><td>" +
+                    formatNumber(response['energy'][i]) + "</td><td>" + 
+                    calculatePrice(response['diff'][i], price) + "</td></tr>";
                 }
                 tableData += "</table>";
                 document.getElementById("data-table").innerHTML = tableData;
 
                 // Update statistics
+                document.getElementById("stat").style.display = "block";
                 document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
                     response['avg'] +
                     " kWh</li>";
@@ -332,10 +339,31 @@
                 return Number.parseFloat(number).toFixed(2);
             }
 
-            function calculateMoney() {
+            function priceChanged() {
                 let price = document.getElementById("money-select").value / 100;
                 document.getElementById("money-val").innerText = price.toFixed(2);
                 console.log(price);
+            }
+
+            function calculatePrice(load, price) {
+                let money;
+
+                switch (state) {
+                    case 1:
+                        money = load * price / 60 * document.getElementById("resolution-selector").value
+                        break;
+                        case 2:
+                        money = load * price / 24
+                        break;
+                        case 3:
+                        money = load * price / 24
+                        break;
+                        case 4:
+                        money = load * price / 60 * document.getElementById("resolution-selector").value
+                        break;
+                }
+
+                return money.toFixed(3)
             }
 
             function loadUsers() {
