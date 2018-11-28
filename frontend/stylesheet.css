@@ -70,3 +70,12 @@ body {
 .navbar-brand {
     font-size: 1rem;
 }
+
+/*
+* Cards
+*/
+
+.card {
+    margin: .75rem 0rem;
+    box-shadow:0 2px 5px 0 #00000029
+}

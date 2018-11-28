@@ -47,7 +47,8 @@ def get_db_values(query):
         'energy': energy,
         'min': min(diff),
         'max': max(diff),
-        'avg': round(mean(diff), 3)
+        'avg': round(mean(diff), 3),
+        'sum': sum(diff)
     }
     return data
 
