@@ -10,12 +10,12 @@ def generate_template(filename="zaehlwerte.csv"):
 
     # Open file
     with open(filename, mode='r') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+        csv_reader = csv.reader(csv_file)
         line_count = 0
 
         for row in csv_reader:
             if line_count != 0:
-                row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M")
+                row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
                 if row_date.minute % 15 == 0:
                     csv_data.append([row_date, float(row[2])])
             line_count += 1
@@ -76,7 +76,7 @@ def generate_load_profile(template):
     meter_start_val = input("Start value: ")
     if not meter_start_val:
         meter_start_val = 1000
-    meter_number = input("Start value: ")
+    meter_number = input("Meter number: ")
     if not meter_number:
         meter_number = "1ESY1312000000"
 

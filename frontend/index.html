@@ -95,24 +95,35 @@
 
             <!-- Main -->
             <main class="col-md-2 ml-sm-auto mr-sm-auto col-lg-10 px-4">
-                <!-- Title -->
-                <div class="card card-body p-2">
-                    <h4 class="card-text text-center">
-                        <a><i class="fas fa-angle-left pr-4"></i></a>
-                        <span id="title">Lastgang vom {...}</span>
-                        <a><i class="fas fa-angle-right pl-4"></i></a>
-                    </h4>
+                <!-- Content -->
+                <div id="content" style="display: none">
+                    <!-- Title -->
+                    <div class="card card-body p-2">
+                        <h4 class="card-text text-center">
+                            <span id="prev-day"><button type="button" onclick="decreaseDate()" style="background-color:transparent; border-color:transparent;"><i class="fas fa-angle-left"></i></button></span>
+                            <span id="title">Lastgang vom {...}</span>
+                            <span id="next-day"><button type="button" onclick="increaseDate()" style="background-color:transparent; border-color:transparent;"><i class="fas fa-angle-right"></i></button></span>
+                        </h4>
+                        <p id="user-info" class="lead text-center p-0 m-0">User</p>
+                    </div>
+                    <!-- Chart -->
+                    <div class="card card-body">
+                        <canvas id="myChart" class="card-text" width="75%" height="35%"></canvas>
+                    </div>
+                    <!-- Table -->
+                    <div class="card card-body">
+                        <div id="data-table" class="card-text table-responsive"></div>
+                    </div>
                 </div>
-                <!-- Chart -->
-                <div class="card card-body">
-                    <canvas id="myChart" class="card-text" width="900" height="380"></canvas>
-                </div>
-                <!-- Table -->
-                <div class="card card-body">
-                    <div id="data-table" class="card-text table-responsive"></div>
+                <!-- Placeholder -->
+                <div id="placeholder">
+                    <div class="card card-body">
+                        <p class="lead text-center">Abfrage starten...</p>
+                    </div>
                 </div>
             </main>
         </div>
+    </div>
 
         <!-- Scripts -->
 
@@ -176,6 +187,9 @@
             }
 
             function getData() {
+                document.getElementById("placeholder").style.display = "none";
+                document.getElementById("content").style.display = "block";
+
                 var http = new XMLHttpRequest();
 
                 http.onreadystatechange = function () {
@@ -225,16 +239,16 @@
                 switch (state) {
                     case 1:
                         let date = new Date(document.getElementById("date-selector").value);
-                        document.getElementById("title").innerText = "Lastgang vom " + date.getDate() + ". " + months[
+                        document.getElementById("title").innerText = "Lastgang vom " + String(date.getDate()).padStart(2, '0') + ". " + months[
                                 date.getMonth()] +
                             " " + date.getFullYear();
                         break;
                     case 2:
                         let firstDate = new Date(document.getElementById("first-date-selector").value);
                         let lastDate = new Date(document.getElementById("last-date-selector").value);
-                        document.getElementById("title").innerText = "Lastgang vom " + firstDate.getDate() + ". " +
+                        document.getElementById("title").innerText = "Lastgang vom " + String(firstDate.getDate()).padStart(2, '0') + ". " +
                             months[
-                                firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + lastDate.getDate() +
+                                firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
                             ". " +
                             months[lastDate.getMonth()] + " " + lastDate.getFullYear();
                         break;
@@ -302,6 +316,19 @@
                 document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
                     (response['sum'] * price).toFixed(2) +
                     " €</li>";
+
+                let meterNumber = document.getElementById("user-selector").value;
+                if (meterNumber === "default") { // Do nothing if no user is selected
+                    document.getElementById("user-info").innerHTML = "";
+                    return;
+                }
+                let user = null;
+                userList.forEach(u => {
+                    if (u["number"] === meterNumber) {
+                        user = u;
+                    }
+                });
+                document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
             }
 
             // Adjust UI depending on selected mode
@@ -313,24 +340,32 @@
                     document.getElementById("interval-options").style.display = "none";
                     document.getElementById("month-options").style.display = "none";
                     document.getElementById("year-options").style.display = "none";
+                    document.getElementById("prev-day").style.display = "inline";
+                    document.getElementById("next-day").style.display = "inline";
                     state = 1; // Set state to day
                 } else if (modeSelector.value === "interval") {
                     document.getElementById("day-options").style.display = "none";
                     document.getElementById("interval-options").style.display = "block";
                     document.getElementById("month-options").style.display = "none";
                     document.getElementById("year-options").style.display = "none";
+                    document.getElementById("prev-day").style.display = "none";
+                    document.getElementById("next-day").style.display = "none";
                     state = 2; // Set state to custom
                 } else if (modeSelector.value === "month") {
                     document.getElementById("day-options").style.display = "none";
                     document.getElementById("interval-options").style.display = "none";
                     document.getElementById("month-options").style.display = "block";
                     document.getElementById("year-options").style.display = "none";
+                    document.getElementById("prev-day").style.display = "none";
+                    document.getElementById("next-day").style.display = "none";
                     state = 3; // Set state to month
                 } else {
                     document.getElementById("day-options").style.display = "none";
                     document.getElementById("interval-options").style.display = "none";
                     document.getElementById("month-options").style.display = "none";
                     document.getElementById("year-options").style.display = "block";
+                    document.getElementById("prev-day").style.display = "none";
+                    document.getElementById("next-day").style.display = "none";
                     state = 4; // Set state to year
                 }
             }
@@ -385,26 +420,12 @@
             }
 
             function updateUser() {
-                let meterNumber = document.getElementById("user-selector").value;
-                if (meterNumber === "default") { // Do nothing if no user is selected
-                    document.getElementById("user-info").innerHTML = "";
-                    return;
-                }
-                let user = null;
-                userList.forEach(u => {
-                    if (u["number"] === meterNumber) {
-                        user = u;
-                    }
-                });
-                // document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
-
                 let http = new XMLHttpRequest();
                 http.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         let response = JSON.parse(this.responseText);
                         let maxDate = response['max_date'];
                         let minDate = response['min_date'];
-                        console.log(maxDate.match(/(\d\d\d\d)(?=-)/g));
                         document.getElementById('date-selector').max = maxDate;
                         document.getElementById('date-selector').min = minDate;
                         document.getElementById('first-date-selector').max = maxDate;
@@ -419,9 +440,24 @@
                     }
                 };
 
-                http.open("GET", "http://localhost:5000/users?u=" + meterNumber, true);
+                http.open("GET", "http://localhost:5000/users?u=" + document.getElementById("user-selector").value, true);
                 http.send();
             }
+
+            function increaseDate() {
+                let date = new Date(document.getElementById('date-selector').value);
+                date.setDate(date.getDate() + 1);
+                document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+                getData();
+            }
+
+            function decreaseDate() {
+                let date = new Date(document.getElementById('date-selector').value);
+                date.setDate(date.getDate() - 1);
+                document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+                getData();
+            }
+
         </script>
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
