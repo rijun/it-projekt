@@ -23,6 +23,7 @@ my_Database = pymysql.connect(
 
 date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
+year_format = "%Y"
 
 
 def get_db_values(query):
@@ -64,6 +65,13 @@ def add_month(date):
     return datetime.strptime(return_str, month_format)
 
 
+def add_year(date):
+    str_date = datetime.strftime(date, year_format)
+    next_year = str(int(str_date) + 1)
+    return_str = next_year
+    return datetime.strptime(return_str, year_format)
+
+
 @app.route('/data')
 def get_data():
     try:
@@ -98,12 +106,14 @@ def get_data():
                     "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
                 .format(month.strftime(date_format), next_month.strftime(date_format), user)
             response = get_db_values(query)
-        # TODO: not fully implemented yet
+
         elif mode == 'year':
-            year = request.args['y']
-            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
-                    "WHERE YEAR (datum_zeit) = '{0}' AND DATE_FORMAT(datum_zeit, '%e') = 1 " \
-                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:01:00'".format(time)
+            year = datetime.strptime(request.args['y'], year_format)
+            next_year = add_year(year)
+            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m'), obis_180 FROM zaehlwerte " \
+                    "WHERE YEAR (datum_zeit) BETWEEN '{0}' AND '{1}' AND DAY (datum_zeit) = '01' "\
+                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'  AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
+                .format(year.strftime(year_format), next_year.strftime(year_format), user)
             response = get_db_values(query)
 
     except:

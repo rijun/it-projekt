@@ -435,7 +435,7 @@
                         document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
                         document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
                         document.getElementById('year-selector').innerHTML = "<option value=\"" +
-                            maxDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + maxDate.match(/(\d\d\d\d)(?=-)/g) +
+                            minDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + minDate.match(/(\d\d\d\d)(?=-)/g) +
                             "</option>";
                     }
                 };
