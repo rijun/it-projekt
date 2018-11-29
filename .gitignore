@@ -670,3 +670,7 @@ ASALocalRun/
 # End of https://www.gitignore.io/api/flask,python,django,visualstudio,jetbrains+all,visualstudiocode
 
 \.vscode/
+
+*.csv
+
+*.json
