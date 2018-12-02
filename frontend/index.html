@@ -18,7 +18,6 @@
     <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
         <!-- Title -->
         <span class="navbar-brand pl-3">Lastgangsvisualisierungsschnitstelle</span>
-        <!-- <span id="user-info" class="navbar-nav px-3"></span>     -->
         <!-- Menu button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -118,7 +117,10 @@
                 <!-- Placeholder -->
                 <div id="placeholder">
                     <div class="card card-body">
-                        <p class="lead text-center">Abfrage starten...</p>
+                        <h2 class="text-center">Wilkommen bei der Lastgangsvisualisierungsschnitstelle</h2>
+                        <br>
+                        <p>Verfügbare Nutzer:</p>
+                        <ul id="user-list-all" class="list"></ul>
                     </div>
                 </div>
             </main>
@@ -406,11 +408,14 @@
                 http.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         let response = JSON.parse(this.responseText);
-                        response['users'].forEach(u => userList.push(u));
+                        response['users'].forEach(u => userList.push(u));   // Store users in array
                         let userSelector = document.getElementById("user-selector");
+                        let userInfo = document.getElementById("user-list-all");
                         userList.forEach(u =>
                             userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
-                            "</option>"
+                            "</option>");
+                        userList.forEach(u =>
+                            userInfo.innerHTML += "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", " + u["city"] + " (" + u["zipcode"] + ")"
                         )
                     }
                 };
