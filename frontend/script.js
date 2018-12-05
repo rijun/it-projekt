@@ -93,6 +93,7 @@ function updatePage(response) {
     let sumKwh = response['sum'];
     // Get current kWh price
     let kwhPrice = document.getElementById("money-select").value / 100;
+
     // Update page contents
     updateHeader();
     updateChart(labels, loadDiffs, meterReadings);
@@ -277,8 +278,8 @@ function updateHeader() {
     switch (state) {
         case 1:
             let date = new Date(document.getElementById("date-selector").value);
-            document.getElementById("title").innerText = "Lastgang vom " + String(date.getDate()).padStart(2, '0') + ". " + months[
-                    date.getMonth()] +
+            document.getElementById("title").innerText = weekdays[date.getDay()] + ", der " +
+                String(date.getDate()).padStart(2, '0') + ". " + months[date.getMonth()] +
                 " " + date.getFullYear();
             break;
         case 2:

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>LaViSch</title>
+    <title>Lastgangsvisualisierungsschnittstelle</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
@@ -17,7 +17,7 @@
     <!-- Header -->
     <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
         <!-- Title -->
-        <span class="navbar-brand pl-3">Lastgangsvisualisierungsschnitstelle</span>
+        <img src="../Banner FH MR.jpg" style="width: 100%" alt="logo.png"/>
         <!-- Menu button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -102,7 +102,7 @@
                             <span id="prev-day"><button type="button" onclick="decreaseDate()" style="background-color:transparent; border-color:transparent;">
                                 <i class="fas fa-angle-left"></i>
                             </button></span>
-                            <span id="title">Lastgang vom {...}</span>
+                            <span id="title"></span>
                             <span id="next-day"><button type="button" onclick="increaseDate()" style="background-color:transparent; border-color:transparent;">
                                 <i class="fas fa-angle-right"></i>
                             </button></span>
@@ -121,7 +121,7 @@
                 <!-- Placeholder -->
                 <div id="placeholder">
                     <div class="card card-body">
-                        <h2 class="text-center">Wilkommen bei der Lastgangsvisualisierungsschnitstelle</h2>
+                        <h2 class="text-center">Wilkommen bei der Lastgangsvisualisierungsschnittstelle</h2>
                         <br>
                         <p>Verfügbare Nutzer:</p>
                         <ul id="user-list-all" class="list"></ul>
