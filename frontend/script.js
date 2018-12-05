@@ -6,7 +6,7 @@ window.onload = function () {
     // Chart initialization
     setupChart();
     // Get available users
-    loadUsers();
+    loadAvailableUsers();
 };
 
 function setupChart() {
@@ -122,32 +122,24 @@ function modeChanged() {
         document.getElementById("interval-options").style.display = "none";
         document.getElementById("month-options").style.display = "none";
         document.getElementById("year-options").style.display = "none";
-        document.getElementById("prev-day").style.display = "inline";
-        document.getElementById("next-day").style.display = "inline";
         state = 1; // Set state to day
     } else if (modeSelector.value === "interval") {
         document.getElementById("day-options").style.display = "none";
         document.getElementById("interval-options").style.display = "block";
         document.getElementById("month-options").style.display = "none";
         document.getElementById("year-options").style.display = "none";
-        document.getElementById("prev-day").style.display = "none";
-        document.getElementById("next-day").style.display = "none";
         state = 2; // Set state to custom
     } else if (modeSelector.value === "month") {
         document.getElementById("day-options").style.display = "none";
         document.getElementById("interval-options").style.display = "none";
         document.getElementById("month-options").style.display = "block";
         document.getElementById("year-options").style.display = "none";
-        document.getElementById("prev-day").style.display = "none";
-        document.getElementById("next-day").style.display = "none";
         state = 3; // Set state to month
     } else {
         document.getElementById("day-options").style.display = "none";
         document.getElementById("interval-options").style.display = "none";
         document.getElementById("month-options").style.display = "none";
         document.getElementById("year-options").style.display = "block";
-        document.getElementById("prev-day").style.display = "none";
-        document.getElementById("next-day").style.display = "none";
         state = 4; // Set state to year
     }
 }
@@ -183,7 +175,7 @@ function calculatePrice(load, price) {
     return money.toFixed(3)
 }
 
-function loadUsers() {
+function loadAvailableUsers() {
     let http = new XMLHttpRequest();
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
@@ -191,6 +183,7 @@ function loadUsers() {
             response['users'].forEach(u => userList.push(u));   // Store users in array
             let userSelector = document.getElementById("user-selector");
             let userInfo = document.getElementById("user-list-all");
+            userSelector.innerHTML = "";    // Clear userSelector
             userList.forEach(u =>
                 userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
                     "</option>");
@@ -204,7 +197,7 @@ function loadUsers() {
     http.send();
 }
 
-function updateUser() {
+function updateUserInformation() {
     let http = new XMLHttpRequest();
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
@@ -285,21 +278,27 @@ function updateHeader() {
         case 2:
             let firstDate = new Date(document.getElementById("first-date-selector").value);
             let lastDate = new Date(document.getElementById("last-date-selector").value);
-            document.getElementById("title").innerText = "Lastgang vom " + String(firstDate.getDate()).padStart(2, '0') + ". " +
-                months[
-                    firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
-                ". " +
-                months[lastDate.getMonth()] + " " + lastDate.getFullYear();
+            document.getElementById("title").innerText = String(firstDate.getDate()).padStart(2, '0') + ". " +
+                months[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
+                ". " + months[lastDate.getMonth()] + " " + lastDate.getFullYear();
             break;
         case 3:
             let month = new Date(document.getElementById("month-selector").value);
-            document.getElementById("title").innerText = "Lastgang vom " + months[month.getMonth()] + " " +
-                month.getFullYear();
+            document.getElementById("title").innerText = months[month.getMonth()] + " " +    month.getFullYear();
             break;
         case 4:
             let year = new Date(document.getElementById("year-selector").value);
             document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
             break;
+    }
+
+    if (state === 1) {
+        document.getElementById("prev-day").style.display = "inline";
+        document.getElementById("next-day").style.display = "inline";
+    }
+    else {
+        document.getElementById("prev-day").style.display = "none";
+        document.getElementById("next-day").style.display = "none";
     }
 }
 
