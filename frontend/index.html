@@ -17,7 +17,7 @@
     <!-- Header -->
     <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
         <!-- Title -->
-        <img src="../Banner FH MR.jpg" style="width: 100%" alt="logo.png"/>
+        <img src="header.png" style="width: 100%" alt="logo.png"/>
         <!-- Menu button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -74,13 +74,13 @@
                     <button type="button" onclick="requestData()" class="form-control form-control-sm btn btn-outline-primary btn-sm my-3">Abrufen</button>
                     <!-- Show meter value -->
                     <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="energy-view">
-                        <label class="custom-control-label " for="energy-view">Zählerstand anzeigen</label>
+                        <input type="checkbox" class="custom-control-input" id="meter-readings-view" onchange="meterReadingsViewChanged(this)">
+                        <label class="custom-control-label " for="meter-readings-view">Zählerstand anzeigen</label>
                     </div>
                     <!-- Set price per kWh -->
                     <div class="custom-control custom-range my-3">
-                        <label for="money-select">Preis pro kWh: <span id="money-val">0.30</span>€</label>
-                        <input type="range" id="money-select" oninput="priceChanged()" class="form-control-range form-control-sm"
+                        <label for="price-select">Preis pro kWh: <span id="price-val">0.30</span> €</label>
+                        <input type="range" id="price-select" oninput="priceChanged()" class="form-control-range form-control-sm"
                             min="10" max="50" value="30">
                     </div>
                 </form>

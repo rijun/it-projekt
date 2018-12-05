@@ -1,6 +1,7 @@
 let myChart;
 let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
 let userList = [];
+let requestObj = {};
 
 window.onload = function () {
     // Chart initialization
@@ -41,18 +42,6 @@ function setupChart() {
                         display: true,
                         labelString: 'Last / kWh/h'
                     }
-                }, {
-                    type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
-                    display: true,
-                    position: 'right',
-                    id: 'y-axis-energy',
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Zählerstand / kWh'
-                    },
-                    gridLines: {
-                        drawOnChartArea: false, // only want the grid lines for one axis to show up
-                    }
                 }]
             }
         }
@@ -84,21 +73,21 @@ function requestData() {
 // Update and plot chart
 function updatePage(response) {
     // Store response values
-    let labels = response['dates'];
-    let loadDiffs = response['diff'];
-    let meterReadings = response['energy'];
-    let avgKwh = response['avg'];
-    let maxKwh = response['max'];
-    let minKwh = response['min'];
-    let sumKwh = response['sum'];
+    requestObj.labels = response['dates'];
+    requestObj.loadDiffs = response['diff'];
+    requestObj.meterReadings = response['energy'];
+    requestObj.avgKwh = response['avg'];
+    requestObj.maxKwh = response['max'];
+    requestObj.minKwh = response['min'];
+    requestObj.sumKwh = response['sum'];
     // Get current kWh price
-    let kwhPrice = document.getElementById("money-select").value / 100;
+    let price = document.getElementById("price-select").value / 100;
 
     // Update page contents
     updateHeader();
-    updateChart(labels, loadDiffs, meterReadings);
-    updateTable(labels, loadDiffs, meterReadings, kwhPrice);
-    updateStatistics(avgKwh, maxKwh, minKwh, sumKwh, kwhPrice);
+    updateChart();
+    updateTable(price);
+    updateStatistics(price);
 
     let meterNumber = document.getElementById("user-selector").value;
     if (meterNumber === "default") { // Do nothing if no user is selected
@@ -149,9 +138,10 @@ function formatNumber(number) {
 }
 
 function priceChanged() {
-    let price = document.getElementById("money-select").value / 100;
-    document.getElementById("money-val").innerText = price.toFixed(2);
-    console.log(price);
+    let currentPrice = document.getElementById("price-select").value / 100;
+    document.getElementById("price-val").innerText = currentPrice.toFixed(2);
+    document.getElementById("stat-price").innerText = formatNumber(requestObj.sumKwh * currentPrice);
+    updateTable(currentPrice);
 }
 
 function calculatePrice(load, price) {
@@ -261,6 +251,41 @@ function createArguments() {
     return arguments;
 }
 
+function meterReadingsViewChanged(cb) {
+    if (cb.checked) {
+        if (myChart.data.datasets.length === 1) {
+            myChart.data.datasets.push({
+                label: 'Zählerstand',
+                data: requestObj.meterReadings,
+                backgroundColor: "rgba(0, 0, 255, 0.2)",
+                borderColor: "rgb(0, 0, 255)",
+                borderWidth: 1,
+                type: "line",
+                yAxisID: 'y-axis-energy'
+            });
+            myChart.options.scales.yAxes.push({
+                type: 'linear', // only linear but allow scale type registration. This allows extensions to  exist solely for log scale for instance
+                display: true,
+                position: 'right',
+                id: 'y-axis-energy',
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Zählerstand / kWh'
+                },
+                gridLines: {
+                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                }
+            });
+        } else {
+            myChart.data.datasets[1].data = requestObj.meterReadings;
+        }
+    } else if (myChart.data.datasets.length === 2) {
+        myChart.data.datasets.pop();
+        myChart.options.scales.yAxes.pop();
+    }
+    myChart.update();
+}
+
 /** Update functions **/
 function updateHeader() {
     // Array for storing month names
@@ -284,7 +309,7 @@ function updateHeader() {
             break;
         case 3:
             let month = new Date(document.getElementById("month-selector").value);
-            document.getElementById("title").innerText = months[month.getMonth()] + " " +    month.getFullYear();
+            document.getElementById("title").innerText = months[month.getMonth()] + " " + month.getFullYear();
             break;
         case 4:
             let year = new Date(document.getElementById("year-selector").value);
@@ -295,58 +320,40 @@ function updateHeader() {
     if (state === 1) {
         document.getElementById("prev-day").style.display = "inline";
         document.getElementById("next-day").style.display = "inline";
-    }
-    else {
+    } else {
         document.getElementById("prev-day").style.display = "none";
         document.getElementById("next-day").style.display = "none";
     }
 }
 
-function updateChart(labels, loads, energy) {
-     myChart.data.labels = labels;
-    myChart.data.datasets[0].data = loads;
-    if (document.getElementById("energy-view").checked === true) {
-        if (myChart.data.datasets.length === 1) {
-            myChart.data.datasets.push({
-                label: 'Zählerstand',
-                data: energy,
-                backgroundColor: "rgba(0, 0, 255, 0.2)",
-                borderColor: "rgb(0, 0, 255)",
-                borderWidth: 1,
-                type: "line",
-                yAxisID: 'y-axis-energy',
-            })
-        } else {
-            myChart.data.datasets[1].data = energy;
-        }
-    } else if (myChart.data.datasets.length === 2) {
-        myChart.data.datasets.pop();
-    }
+function updateChart() {
+    myChart.data.labels = requestObj.labels;
+    myChart.data.datasets[0].data = requestObj.loadDiffs;
     myChart.update();
 }
 
-function updateTable(labels, loadDiffs, meterReadings, kwhPrice) {
+function updateTable(kwhPrice) {
     let tableData = "<table class=\"table table-striped table-sm\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th><th>Kosten / € </th></tr>";
-    for (let index in labels) {
-        tableData += "<tr><td>" + labels[index] + "</td><td>" +
-            formatNumber(loadDiffs[index]) + "</td><td>" +
-            formatNumber(meterReadings[index]) + "</td><td>" +
-            calculatePrice(loadDiffs[index], kwhPrice) + "</td></tr>";
+    for (let index in requestObj.labels) {
+        tableData += "<tr><td>" + requestObj.labels[index] + "</td><td>" +
+            formatNumber(requestObj.loadDiffs[index]) + "</td><td>" +
+            formatNumber(requestObj.meterReadings[index]) + "</td><td>" +
+            calculatePrice(requestObj.loadDiffs[index], kwhPrice) + "</td></tr>";
     }
     tableData += "</table>";
     document.getElementById("data-table").innerHTML = tableData;
 }
 
-function updateStatistics(average, maximum, minimum, sum, price) {
+function updateStatistics(price) {
     document.getElementById("stat").style.display = "block";
     document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
-        average + " kWh</li>";
+        requestObj.avgKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" +
-        maximum + " kWh</li>";
+        requestObj.maxKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" +
-        minimum + " kWh</li>";
+        requestObj.minKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" +
-        sum + " kWh</li>";
+        requestObj.sumKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
-        formatNumber(sum * price) + " €</li>";
+        "<span id=\"stat-price\">" + formatNumber(requestObj.sumKwh * price) + "</span> €</li>";
 }

@@ -49,7 +49,7 @@ def get_db_values(query):
         'min': min(diff),
         'max': max(diff),
         'avg': round(mean(diff), 3),
-        'sum': sum(diff)
+        'sum': round(sum(diff), 2)
     }
     return data
 
