@@ -40,7 +40,7 @@ function setupChart() {
                     id: 'y-axis-load',
                     scaleLabel: {
                         display: true,
-                        labelString: 'Last / kWh/h'
+                        labelString: 'Lastgang'
                     }
                 }]
             }
@@ -226,31 +226,6 @@ function decreaseDate() {
     requestData();
 }
 
-function createArguments() {
-    let arguments = "u=" + document.getElementById("user-selector").value;
-    switch (state) {
-        case 1: // Day query
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&d=" + document.getElementById("date-selector").value +
-                "&r=" + document.getElementById("resolution-selector").value;
-            break;
-        case 2: // Interval query
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&sd=" + document.getElementById("first-date-selector").value +
-                "&ed=" + document.getElementById("last-date-selector").value;
-            break;
-        case 3:
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&m=" + document.getElementById("month-selector").value;
-            break;
-        case 4:
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&y=" + document.getElementById("year-selector").value;
-            break;
-    }
-    return arguments;
-}
-
 function meterReadingsViewChanged(cb) {
     if (cb.checked) {
         if (myChart.data.datasets.length === 1) {
@@ -329,22 +304,25 @@ function updateHeader() {
 function updateChart() {
     myChart.data.labels = requestObj.labels;
     myChart.data.datasets[0].data = requestObj.loadDiffs;
+    myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang " + currentUnit();
     myChart.update();
 }
 
 function updateTable(kwhPrice) {
-    let tableData = "<table class=\"table table-striped table-sm\"><tr><th>Zeitpunkt</th><th>Lastgang / kW </th><th>Zählerstand / kWh </th><th>Kosten / € </th></tr>";
+    let tableData = "<table class=\"table table-striped table-sm table-hover text-center\"><tr class=\"d-flex\">" +
+        "<th class=\"col\">Zeitpunkt</th><th class=\"col\">Lastgang " + currentUnit() + "</th>" +
+        "<th class=\"col\">Zählerstand [kWh] </th><th class=\"col\">Kosten [€]</th></tr>";
     for (let index in requestObj.labels) {
-        tableData += "<tr><td>" + requestObj.labels[index] + "</td><td>" +
-            formatNumber(requestObj.loadDiffs[index]) + "</td><td>" +
-            formatNumber(requestObj.meterReadings[index]) + "</td><td>" +
-            calculatePrice(requestObj.loadDiffs[index], kwhPrice) + "</td></tr>";
+        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + requestObj.labels[index] + "</td><td class=\"col\">" +
+            formatNumber(requestObj.loadDiffs[index]) + "</td><td class=\"col\">" +
+            formatNumber(requestObj.meterReadings[index]) + "</td><td class=\"col\">" +
+            calculatePrice(requestObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
     tableData += "</table>";
     document.getElementById("data-table").innerHTML = tableData;
 }
 
-function updateStatistics(price) {
+function updateStatistics(kwhPrice) {
     document.getElementById("stat").style.display = "block";
     document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
         requestObj.avgKwh + " kWh</li>";
@@ -355,5 +333,55 @@ function updateStatistics(price) {
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" +
         requestObj.sumKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
-        "<span id=\"stat-price\">" + formatNumber(requestObj.sumKwh * price) + "</span> €</li>";
+        "<span id=\"stat-price\">" + formatNumber(requestObj.sumKwh * kwhPrice) + "</span> €</li>";
+}
+
+/** Helper functions **/
+function createArguments() {
+    let arguments = "u=" + document.getElementById("user-selector").value;
+    switch (state) {
+        case 1: // Day query
+            arguments += "&mode=" + document.getElementById("mode-selector").value +
+                "&d=" + document.getElementById("date-selector").value +
+                "&r=" + document.getElementById("resolution-selector").value;
+            break;
+        case 2: // Interval query
+            arguments += "&mode=" + document.getElementById("mode-selector").value +
+                "&sd=" + document.getElementById("first-date-selector").value +
+                "&ed=" + document.getElementById("last-date-selector").value;
+            break;
+        case 3:
+            arguments += "&mode=" + document.getElementById("mode-selector").value +
+                "&m=" + document.getElementById("month-selector").value;
+            break;
+        case 4:
+            arguments += "&mode=" + document.getElementById("mode-selector").value +
+                "&y=" + document.getElementById("year-selector").value;
+            break;
+    }
+    return arguments;
+}
+
+function currentUnit() {
+    let unit = "";
+    switch (state) {
+        case 1:
+            if (document.getElementById("resolution-selector").value === "15") {
+                unit = "[kWh / Viertelstunde]";
+            }
+            else {
+                unit = "[kWh / Stunde]";
+            }
+            break;
+        case 2:
+            unit = "[kWh / Tag]";
+            break;
+        case 3:
+            unit = "[kWh / Tag]";
+            break;
+        case 4:
+            unit = "[kWh / Monat]";
+            break;
+    }
+    return unit;
 }

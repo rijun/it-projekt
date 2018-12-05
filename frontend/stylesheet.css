@@ -12,7 +12,7 @@ body {
     bottom: 0;
     left: 0;
     height: 100vh;
-    max-width: 15%;
+    max-width: 12%;
     padding-top: .5rem;
     overflow-x: hidden;
     overflow-y: auto;
@@ -79,4 +79,15 @@ body {
 .card {
     margin: .75rem 0rem;
     box-shadow:0 2px 5px 0 #00000029
+}
+
+/*
+* Table
+ */
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    /*background-color: #343a40;*/
+    background-color: #ff8000;
+    color: #ffffff;
+    font-weight: bold;
 }
