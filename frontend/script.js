@@ -37,7 +37,7 @@ function setupChart() {
                         minRotation: 45
                     },
                     gridLines: {
-                        offsetGridLines: false
+                        offsetGridLines: true
                     }
                 }],
                 yAxes: [{
@@ -52,6 +52,19 @@ function setupChart() {
                     },
                     ticks: {
                         beginAtZero: true
+                    }
+                }, {
+                    type: 'linear', // only linear but allow scale type registration. This allows extensions to  exist solely for log scale for instance
+                    display: false,
+                    position: 'right',
+                    id: 'y-axis-energy',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Zählerstand [kWh]',
+                        fontSize: 14
+                    },
+                    gridLines: {
+                        drawOnChartArea: false, // only want the grid lines for one axis to show up
                     }
                 }]
             },
@@ -249,26 +262,13 @@ function meterReadingsViewChanged(cb) {
                 type: "line",
                 yAxisID: 'y-axis-energy'
             });
-            myChart.options.scales.yAxes.push({
-                type: 'linear', // only linear but allow scale type registration. This allows extensions to  exist solely for log scale for instance
-                display: true,
-                position: 'right',
-                id: 'y-axis-energy',
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Zählerstand [kWh]',
-                    fontSize: 14
-                },
-                gridLines: {
-                    drawOnChartArea: false, // only want the grid lines for one axis to show up
-                }
-            });
+            myChart.options.scales.yAxes[1].display = true;
         } else {
             myChart.data.datasets[1].data = requestObj.meterReadings;
         }
     } else if (myChart.data.datasets.length === 2) {
         myChart.data.datasets.pop();
-        myChart.options.scales.yAxes.pop();
+        myChart.options.scales.yAxes[1].display = false;
     }
     myChart.update();
 }
@@ -316,6 +316,9 @@ function updateHeader() {
 function updateChart() {
     myChart.data.labels = requestObj.labels;
     myChart.data.datasets[0].data = requestObj.loadDiffs;
+    if (document.getElementById('meter-readings-view').checked) {
+        myChart.data.datasets[1].data = requestObj.meterReadings;
+    }
     myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang " + currentUnit();
     myChart.update();
 }
