@@ -30,7 +30,14 @@ function setupChart() {
                 xAxes: [{
                     scaleLabel: {
                         display: true,
-                        labelString: 'Zeitpunkt'
+                        labelString: 'Zeitpunkt',
+                        fontSize: 14
+                    },
+                    ticks: {
+                        minRotation: 45
+                    },
+                    gridLines: {
+                        offsetGridLines: false
                     }
                 }],
                 yAxes: [{
@@ -40,10 +47,14 @@ function setupChart() {
                     id: 'y-axis-load',
                     scaleLabel: {
                         display: true,
-                        labelString: 'Lastgang'
+                        labelString: 'Lastgang',
+                        fontSize: 14
+                    },
+                    ticks: {
+                        beginAtZero: true
                     }
                 }]
-            }
+            },
         }
     });
 }
@@ -232,8 +243,8 @@ function meterReadingsViewChanged(cb) {
             myChart.data.datasets.push({
                 label: 'Zählerstand',
                 data: requestObj.meterReadings,
-                backgroundColor: "rgba(0, 0, 255, 0.2)",
-                borderColor: "rgb(0, 0, 255)",
+                backgroundColor: "rgba(255, 0, 0, 0.2)",
+                borderColor: "rgb(255, 0, 0)",
                 borderWidth: 1,
                 type: "line",
                 yAxisID: 'y-axis-energy'
@@ -245,7 +256,8 @@ function meterReadingsViewChanged(cb) {
                 id: 'y-axis-energy',
                 scaleLabel: {
                     display: true,
-                    labelString: 'Zählerstand / kWh'
+                    labelString: 'Zählerstand [kWh]',
+                    fontSize: 14
                 },
                 gridLines: {
                     drawOnChartArea: false, // only want the grid lines for one axis to show up
