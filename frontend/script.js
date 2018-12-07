@@ -2,6 +2,10 @@ let myChart;
 let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
 let userList = [];
 let requestObj = {};
+// Array for storing month names
+let monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+// Array for storing weekday names
+let weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 window.onload = function () {
     // Chart initialization
@@ -32,9 +36,6 @@ function setupChart() {
                         display: true,
                         labelString: 'Zeitpunkt',
                         fontSize: 14
-                    },
-                    ticks: {
-                        minRotation: 45
                     },
                     gridLines: {
                         offsetGridLines: true
@@ -68,6 +69,28 @@ function setupChart() {
                     }
                 }]
             },
+            tooltips: {
+                mode: 'index',
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        if (tooltipItem.datasetIndex === 0) {
+                            return tooltipItem.yLabel + " " + currentUnit();
+                        }
+                        else {
+                            return tooltipItem.yLabel + " kWh";
+                        }
+                    },
+                    // Use the footer callback to display the sum of the items showing in the tooltip
+                    footer: function (tooltipItem, data) {
+                        let kwhPrice;
+                        let load = tooltipItem[0].yLabel;
+                        let price = document.getElementById("price-select").value / 100;
+                        kwhPrice = calculatePrice(load, price);
+                        return "Kosten: " + kwhPrice + " €";
+                    },
+                },
+                footerFontStyle: 'normal'
+            }
         }
     });
 }
@@ -197,7 +220,6 @@ function loadAvailableUsers() {
             response['users'].forEach(u => userList.push(u));   // Store users in array
             let userSelector = document.getElementById("user-selector");
             let userInfo = document.getElementById("user-list-all");
-            userSelector.innerHTML = "";    // Clear userSelector
             userList.forEach(u =>
                 userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
                     "</option>");
@@ -212,9 +234,14 @@ function loadAvailableUsers() {
 }
 
 function updateUserInformation() {
+    let userSelector = document.getElementById('user-selector');
+    if (userSelector[0].value === "default") {
+        userSelector[0].remove();
+    }
     let http = new XMLHttpRequest();
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
+            // Clear user selector on first run
             let response = JSON.parse(this.responseText);
             let maxDate = response['max_date'];
             let minDate = response['min_date'];
@@ -232,7 +259,7 @@ function updateUserInformation() {
         }
     };
 
-    http.open("GET", "http://localhost:5000/users?u=" + document.getElementById("user-selector").value, true);
+    http.open("GET", "http://localhost:5000/users?u=" + userSelector.value, true);
     http.send();
 }
 
@@ -275,28 +302,23 @@ function meterReadingsViewChanged(cb) {
 
 /** Update functions **/
 function updateHeader() {
-    // Array for storing month names
-    let months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
-    // Array for storing weekday names
-    let weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
-
     switch (state) {
         case 1:
             let date = new Date(document.getElementById("date-selector").value);
-            document.getElementById("title").innerText = weekdays[date.getDay()] + ", der " +
-                String(date.getDate()).padStart(2, '0') + ". " + months[date.getMonth()] +
+            document.getElementById("title").innerText = weekdaysList[date.getDay()] + ", der " +
+                String(date.getDate()).padStart(2, '0') + ". " + monthsList[date.getMonth()] +
                 " " + date.getFullYear();
             break;
         case 2:
             let firstDate = new Date(document.getElementById("first-date-selector").value);
             let lastDate = new Date(document.getElementById("last-date-selector").value);
             document.getElementById("title").innerText = String(firstDate.getDate()).padStart(2, '0') + ". " +
-                months[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
-                ". " + months[lastDate.getMonth()] + " " + lastDate.getFullYear();
+                monthsList[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
+                ". " + monthsList[lastDate.getMonth()] + " " + lastDate.getFullYear();
             break;
         case 3:
             let month = new Date(document.getElementById("month-selector").value);
-            document.getElementById("title").innerText = months[month.getMonth()] + " " + month.getFullYear();
+            document.getElementById("title").innerText = monthsList[month.getMonth()] + " " + month.getFullYear();
             break;
         case 4:
             let year = new Date(document.getElementById("year-selector").value);
@@ -314,18 +336,28 @@ function updateHeader() {
 }
 
 function updateChart() {
-    myChart.data.labels = requestObj.labels;
+    switch (state) {
+        case 1:
+            myChart.data.labels = requestObj.labels;
+            break;
+        case 2:
+        case 3:
+            myChart.data.labels = formatDays(requestObj.labels);
+            break;
+        case 4:
+            myChart.data.labels = formatMonths(requestObj.labels)
+    }
     myChart.data.datasets[0].data = requestObj.loadDiffs;
     if (document.getElementById('meter-readings-view').checked) {
         myChart.data.datasets[1].data = requestObj.meterReadings;
     }
-    myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang " + currentUnit();
+    myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + currentUnit() + "]";
     myChart.update();
 }
 
 function updateTable(kwhPrice) {
     let tableData = "<table class=\"table table-striped table-sm table-hover text-center\"><tr class=\"d-flex\">" +
-        "<th class=\"col\">Zeitpunkt</th><th class=\"col\">Lastgang " + currentUnit() + "</th>" +
+        "<th class=\"col\">Zeitpunkt</th><th class=\"col\">Lastgang [" + currentUnit() + "]</th>" +
         "<th class=\"col\">Zählerstand [kWh] </th><th class=\"col\">Kosten [€]</th></tr>";
     for (let index in requestObj.labels) {
         tableData += "<tr class=\"d-flex\"><td class=\"col\">" + requestObj.labels[index] + "</td><td class=\"col\">" +
@@ -382,21 +414,42 @@ function currentUnit() {
     switch (state) {
         case 1:
             if (document.getElementById("resolution-selector").value === "15") {
-                unit = "[kWh / Viertelstunde]";
+                unit = "kWh / Viertelstunde";
             }
             else {
-                unit = "[kWh / Stunde]";
+                unit = "kWh / Stunde";
             }
             break;
         case 2:
-            unit = "[kWh / Tag]";
+            unit = "kWh / Tag";
             break;
         case 3:
-            unit = "[kWh / Tag]";
+            unit = "kWh / Tag";
             break;
         case 4:
-            unit = "[kWh / Monat]";
+            unit = "kWh / Monat";
             break;
     }
     return unit;
+}
+
+function formatDays(days) {
+    let returnDays = [];
+    days.forEach(d => {
+        let date = new Date(d);
+        let returnDate = String(date.getDate()).padStart(2, '0') + "."
+            + String(date.getMonth() + 1).padStart(2, '0');
+        returnDays.push(returnDate);
+    });
+    return returnDays;
+}
+
+function formatMonths(months) {
+    let returnMonths = [];
+        months.forEach(m => {
+            let month = new Date(m + "-01");
+            let returnMonth = monthsList[month.getMonth()]
+            returnMonths.push(returnMonth);
+        });
+    return returnMonths;
 }
