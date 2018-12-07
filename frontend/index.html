@@ -18,17 +18,12 @@
     <header class="navbar navbar-expand-lg navbar-dark bg-dark p-0 shadow">
         <!-- Title -->
         <img src="header.png" style="width: 100%" alt="logo.png"/>
-        <!-- Menu button -->
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebarToggler"
-            aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
     </header>
 
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-2 d-none d-md-block bg-light sidebar" id="sidebar">
+            <nav class="col-md-2 bg-light sidebar" id="sidebar">
                 <h5>Abfrageoptionen</h5>
                 <!-- Menu items -->
                 <form class="form-group">
@@ -57,9 +52,9 @@
                         </select>
                     </div>
                     <div id="interval-options" style="display: none">
-                        <label for="first-date-selector">Start Datum</label>
+                        <label for="first-date-selector" class="col-form-label-sm">Startdatum</label>
                         <input type="date" id="first-date-selector" class="form-control form-control-sm">
-                        <label for="last-date-selector" class="col-form-label-sm">End Datum</label>
+                        <label for="last-date-selector" class="col-form-label-sm">Enddatum</label>
                         <input type="date" id="last-date-selector" class="form-control form-control-sm">
                     </div>
                     <div id="month-options" style="display: none">

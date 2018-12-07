@@ -383,26 +383,38 @@ function updateChart() {
 
 function updateTable(kwhPrice) {
     let tableData = "<table class=\"table table-striped table-sm table-hover text-center\"><tr class=\"d-flex\">" +
-        "<th class=\"col\">Zeitpunkt</th><th class=\"col\">Lastgang [" + currentUnit() + "]</th>" +
+        "<th id=\"datetime-title\" class=\"col\"></th><th class=\"col\">Lastgang [" + currentUnit() + "]</th>" +
         "<th class=\"col\">Zählerstand [kWh] </th><th class=\"col\">Kosten [€]</th></tr>";
     for (let index in requestObj.labels) {
-        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + requestObj.labels[index] + "</td><td class=\"col\">" +
+        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(requestObj.labels[index]) + "</td><td class=\"col\">" +
             formatNumber(requestObj.loadDiffs[index]) + "</td><td class=\"col\">" +
             formatNumber(requestObj.meterReadings[index]) + "</td><td class=\"col\">" +
             calculatePrice(requestObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
     tableData += "</table>";
     document.getElementById("data-table").innerHTML = tableData;
+    let title = document.getElementById('datetime-title');
+    switch (state) {
+        case 1:
+            title.innerText = "Uhrzeit";
+            break;
+        case 2:
+        case 3:
+            title.innerText = "Datum";
+            break;
+        case 4:
+            title.innerText = "Monat"
+    }
 }
 
 function updateStatistics(kwhPrice) {
     document.getElementById("stat").style.display = "block";
     document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
-        requestObj.avgKwh + " kWh</li>";
+        requestObj.avgKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" +
-        requestObj.maxKwh + " kWh</li>";
+        requestObj.maxKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" +
-        requestObj.minKwh + " kWh</li>";
+        requestObj.minKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" +
         requestObj.sumKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
@@ -473,9 +485,24 @@ function formatDays(days) {
 function formatMonths(months) {
     let returnMonths = [];
         months.forEach(m => {
-            let month = new Date(m + "-01");
+            let month = new Date(m);
             let returnMonth = monthsList[month.getMonth()]
             returnMonths.push(returnMonth);
         });
     return returnMonths;
+}
+
+function formatLabel(label) {
+    switch (state) {
+        case 1:
+            return label;
+        case 2:
+        case 3:
+            let d = new Date(label);
+            return String(d.getDate()).padStart(2, '0') + "." + String(d.getMonth() + 1)
+                .padStart(2, '0') + "." + d.getFullYear();
+        case 4:
+            let m = new Date(label);
+            return monthsList[m.getMonth()];
+    }
 }

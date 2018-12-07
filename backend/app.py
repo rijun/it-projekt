@@ -110,7 +110,7 @@ def get_data():
         elif mode == 'year':
             year = datetime.strptime(request.args['y'], year_format)
             next_year = add_year(year)
-            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m'), obis_180 FROM zaehlwerte " \
+            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE YEAR (datum_zeit) BETWEEN '{0}' AND '{1}' AND DAY (datum_zeit) = '01' "\
                     "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'  AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
                 .format(year.strftime(year_format), next_year.strftime(year_format), user)
