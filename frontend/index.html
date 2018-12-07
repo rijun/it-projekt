@@ -35,7 +35,7 @@
                     <!-- User selection -->
                     <label for="user-selector" class="col-form-label-sm">Zählernummer</label>
                     <select id="user-selector" onchange="updateUserInformation()" class="form-control form-control-sm">
-                        <option value="default"></option>
+                        <option value="default">Zähler auswählen...</option>
                     </select>
                     <!-- Mode selection -->
                     <label for="mode-selector" class="col-form-label-sm">Modus</label>
@@ -99,11 +99,11 @@
                     <!-- Title -->
                     <div class="card card-body p-2">
                         <h4 class="card-text text-center">
-                            <span id="prev-day"><button type="button" onclick="decreaseDate()" style="background-color:transparent; border-color:transparent;">
+                            <span id="prev"><button type="button" id="prev-button" onclick="decreaseDate()" style="background-color:transparent; border-color:transparent;">
                                 <i class="fas fa-angle-left"></i>
                             </button></span>
                             <span id="title"></span>
-                            <span id="next-day"><button type="button" onclick="increaseDate()" style="background-color:transparent; border-color:transparent;">
+                            <span id="next"><button type="button" id="next-button" onclick="increaseDate()" style="background-color:transparent; border-color:transparent;">
                                 <i class="fas fa-angle-right"></i>
                             </button></span>
                         </h4>

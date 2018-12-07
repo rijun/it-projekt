@@ -277,6 +277,24 @@ function decreaseDate() {
     requestData();
 }
 
+function increaseMonth() {
+    let month = new Date(document.getElementById('month-selector').value);
+    let currentMonth = month.getMonth();
+    let nextMonth = currentMonth + 1;
+    month.setMonth(nextMonth);
+    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    requestData();
+}
+
+function decreaseMonth() {
+   let month = new Date(document.getElementById('month-selector').value);
+    let currentMonth = month.getMonth();
+    let nextMonth = currentMonth - 1;
+    month.setMonth(nextMonth);
+    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    requestData();
+}
+
 function meterReadingsViewChanged(cb) {
     if (cb.checked) {
         if (myChart.data.datasets.length === 1) {
@@ -327,11 +345,19 @@ function updateHeader() {
     }
 
     if (state === 1) {
-        document.getElementById("prev-day").style.display = "inline";
-        document.getElementById("next-day").style.display = "inline";
-    } else {
-        document.getElementById("prev-day").style.display = "none";
-        document.getElementById("next-day").style.display = "none";
+        document.getElementById("prev").style.display = "inline";
+        document.getElementById("next").style.display = "inline";
+        document.getElementById("prev-button").setAttribute("onclick","decreaseDate()");
+        document.getElementById("next-button").setAttribute("onclick","increaseDate()");
+    } else if (state === 3){
+        document.getElementById("prev").style.display = "inline";
+        document.getElementById("next").style.display = "inline";
+        document.getElementById("prev-button").setAttribute("onclick","decreaseMonth()");
+        document.getElementById("next-button").setAttribute("onclick","increaseMonth()");
+    }
+    else {
+        document.getElementById("prev").style.display = "none";
+        document.getElementById("next").style.display = "none";
     }
 }
 
