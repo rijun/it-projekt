@@ -2,19 +2,18 @@
 This script runs the application using a development server.
 It contains the definition of routes and views for the application.
 """
-from collections import namedtuple
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
-from math import floor
 from datetime import datetime, timedelta
-import pymysql
+from pymysql import connect
+from math import floor
 from statistics import mean
 
 app = Flask(__name__)
 CORS(app)
 
-my_Database = pymysql.connect(
+my_Database = connect(
     host="127.0.0.1",
     user="root",
     passwd="",  # Michel: root
@@ -100,7 +99,6 @@ def get_data():
         elif mode == 'month':
             month = datetime.strptime(request.args['m'], month_format)
             next_month = add_month(month)
-            # year = request.args['y']
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
                     "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\

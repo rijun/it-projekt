@@ -8,9 +8,9 @@ let monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", 
 let weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 window.onload = function () {
-    // Chart initialization
+    // Chart setup
     setupChart();
-    // Get available users
+    // Load available users
     loadAvailableUsers();
 };
 
@@ -72,11 +72,10 @@ function setupChart() {
             tooltips: {
                 mode: 'index',
                 callbacks: {
-                    label: function(tooltipItem, data) {
+                    label: function (tooltipItem, data) {
                         if (tooltipItem.datasetIndex === 0) {
                             return tooltipItem.yLabel + " " + currentUnit();
-                        }
-                        else {
+                        } else {
                             return tooltipItem.yLabel + " kWh";
                         }
                     },
@@ -287,7 +286,7 @@ function increaseMonth() {
 }
 
 function decreaseMonth() {
-   let month = new Date(document.getElementById('month-selector').value);
+    let month = new Date(document.getElementById('month-selector').value);
     let currentMonth = month.getMonth();
     let nextMonth = currentMonth - 1;
     month.setMonth(nextMonth);
@@ -347,15 +346,14 @@ function updateHeader() {
     if (state === 1) {
         document.getElementById("prev").style.display = "inline";
         document.getElementById("next").style.display = "inline";
-        document.getElementById("prev-button").setAttribute("onclick","decreaseDate()");
-        document.getElementById("next-button").setAttribute("onclick","increaseDate()");
-    } else if (state === 3){
+        document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
+        document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
+    } else if (state === 3) {
         document.getElementById("prev").style.display = "inline";
         document.getElementById("next").style.display = "inline";
-        document.getElementById("prev-button").setAttribute("onclick","decreaseMonth()");
-        document.getElementById("next-button").setAttribute("onclick","increaseMonth()");
-    }
-    else {
+        document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
+        document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
+    } else {
         document.getElementById("prev").style.display = "none";
         document.getElementById("next").style.display = "none";
     }
@@ -422,6 +420,7 @@ function updateStatistics(kwhPrice) {
 }
 
 /** Helper functions **/
+
 function createArguments() {
     let arguments = "u=" + document.getElementById("user-selector").value;
     switch (state) {
@@ -453,8 +452,7 @@ function currentUnit() {
         case 1:
             if (document.getElementById("resolution-selector").value === "15") {
                 unit = "kWh / Viertelstunde";
-            }
-            else {
+            } else {
                 unit = "kWh / Stunde";
             }
             break;
@@ -484,11 +482,11 @@ function formatDays(days) {
 
 function formatMonths(months) {
     let returnMonths = [];
-        months.forEach(m => {
-            let month = new Date(m);
-            let returnMonth = monthsList[month.getMonth()]
-            returnMonths.push(returnMonth);
-        });
+    months.forEach(m => {
+        let month = new Date(m);
+        let returnMonth = monthsList[month.getMonth()]
+        returnMonths.push(returnMonth);
+    });
     return returnMonths;
 }
 
