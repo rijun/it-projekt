@@ -1,8 +1,9 @@
-import csv
+from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
-import json
+from json import dumps
+from math import cos, pi
 from statistics import mean
-import random
+from random import seed, triangular
 
 
 def generate_template(filename="zaehlwerte.csv"):
@@ -10,7 +11,7 @@ def generate_template(filename="zaehlwerte.csv"):
 
     # Open file
     with open(filename, mode='r') as csv_file:
-        csv_reader = csv.reader(csv_file)
+        csv_reader = reader(csv_file)
         line_count = 0
 
         for row in csv_reader:
@@ -60,13 +61,14 @@ def generate_template(filename="zaehlwerte.csv"):
             weekday_dict[time] = (min_load, max_load, avg_load)
 
     f = open("load_statistics.json", 'w')
-    f.write(json.dumps(data_dict))
+    f.write(dumps(data_dict))
     f.close()
 
     return data_dict
 
 
 def generate_load_profile(template):
+    # Get user input
     start = input("Start date (YYYY-MM-DD): ")
     if not start:
         start = "2018-01-01"
@@ -80,7 +82,7 @@ def generate_load_profile(template):
     if not meter_number:
         meter_number = "1ESY1312000000"
 
-    random.seed()
+    seed()
     START_DATE = datetime.strptime(start, "%Y-%m-%d")
     END_DATE = datetime.strptime(end, "%Y-%m-%d")
     current_datetime = START_DATE
@@ -89,9 +91,9 @@ def generate_load_profile(template):
     current_meter_val = meter_start_val
 
     while current_datetime <= END_DATE:
-
+        month_factor = 0.25*cos(2*pi/12*(current_datetime.month-0.5))+1.50
         if current_datetime is START_DATE:
-            csv_entry = [current_datetime, meter_number, meter_start_val, 0]
+            csv_entry = [current_datetime, meter_number, meter_start_val * month_factor, 0]
             csv_entry_list.append(csv_entry)
             current_datetime += timedelta(minutes=15)
             continue
@@ -99,14 +101,14 @@ def generate_load_profile(template):
         current_weekday = current_datetime.weekday()
         current_time = current_datetime.time().strftime("%H:%M")
         current_time_data = template[current_weekday][current_time]
-        current_load = random.triangular(current_time_data[0], current_time_data[1], current_time_data[2])
-        current_meter_val += current_load
+        current_load = triangular(current_time_data[0], current_time_data[1], current_time_data[2])
+        current_meter_val += current_load * month_factor
         csv_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
         csv_entry_list.append(csv_entry)
         current_datetime += timedelta(minutes=15)
 
     with open('meter_data.csv', mode='w') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONE)
+        csv_writer = writer(csv_file, delimiter=',', quotechar='"', quoting=QUOTE_NONE)
         for row in csv_entry_list:
             csv_writer.writerow(row)
         csv_file.close()
