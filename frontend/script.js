@@ -104,7 +104,7 @@ function requestData() {
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {   // Response OK
             updatePage(JSON.parse(this.responseText));
-        } else if (this.readyState == 4 && this.status == 404) {    // Response failed
+        } else if (this.readyState == 4 && this.status == 400) {    // Response failed
             window.alert(this.responseText);
         }
     };
