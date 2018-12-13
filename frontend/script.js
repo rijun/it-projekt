@@ -99,13 +99,13 @@ function requestData() {
     document.getElementById("placeholder").style.display = "none";
     document.getElementById("content").style.display = "block";
 
-    var http = new XMLHttpRequest();
+    let http = new XMLHttpRequest();
 
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {   // Response OK
             updatePage(JSON.parse(this.responseText));
-        } else if (this.readyState == 4 && this.status == 400) {    // Response failed
-            window.alert("Fehler!");
+        } else if (this.readyState == 4 && this.status == 404) {    // Response failed
+            window.alert(this.responseText);
         }
     };
 
@@ -119,9 +119,9 @@ function requestData() {
 // Update and plot chart
 function updatePage(response) {
     // Store response values
-    requestObj.labels = response['dates'];
-    requestObj.loadDiffs = response['diff'];
-    requestObj.meterReadings = response['energy'];
+    requestObj.labels = response['times'];
+    requestObj.loadDiffs = response['energy_diffs'];
+    requestObj.meterReadings = response['meter_readings'];
     requestObj.avgKwh = response['avg'];
     requestObj.maxKwh = response['max'];
     requestObj.minKwh = response['min'];
