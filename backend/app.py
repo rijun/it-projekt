@@ -1,13 +1,13 @@
 """
-This script runs the application using a development server.
-It contains the definition of routes and views for the application.
+This script runs a flask server
 
 Requirements: flask, flask_cors, pymysql
 
 - flask_cors is used to allow cross-origin requests
 - pymysql is the database connector, an alternate connecter can also be used
 
-@app.route('/foo') creates an API endpoint to which an GET request can be sent, e.g. http://bar.com/foo
+Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
+        Request arguments can be used with: request.args["<request_variable_name>"]
 """
 
 from flask import Flask, request, jsonify, make_response
@@ -18,7 +18,7 @@ from math import floor
 from statistics import mean
 
 app = Flask(__name__)  # Create Flask application
-CORS(app)  # Enable CORS
+CORS(app)  # Enable CORS for allowing cross-origin requests
 
 my_Database = connect(
     host="127.0.0.1",
@@ -70,10 +70,12 @@ def get_db_values(query):
 def add_month(date):
     date_string = datetime.strftime(date, month_format)
     str_list = date_string.split("-")
+
     if int(str_list[1]) == 12:
         next_month = 1
     else:
         next_month = str(int(str_list[1]) + 1)
+
     return_str = str_list[0] + "-" + next_month
     return datetime.strptime(return_str, month_format)
 
