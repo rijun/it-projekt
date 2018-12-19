@@ -104,6 +104,7 @@ function requestData() {
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {   // Response OK
             updatePage(JSON.parse(this.responseText));
+            checkRanges();
         } else if (this.readyState == 4 && this.status == 400) {    // Response failed
             window.alert(this.responseText);
         }
@@ -226,9 +227,6 @@ function loadAvailableUsers() {
                 userInfo.innerHTML += "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", " + u["city"] + " (" + u["zipcode"] + ")"
             )
         }
-        else if (this.readyState == 1 && this.status == 0) {
-            window.alert("Server nicht erreichbar!");
-        }
     };
 
     http.open("GET", "http://localhost:5000/boot", true);
@@ -295,6 +293,30 @@ function decreaseMonth() {
     month.setMonth(nextMonth);
     document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
     requestData();
+}
+
+function checkRanges() {
+    let datetimeSelector;
+    if (state === 1) {
+        datetimeSelector = document.getElementById('date-selector');
+    }
+    else if (state === 3) {
+        datetimeSelector = document.getElementById('month-selector');
+    }
+
+    if (datetimeSelector.value === datetimeSelector.max) {
+        document.getElementById("next-button").style.display = "none";
+    }
+    else if (document.getElementById("next-button").style.display === "none") {
+        document.getElementById("next-button").style.display = "inline";
+    }
+
+    if (datetimeSelector.value === datetimeSelector.min) {
+        document.getElementById("prev-button").style.display = "none";
+    }
+    else if (document.getElementById("prev-button").style.display === "none") {
+        document.getElementById("prev-button").style.display = "inline";
+    }
 }
 
 function meterReadingsViewChanged(cb) {
