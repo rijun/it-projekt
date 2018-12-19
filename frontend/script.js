@@ -214,17 +214,20 @@ function calculatePrice(load, price) {
 function loadAvailableUsers() {
     let http = new XMLHttpRequest();
     http.onreadystatechange = function () {
+        let userInfo = document.getElementById("user-list-all");
+        let userSelector = document.getElementById("user-selector");
         if (this.readyState == 4 && this.status == 200) {
             let response = JSON.parse(this.responseText);
             response['users'].forEach(u => userList.push(u));   // Store users in array
-            let userSelector = document.getElementById("user-selector");
-            let userInfo = document.getElementById("user-list-all");
             userList.forEach(u =>
                 userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
                     "</option>");
             userList.forEach(u =>
                 userInfo.innerHTML += "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", " + u["city"] + " (" + u["zipcode"] + ")"
             )
+        }
+        else if (this.readyState == 1 && this.status == 0) {
+            window.alert("Server nicht erreichbar!");
         }
     };
 
