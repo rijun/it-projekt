@@ -114,13 +114,36 @@ def generate_load_profile(template):
         csv_file.close()
 
 
+def menu(sel):
+    print("This script reads an .csv file containing meter reading values and generates a database.\n")
+    print("Select an option:\n")
+    print("(1)\t\t-->\t\tGenerate template and database file")
+    print("(2)\t\t-->\t\tGenerate template")
+    print("(3)\t\t-->\t\tGenerate database file\n")
+    try:
+        sel.append(int(input(">>> ")))
+    except ValueError:
+        sel.append(0)
+
+
 def main():
-    template = input("Template file path:")
-    if not template:
-        data_template = generate_template()
+    selection = []  # List type is needed to pass variable as reference
+    menu(selection)
+    if selection is 1:
+        generate_template()
+        generate_load_profile()
+    elif selection is 2:
+        generate_template()
+    elif selection is 3:
+        generate_load_profile()
     else:
-        data_template = generate_template(template)
-    generate_load_profile(data_template)
+        print("Input error!")
+    # template = input("Template file path:")
+    # if not template:
+    #     data_template = generate_template()
+    # else:
+    #     data_template = generate_template(template)
+    # generate_load_profile(data_template)
 
 
 if __name__ == "__main__":
