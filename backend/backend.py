@@ -24,7 +24,7 @@ my_Database = connect(
     host="127.0.0.1",
     user="root",
     passwd="",  # Michel: root
-    database="itp_2018_bsp02"  # Michel: itp2
+    database="itp_2018_bsp03"  # Michel: itp2
 )
 
 # String templates
