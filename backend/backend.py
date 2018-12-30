@@ -24,7 +24,7 @@ my_Database = connect(
     host="127.0.0.1",
     user="root",
     passwd="",  # Michel: root
-    database="itp_2018_bsp03"  # Michel: itp2
+    database="itp_2018"  # Michel: itp2
 )
 
 # String templates
@@ -146,7 +146,7 @@ def get_data():
 
 
 # Get all available users and their personal information stored in the database
-@app.route('/boot')
+@app.route('/users')
 def boot():
     meter_list = []
     cursor = my_Database.cursor()
@@ -170,7 +170,7 @@ def boot():
 
 
 # Get first and last available date of the current user
-@app.route('/users')
+@app.route('/user-info')
 def users():
     user = request.args['u']
     cursor = my_Database.cursor()

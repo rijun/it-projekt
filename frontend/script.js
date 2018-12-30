@@ -229,7 +229,7 @@ function loadAvailableUsers() {
         }
     };
 
-    http.open("GET", "http://localhost:5000/boot", true);
+    http.open("GET", "http://localhost:5000/users", true);
     http.send();
 }
 
@@ -259,7 +259,7 @@ function updateUserInformation() {
         }
     };
 
-    http.open("GET", "http://localhost:5000/users?u=" + userSelector.value, true);
+    http.open("GET", "http://localhost:5000/user-info?u=" + userSelector.value, true);
     http.send();
 }
 
