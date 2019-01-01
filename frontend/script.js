@@ -1,16 +1,13 @@
+const monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+
 let myChart;
-let state = 1; // 1 - day, 2 - custom, 3 - month, 4 - year
-let userList = [];
-let requestObj = {};
-// Array for storing month names
-let monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
-// Array for storing weekday names
-let weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+let state = 1;          // 1 - day, 2 - custom, 3 - month, 4 - year
+let userList = [];      // List for storing all available users
+let responseObj = {};   // Object for storing the response values
 
 window.onload = function () {
-    // Chart setup
     setupChart();
-    // Load available users
     loadAvailableUsers();
 };
 
@@ -103,10 +100,12 @@ function requestData() {
 
     http.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {   // Response OK
-            updatePage(JSON.parse(this.responseText));
+            storeResponseValues(JSON.parse(this.responseText));
+            updatePage();
             checkRanges();
         } else if (this.readyState == 4 && this.status == 400) {    // Response failed
             window.alert(this.responseText);
+            return;
         }
     };
 
@@ -118,15 +117,7 @@ function requestData() {
 }
 
 // Update and plot chart
-function updatePage(response) {
-    // Store response values
-    requestObj.labels = response['times'];
-    requestObj.loadDiffs = response['energy_diffs'];
-    requestObj.meterReadings = response['meter_readings'];
-    requestObj.avgKwh = response['avg'];
-    requestObj.maxKwh = response['max'];
-    requestObj.minKwh = response['min'];
-    requestObj.sumKwh = response['sum'];
+function updatePage() {
     // Get current kWh price
     let price = document.getElementById("price-select").value / 100;
 
@@ -187,7 +178,7 @@ function formatNumber(number) {
 function priceChanged() {
     let currentPrice = document.getElementById("price-select").value / 100;
     document.getElementById("price-val").innerText = currentPrice.toFixed(2);
-    document.getElementById("stat-price").innerText = formatNumber(requestObj.sumKwh * currentPrice);
+    document.getElementById("stat-price").innerText = formatNumber(responseObj.sumKwh * currentPrice);
     updateTable(currentPrice);
 }
 
@@ -263,68 +254,12 @@ function updateUserInformation() {
     http.send();
 }
 
-function increaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() + 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
-    requestData();
-}
-
-function decreaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() - 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
-    requestData();
-}
-
-function increaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth + 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
-    requestData();
-}
-
-function decreaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth - 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
-    requestData();
-}
-
-function checkRanges() {
-    let datetimeSelector;
-    if (state === 1) {
-        datetimeSelector = document.getElementById('date-selector');
-    }
-    else if (state === 3) {
-        datetimeSelector = document.getElementById('month-selector');
-    }
-
-    if (datetimeSelector.value === datetimeSelector.max) {
-        document.getElementById("next-button").style.display = "none";
-    }
-    else if (document.getElementById("next-button").style.display === "none") {
-        document.getElementById("next-button").style.display = "inline";
-    }
-
-    if (datetimeSelector.value === datetimeSelector.min) {
-        document.getElementById("prev-button").style.display = "none";
-    }
-    else if (document.getElementById("prev-button").style.display === "none") {
-        document.getElementById("prev-button").style.display = "inline";
-    }
-}
-
 function meterReadingsViewChanged(cb) {
     if (cb.checked) {
         if (myChart.data.datasets.length === 1) {
             myChart.data.datasets.push({
                 label: 'Zählerstand',
-                data: requestObj.meterReadings,
+                data: responseObj.meterReadings,
                 backgroundColor: "rgba(255, 0, 0, 0.2)",
                 borderColor: "rgb(255, 0, 0)",
                 borderWidth: 1,
@@ -333,7 +268,7 @@ function meterReadingsViewChanged(cb) {
             });
             myChart.options.scales.yAxes[1].display = true;
         } else {
-            myChart.data.datasets[1].data = requestObj.meterReadings;
+            myChart.data.datasets[1].data = responseObj.meterReadings;
         }
     } else if (myChart.data.datasets.length === 2) {
         myChart.data.datasets.pop();
@@ -342,7 +277,7 @@ function meterReadingsViewChanged(cb) {
     myChart.update();
 }
 
-/** Update functions **/
+/** Update page sub functions **/
 function updateHeader() {
     switch (state) {
         case 1:
@@ -387,18 +322,18 @@ function updateHeader() {
 function updateChart() {
     switch (state) {
         case 1:
-            myChart.data.labels = requestObj.labels;
+            myChart.data.labels = responseObj.labels;
             break;
         case 2:
         case 3:
-            myChart.data.labels = formatDays(requestObj.labels);
+            myChart.data.labels = formatDays(responseObj.labels);
             break;
         case 4:
-            myChart.data.labels = formatMonths(requestObj.labels)
+            myChart.data.labels = formatMonths(responseObj.labels)
     }
-    myChart.data.datasets[0].data = requestObj.loadDiffs;
+    myChart.data.datasets[0].data = responseObj.loadDiffs;
     if (document.getElementById('meter-readings-view').checked) {
-        myChart.data.datasets[1].data = requestObj.meterReadings;
+        myChart.data.datasets[1].data = responseObj.meterReadings;
     }
     myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + currentUnit() + "]";
     myChart.update();
@@ -408,11 +343,11 @@ function updateTable(kwhPrice) {
     let tableData = "<table class=\"table table-striped table-sm table-hover text-center\"><tr class=\"d-flex\">" +
         "<th id=\"datetime-title\" class=\"col\"></th><th class=\"col\">Lastgang [" + currentUnit() + "]</th>" +
         "<th class=\"col\">Zählerstand [kWh] </th><th class=\"col\">Kosten [€]</th></tr>";
-    for (let index in requestObj.labels) {
-        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(requestObj.labels[index]) + "</td><td class=\"col\">" +
-            formatNumber(requestObj.loadDiffs[index]) + "</td><td class=\"col\">" +
-            formatNumber(requestObj.meterReadings[index]) + "</td><td class=\"col\">" +
-            calculatePrice(requestObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
+    for (let index in responseObj.labels) {
+        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.labels[index]) + "</td><td class=\"col\">" +
+            formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">" +
+            formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">" +
+            calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
     tableData += "</table>";
     document.getElementById("data-table").innerHTML = tableData;
@@ -433,19 +368,18 @@ function updateTable(kwhPrice) {
 function updateStatistics(kwhPrice) {
     document.getElementById("stat").style.display = "block";
     document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
-        requestObj.avgKwh + " " + currentUnit() + "</li>";
+        responseObj.avgKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" +
-        requestObj.maxKwh + " " + currentUnit() + "</li>";
+        responseObj.maxKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" +
-        requestObj.minKwh + " " + currentUnit() + "</li>";
+        responseObj.minKwh + " " + currentUnit() + "</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" +
-        requestObj.sumKwh + " kWh</li>";
+        responseObj.sumKwh + " kWh</li>";
     document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
-        "<span id=\"stat-price\">" + formatNumber(requestObj.sumKwh * kwhPrice) + "</span> €</li>";
+        "<span id=\"stat-price\">" + formatNumber(responseObj.sumKwh * kwhPrice) + "</span> €</li>";
 }
 
 /** Helper functions **/
-
 function createArguments() {
     let arguments = "u=" + document.getElementById("user-selector").value;
     switch (state) {
@@ -469,6 +403,16 @@ function createArguments() {
             break;
     }
     return arguments;
+}
+
+function storeResponseValues(response) {
+    responseObj.labels = response['times'];
+    responseObj.loadDiffs = response['energy_diffs'];
+    responseObj.meterReadings = response['meter_readings'];
+    responseObj.avgKwh = response['avg'];
+    responseObj.maxKwh = response['max'];
+    responseObj.minKwh = response['min'];
+    responseObj.sumKwh = response['sum'];
 }
 
 function currentUnit() {
@@ -527,5 +471,61 @@ function formatLabel(label) {
         case 4:
             let m = new Date(label);
             return monthsList[m.getMonth()];
+    }
+}
+
+function increaseDate() {
+    let date = new Date(document.getElementById('date-selector').value);
+    date.setDate(date.getDate() + 1);
+    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    requestData();
+}
+
+function decreaseDate() {
+    let date = new Date(document.getElementById('date-selector').value);
+    date.setDate(date.getDate() - 1);
+    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    requestData();
+}
+
+function increaseMonth() {
+    let month = new Date(document.getElementById('month-selector').value);
+    let currentMonth = month.getMonth();
+    let nextMonth = currentMonth + 1;
+    month.setMonth(nextMonth);
+    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    requestData();
+}
+
+function decreaseMonth() {
+    let month = new Date(document.getElementById('month-selector').value);
+    let currentMonth = month.getMonth();
+    let nextMonth = currentMonth - 1;
+    month.setMonth(nextMonth);
+    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    requestData();
+}
+
+function checkRanges() {
+    let datetimeSelector;
+    if (state === 1) {
+        datetimeSelector = document.getElementById('date-selector');
+    }
+    else if (state === 3) {
+        datetimeSelector = document.getElementById('month-selector');
+    }
+
+    if (datetimeSelector.value === datetimeSelector.max) {
+        document.getElementById("next-button").style.display = "none";
+    }
+    else if (document.getElementById("next-button").style.display === "none") {
+        document.getElementById("next-button").style.display = "inline";
+    }
+
+    if (datetimeSelector.value === datetimeSelector.min) {
+        document.getElementById("prev-button").style.display = "none";
+    }
+    else if (document.getElementById("prev-button").style.display === "none") {
+        document.getElementById("prev-button").style.display = "inline";
     }
 }
