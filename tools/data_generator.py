@@ -2,43 +2,74 @@ from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
 from json import dumps
 from math import cos, pi
-from statistics import mean
 from random import seed, triangular
+from statistics import mean
 
 
 def generate_template():
-    csv_data = []
+    """
 
-    filename = input("Path of .csv file: ")
+    :return:
+    """
+    print("\nGenerate a load profile template\n")
+    csv_data = read_csv_data()
+    load_data = convert_energy(csv_data)
+    week_dict = build_week_dict(load_data)
+    data_dict = build_data_dict(week_dict)
 
+    print("Writing template file...")
+    f = open("template.json", 'w')
+    f.write(dumps(data_dict))
+    f.close()
+
+    return data_dict
+
+
+def read_csv_data():
+    return_list = []
+
+    # Get csv filename
+    filename = input("Name of .csv file (zaehlwerte.csv): ")
     if not filename:
         filename = "zaehlwerte.csv"
-
-    # Open .csv file
     with open(filename, mode='r') as csv_file:
-        csv_reader = reader(csv_file)
-        line_count = 0
+        row_count = sum(1 for row in reader(csv_file))
+        print("Number of rows in file: ", row_count)
 
-        for row in csv_reader:
-            if line_count != 0:
-                row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
-                if row_date.minute % 15 == 0:
-                    csv_data.append([row_date, float(row[2])])
-            line_count += 1
+        csv_file.seek(0)
+        csv_reader = reader(csv_file)
+
+        # Go through each row in the .csv file and append a tuple containing the current date/time and meter readings
+        # to the csv_data list --> (date/time, meter_readings)
+        for index, row in enumerate(csv_reader):
+            row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+
+            # Only 15 minute values, as this resolution will suffice
+            if row_date.minute % 15 == 0:
+                return_list.append((row_date, float(row[2])))
+
+            print("\rStatus: {0} / {1} rows processed".format(index + 1, row_count), end='')  # Print current status
+
         csv_file.close()
 
+    return return_list
+
+
+def convert_energy(csv_data):
+    load_data = []
     # Convert energy to load
-    for i in range(len(csv_data)-1):
+    for i in range(len(csv_data) - 1):  # len(csv_data)-1 as a load can't be calculated for the last element
         current_data = csv_data[i][1]
         next_data = csv_data[i + 1][1]
         diff = round(next_data - current_data, 2)
-        csv_data[i][1] = diff
+        load_data.append((csv_data[i][0], diff))
+    return load_data
 
-    csv_data.pop()
+
+def build_week_dict(load_data):
     week_dict = {}
-
     # Build week dictionary
-    for data in csv_data:
+    for data in load_data:
         current_weekday = data[0].weekday()
         if current_weekday not in week_dict:
             week_dict[current_weekday] = {}
@@ -47,9 +78,11 @@ def generate_template():
         if current_time not in weekday_dict:
             weekday_dict[current_time] = []
         weekday_dict[current_time].append(data[1])
+    return week_dict
 
+
+def build_data_dict(week_dict):
     data_dict = {}
-
     # Build data dictionary
     for key, value in week_dict.items():
         current_weekday = key
@@ -64,11 +97,6 @@ def generate_template():
             max_load = max(value[time])
             avg_load = mean(value[time])
             weekday_dict[time] = (min_load, max_load, avg_load)
-
-    f = open("load_statistics.json", 'w')
-    f.write(dumps(data_dict))
-    f.close()
-
     return data_dict
 
 
@@ -120,7 +148,8 @@ def generate_load_profile(template):
 
 
 def menu():
-    print("This script reads an .csv file containing meter reading values and generates a database.\n")
+    print("This script reads an .csv file containing meter reading values and generates a database.")
+    print("Hint: Default values are shown in brackets\n")
     print("Select an option:\n")
     print("(1)\t\t-->\t\tGenerate template and database file (default)")
     print("(2)\t\t-->\t\tGenerate template")
@@ -140,22 +169,41 @@ def menu():
             return 0
 
 
-def main():
-    selection = menu()
+def print_progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100):
+    import sys
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        bar_length  - Optional  : character length of bar (Int)
 
-    if selection is 1:
-        generate_template()
-        generate_load_profile()
+    Origin: aubricus@https://gist.github.com/aubricus/f91fb55dc6ba5557fbab06119420dd6a
+    """
+    str_format = "{0:." + str(decimals) + "f}"
+    percents = str_format.format(100 * (iteration / float(total)))
+    filled_length = int(round(bar_length * iteration / float(total)))
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
 
-    elif selection is 2:
-        generate_template()
+    sys.stdout.write('\r%s |%s| %s%s %s' % (prefix, bar, percents, '%', suffix)),
 
-    elif selection is 3:
-        generate_load_profile()
-
-    else:
-        print("Input error!")
+    if iteration == total:
+        sys.stdout.write('\n')
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
-    main()
+    user_selection = menu()
+
+    if user_selection == 1:
+        generate_template()
+        generate_load_profile()
+    elif user_selection == 2:
+        generate_template()
+    elif user_selection == 3:
+        generate_load_profile()
+    else:
+        print("Input error!")
