@@ -250,7 +250,7 @@ function updateUserInformation() {
         }
     };
 
-    http.open("GET", "http://localhost:5000/user-info?u=" + userSelector.value, true);
+    http.open("GET", "http://localhost:5000/boundaries?u=" + userSelector.value, true);
     http.send();
 }
 

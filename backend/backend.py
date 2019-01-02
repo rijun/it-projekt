@@ -147,7 +147,7 @@ def get_data():
 
 # Get all available users and their personal information stored in the database
 @app.route('/users')
-def boot():
+def get_users():
     meter_list = []
     cursor = my_Database.cursor()
 
@@ -170,8 +170,8 @@ def boot():
 
 
 # Get first and last available date of the current user
-@app.route('/user-info')
-def users():
+@app.route('/min-max')
+def get_min_max():
     user = request.args['u']
     cursor = my_Database.cursor()
     max_date = ""
