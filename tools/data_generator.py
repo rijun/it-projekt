@@ -1,11 +1,9 @@
-
 from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
 from json import dumps, load
 from math import cos, pi
 from random import seed, triangular
 from statistics import mean
-from time import perf_counter
 
 
 def generate_template():
@@ -185,9 +183,9 @@ def get_user_settings():
     meter_number = input("Meter number (1ESY1312000000): ")
     if not meter_number:
         meter_number = "1ESY1312000000"
-    meter_start_val = input("Start value (1000): ")
+    meter_start_val = float(input("Start value (1000): "))
     if not meter_start_val:
-        meter_start_val = 1000
+        meter_start_val = 1000.0
 
     return start, end, meter_number, meter_start_val
 
@@ -210,12 +208,13 @@ def menu():
             return int(selection)
         # Return error code
         except ValueError:
-            return 0
+            print("Input error!")
+            input("Press <Enter> to exit...")
+            quit()
 
 
 if __name__ == "__main__":
     user_selection = menu()
-
     if user_selection == 1:
         data_template = generate_template()
         generate_load_profile(template=data_template)
@@ -226,5 +225,3 @@ if __name__ == "__main__":
     elif user_selection == 3:
         generate_load_profile()
         print("Success!")
-    else:
-        print("Input error!")
