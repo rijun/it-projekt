@@ -4,14 +4,10 @@ from json import dumps, load
 from math import cos, pi
 from random import seed, triangular
 from statistics import mean
+from time import perf_counter
 
 
 def generate_template():
-    """
-
-    :return:
-    """
-    print("\nGenerate a load profile template\n")
     csv_data = read_csv_data()
 
     if not csv_data:
@@ -23,7 +19,7 @@ def generate_template():
     week_dict = build_week_dict(load_data)
     data_dict = build_data_dict(week_dict)
 
-    print("Writing template file...")
+    print("\nWriting template file...")
     f = open("template.json", 'w')
     f.write(dumps(data_dict))
     f.close()
@@ -49,6 +45,7 @@ def read_csv_data():
 
             # Go through each row in the .csv file and append a tuple containing the current date/time
             # and meter readings to the csv_data list --> (date/time, meter_readings)
+            start = perf_counter()
             for index, row in enumerate(csv_reader):
                 row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
 
@@ -56,7 +53,9 @@ def read_csv_data():
                 if row_date.minute % 15 == 0:
                     return_list.append((row_date, float(row[2])))
 
-                print("\rStatus: {0} / {1} rows processed".format(index + 1, row_count), end='')  # Print current status
+                    print("\rRows processed: {0} / {1}".format(index + 1, row_count), end='')
+
+            print("\nExecution time: ", perf_counter() - start, "s")
     finally:
         return return_list
 
@@ -107,6 +106,7 @@ def build_data_dict(week_dict):
 
 
 def generate_load_profile(template=None):
+    print("\nGenerate a load profile\n")
 
     # Load JSON template if it is not passed as an argument
     if not template:
@@ -116,6 +116,50 @@ def generate_load_profile(template=None):
         with open(filename, mode='r') as json_file:
             template = load(json_file)
 
+    print("Building load profile...")
+    csv_entry_list = build_load_profile(template)
+
+    print("Writing load profile...")
+    with open("data.csv", mode='w') as csv_file:
+        csv_writer = writer(csv_file, delimiter=',', quotechar='"', quoting=QUOTE_NONE)
+        for row in csv_entry_list:
+            csv_writer.writerow(row)
+        csv_file.close()
+
+
+def build_load_profile(template):
+
+    start, end, meter_number, meter_start_val = get_user_settings()
+
+    load_profile = []
+    START_DATE = datetime.strptime(start, "%Y-%m-%d")
+    END_DATE = datetime.strptime(end, "%Y-%m-%d")
+    current_datetime = START_DATE
+    current_meter_val = meter_start_val
+
+    while current_datetime <= END_DATE:
+        seed()
+        month_factor = 0.25 * cos(2 * pi / 12 * (current_datetime.month - 0.5)) + 1.50
+
+        if current_datetime is START_DATE:
+            load_profile_entry = [current_datetime, meter_number, meter_start_val * month_factor, 0]
+        else:
+            current_weekday = current_datetime.weekday()
+            current_time = current_datetime.time().strftime("%H:%M")
+            current_time_data = template[current_weekday][current_time]
+
+            current_load = triangular(current_time_data[0], current_time_data[1], current_time_data[2])
+            current_meter_val += current_load * month_factor
+
+            load_profile_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
+
+        load_profile.append(load_profile_entry)
+        current_datetime += timedelta(minutes=15)
+
+    return load_profile
+
+
+def get_user_settings():
     # Get user input
     start = input("Start date in YYYY-MM-DD format (2018-01-01): ")
     if not start:
@@ -123,43 +167,14 @@ def generate_load_profile(template=None):
     end = input("End date in YYYY-MM-DD format (2019-01-01): ")
     if not end:
         end = "2019-01-01"
-    meter_start_val = input("Start value (1000): ")
-    if not meter_start_val:
-        meter_start_val = 1000
     meter_number = input("Meter number (1ESY1312000000): ")
     if not meter_number:
         meter_number = "1ESY1312000000"
+    meter_start_val = input("Start value (1000): ")
+    if not meter_start_val:
+        meter_start_val = 1000
 
-    seed()
-    START_DATE = datetime.strptime(start, "%Y-%m-%d")
-    END_DATE = datetime.strptime(end, "%Y-%m-%d")
-    current_datetime = START_DATE
-
-    csv_entry_list = []
-    current_meter_val = meter_start_val
-
-    while current_datetime <= END_DATE:
-        month_factor = 0.25*cos(2*pi/12*(current_datetime.month-0.5))+1.50
-        if current_datetime is START_DATE:
-            csv_entry = [current_datetime, meter_number, meter_start_val * month_factor, 0]
-            csv_entry_list.append(csv_entry)
-            current_datetime += timedelta(minutes=15)
-            continue
-
-        current_weekday = current_datetime.weekday()
-        current_time = current_datetime.time().strftime("%H:%M")
-        current_time_data = template[current_weekday][current_time]
-        current_load = triangular(current_time_data[0], current_time_data[1], current_time_data[2])
-        current_meter_val += current_load * month_factor
-        csv_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
-        csv_entry_list.append(csv_entry)
-        current_datetime += timedelta(minutes=15)
-
-    with open("data.csv", mode='w') as csv_file:
-        csv_writer = writer(csv_file, delimiter=',', quotechar='"', quoting=QUOTE_NONE)
-        for row in csv_entry_list:
-            csv_writer.writerow(row)
-        csv_file.close()
+    return start, end, meter_number, meter_start_val
 
 
 def menu():
@@ -190,9 +205,12 @@ if __name__ == "__main__":
     if user_selection == 1:
         data_template = generate_template()
         generate_load_profile(template=data_template)
+        print("Success!")
     elif user_selection == 2:
         generate_template()
+        print("Success!")
     elif user_selection == 3:
         generate_load_profile()
+        print("Success!")
     else:
         print("Input error!")
