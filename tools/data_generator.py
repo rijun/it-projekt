@@ -1,6 +1,6 @@
 from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
-from json import dumps
+from json import dumps, load
 from math import cos, pi
 from random import seed, triangular
 from statistics import mean
@@ -13,6 +13,12 @@ def generate_template():
     """
     print("\nGenerate a load profile template\n")
     csv_data = read_csv_data()
+
+    if not csv_data:
+        print("Input error!")
+        input("Press <Enter> to exit...")
+        quit()
+
     load_data = convert_energy(csv_data)
     week_dict = build_week_dict(load_data)
     data_dict = build_data_dict(week_dict)
@@ -32,27 +38,27 @@ def read_csv_data():
     filename = input("Name of .csv file (zaehlwerte.csv): ")
     if not filename:
         filename = "zaehlwerte.csv"
-    with open(filename, mode='r') as csv_file:
-        row_count = sum(1 for row in reader(csv_file))
-        print("Number of rows in file: ", row_count)
 
-        csv_file.seek(0)
-        csv_reader = reader(csv_file)
+    try:
+        with open(filename, mode='r') as csv_file:
+            row_count = sum(1 for row in reader(csv_file))
+            print("Number of rows in file: ", row_count)
 
-        # Go through each row in the .csv file and append a tuple containing the current date/time and meter readings
-        # to the csv_data list --> (date/time, meter_readings)
-        for index, row in enumerate(csv_reader):
-            row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
+            csv_file.seek(0)
+            csv_reader = reader(csv_file)
 
-            # Only 15 minute values, as this resolution will suffice
-            if row_date.minute % 15 == 0:
-                return_list.append((row_date, float(row[2])))
+            # Go through each row in the .csv file and append a tuple containing the current date/time
+            # and meter readings to the csv_data list --> (date/time, meter_readings)
+            for index, row in enumerate(csv_reader):
+                row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
 
-            print("\rStatus: {0} / {1} rows processed".format(index + 1, row_count), end='')  # Print current status
+                # Only 15 minute values, as this resolution will suffice
+                if row_date.minute % 15 == 0:
+                    return_list.append((row_date, float(row[2])))
 
-        csv_file.close()
-
-    return return_list
+                print("\rStatus: {0} / {1} rows processed".format(index + 1, row_count), end='')  # Print current status
+    finally:
+        return return_list
 
 
 def convert_energy(csv_data):
@@ -100,18 +106,27 @@ def build_data_dict(week_dict):
     return data_dict
 
 
-def generate_load_profile(template):
+def generate_load_profile(template=None):
+
+    # Load JSON template if it is not passed as an argument
+    if not template:
+        filename = input("Name of .json file (template.json): ")
+        if not filename:
+            filename = "template.json"
+        with open(filename, mode='r') as json_file:
+            template = load(json_file)
+
     # Get user input
-    start = input("Start date (YYYY-MM-DD): ")
+    start = input("Start date in YYYY-MM-DD format (2018-01-01): ")
     if not start:
         start = "2018-01-01"
-    end = input("End date (YYYY-MM-DD): ")
+    end = input("End date in YYYY-MM-DD format (2019-01-01): ")
     if not end:
         end = "2019-01-01"
-    meter_start_val = input("Start value: ")
+    meter_start_val = input("Start value (1000): ")
     if not meter_start_val:
         meter_start_val = 1000
-    meter_number = input("Meter number: ")
+    meter_number = input("Meter number (1ESY1312000000): ")
     if not meter_number:
         meter_number = "1ESY1312000000"
 
@@ -140,7 +155,7 @@ def generate_load_profile(template):
         csv_entry_list.append(csv_entry)
         current_datetime += timedelta(minutes=15)
 
-    with open('meter_data.csv', mode='w') as csv_file:
+    with open("data.csv", mode='w') as csv_file:
         csv_writer = writer(csv_file, delimiter=',', quotechar='"', quoting=QUOTE_NONE)
         for row in csv_entry_list:
             csv_writer.writerow(row)
@@ -169,38 +184,12 @@ def menu():
             return 0
 
 
-def print_progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100):
-    import sys
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        bar_length  - Optional  : character length of bar (Int)
-
-    Origin: aubricus@https://gist.github.com/aubricus/f91fb55dc6ba5557fbab06119420dd6a
-    """
-    str_format = "{0:." + str(decimals) + "f}"
-    percents = str_format.format(100 * (iteration / float(total)))
-    filled_length = int(round(bar_length * iteration / float(total)))
-    bar = '█' * filled_length + '-' * (bar_length - filled_length)
-
-    sys.stdout.write('\r%s |%s| %s%s %s' % (prefix, bar, percents, '%', suffix)),
-
-    if iteration == total:
-        sys.stdout.write('\n')
-    sys.stdout.flush()
-
-
 if __name__ == "__main__":
     user_selection = menu()
 
     if user_selection == 1:
-        generate_template()
-        generate_load_profile()
+        data_template = generate_template()
+        generate_load_profile(template=data_template)
     elif user_selection == 2:
         generate_template()
     elif user_selection == 3:
