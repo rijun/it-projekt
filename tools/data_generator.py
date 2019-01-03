@@ -1,3 +1,4 @@
+
 from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
 from json import dumps, load
@@ -8,21 +9,32 @@ from time import perf_counter
 
 
 def generate_template():
-    csv_data = read_csv_data()
+    """
+    Generate a JSON file which maps every weekday and every quarter hour to a minimal, maximal and average load.
+    This can later be used as a template for the load profile generation.
 
+    :rtype: dict
+    :return: The load profile template
+    """
+
+    print("\nReading CSV file... ")
+    csv_data = read_csv_data()
     if not csv_data:
-        print("Input error!")
+        print("\nInput error!")
         input("Press <Enter> to exit...")
         quit()
 
+    print("\nBuilding template... ", end='')
     load_data = convert_energy(csv_data)
     week_dict = build_week_dict(load_data)
     data_dict = build_data_dict(week_dict)
+    print("Done!")
 
-    print("\nWriting template file...")
+    print("Writing template file... ", end='')
     f = open("template.json", 'w')
     f.write(dumps(data_dict))
     f.close()
+    print("Done!")
 
     return data_dict
 
@@ -31,7 +43,7 @@ def read_csv_data():
     return_list = []
 
     # Get csv filename
-    filename = input("Name of .csv file (zaehlwerte.csv): ")
+    filename = input("Name of CSV file (zaehlwerte.csv): ")
     if not filename:
         filename = "zaehlwerte.csv"
 
@@ -45,7 +57,6 @@ def read_csv_data():
 
             # Go through each row in the .csv file and append a tuple containing the current date/time
             # and meter readings to the csv_data list --> (date/time, meter_readings)
-            start = perf_counter()
             for index, row in enumerate(csv_reader):
                 row_date = datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S")
 
@@ -55,7 +66,6 @@ def read_csv_data():
 
                     print("\rRows processed: {0} / {1}".format(index + 1, row_count), end='')
 
-            print("\nExecution time: ", perf_counter() - start, "s")
     finally:
         return return_list
 
@@ -106,30 +116,33 @@ def build_data_dict(week_dict):
 
 
 def generate_load_profile(template=None):
-    print("\nGenerate a load profile\n")
 
     # Load JSON template if it is not passed as an argument
     if not template:
-        filename = input("Name of .json file (template.json): ")
+        filename = input("Name of JSON file (template.json): ")
         if not filename:
             filename = "template.json"
+        print("Opening template file... ", end='')
         with open(filename, mode='r') as json_file:
             template = load(json_file)
+        print("Done!")
 
-    print("Building load profile...")
     csv_entry_list = build_load_profile(template)
 
-    print("Writing load profile...")
+    print("Writing load profile... ", end='')
     with open("data.csv", mode='w') as csv_file:
         csv_writer = writer(csv_file, delimiter=',', quotechar='"', quoting=QUOTE_NONE)
         for row in csv_entry_list:
             csv_writer.writerow(row)
         csv_file.close()
+    print("Done!")
 
 
 def build_load_profile(template):
 
     start, end, meter_number, meter_start_val = get_user_settings()
+
+    print("Building load profile... ", end='')
 
     load_profile = []
     START_DATE = datetime.strptime(start, "%Y-%m-%d")
@@ -156,6 +169,8 @@ def build_load_profile(template):
         load_profile.append(load_profile_entry)
         current_datetime += timedelta(minutes=15)
 
+    print("Done!")
+
     return load_profile
 
 
@@ -178,8 +193,7 @@ def get_user_settings():
 
 
 def menu():
-    print("This script reads an .csv file containing meter reading values and generates a database.")
-    print("Hint: Default values are shown in brackets\n")
+    print("## Meter Readings Generation Tool ##\n")
     print("Select an option:\n")
     print("(1)\t\t-->\t\tGenerate template and database file (default)")
     print("(2)\t\t-->\t\tGenerate template")
