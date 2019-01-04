@@ -25,16 +25,16 @@ def generate_template():
     print("\nBuilding template... ", end='')
     load_data = convert_energy(csv_data)
     week_dict = build_week_dict(load_data)
-    data_dict = build_data_dict(week_dict)
+    profile_dict = build_stat_dict(week_dict)
     print("Done!")
 
     print("Writing template file... ", end='')
     f = open("template.json", 'w')
-    f.write(dumps(data_dict))
+    f.write(dumps(profile_dict))
     f.close()
     print("Done!")
 
-    return data_dict
+    return profile_dict
 
 
 def read_csv_data():
@@ -94,14 +94,14 @@ def build_week_dict(load_data):
     return week_dict
 
 
-def build_data_dict(week_dict):
-    data_dict = {}
+def build_stat_dict(week_dict):
+    stat_dict = {}
     # Build data dictionary
     for key, value in week_dict.items():
         current_weekday = key
-        if current_weekday not in data_dict:
-            data_dict[current_weekday] = {}
-        weekday_dict = data_dict[current_weekday]
+        if current_weekday not in stat_dict:
+            stat_dict[current_weekday] = {}
+        weekday_dict = stat_dict[current_weekday]
         time_list = value.keys()
         for time in time_list:
             if time not in weekday_dict:
@@ -110,7 +110,7 @@ def build_data_dict(week_dict):
             max_load = max(value[time])
             avg_load = mean(value[time])
             weekday_dict[time] = (min_load, max_load, avg_load)
-    return data_dict
+    return stat_dict
 
 
 def generate_load_profile(template=None):
@@ -152,7 +152,7 @@ def build_load_profile(template):
         seed()
         month_factor = 0.25 * cos(2 * pi / 12 * (current_datetime.month - 0.5)) + 1.50
 
-        if current_datetime is START_DATE:
+        if current_datetime == START_DATE:
             load_profile_entry = [current_datetime, meter_number, meter_start_val * month_factor, 0]
         else:
             current_weekday = current_datetime.weekday()
