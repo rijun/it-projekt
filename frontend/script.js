@@ -35,6 +35,39 @@ function loadAvailableUsers() {
     http.send();
 }
 
+function parseUserResponse() {
+    /**
+     * Parse the response of /users, add all available users in the database to the user list
+     * and display these on the start page
+     * **/
+
+    let userInfo = document.getElementById("user-list-all");
+    let userSelector = document.getElementById("user-selector");
+
+    if (this.readyState === 4) {    //  4 -> XMLHttpRequest status: DONE
+        if (this.status === 200) {  // 200 -> HTTP response status: OK
+            let response = JSON.parse(this.responseText);
+
+            response['users'].forEach(u => userList.push(u));   // Store users in user list
+
+            // Add users to user selector
+            userList.forEach(u =>
+                userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>");
+
+            // Add users to start page
+            userList.forEach(u =>
+                userInfo.innerHTML +=
+                    "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", "
+                    + u["city"] + " (" + u["zipcode"] + ")</li>"
+            );
+        } else if (this.status === 400) {   // 400 -> HTTP response status: Bad request
+            window.alert(this.getResponseHeader(this.response));
+        } else {
+            window.alert("Server Fehler!");
+        }
+    }
+}
+
 function requestData() {
     /**
      * Request the specified data from the server and parse the response
@@ -58,6 +91,33 @@ function requestData() {
 
     http.open("GET", "http://localhost:5000/data?" + urlArguments, true);
     http.send();
+}
+
+function parseDataResponse() {
+    /**
+     * Parse the response of /data and update the complete page
+     * **/
+
+    if (this.readyState === 4) {    // 4 -> XMLHttpRequest status: DONE
+        if (this.status === 200) {  // 200 -> HTTP response status: OK
+            storeResponseValues(JSON.parse(this.responseText));
+            updatePage();
+        } else if (this.status === 400) {   // 400 -> HTTP response status: Bad request
+            window.alert(this.responseText);
+        } else {
+            window.alert("Server Fehler!");
+        }
+    }
+}
+
+function storeResponseValues(response) {
+    responseObj.labels = response['times'];
+    responseObj.loadDiffs = response['energy_diffs'];
+    responseObj.meterReadings = response['meter_readings'];
+    responseObj.avgKwh = response['avg'];
+    responseObj.maxKwh = response['max'];
+    responseObj.minKwh = response['min'];
+    responseObj.sumKwh = response['sum'];
 }
 
 function updatePage() {
@@ -155,12 +215,14 @@ function checkNavArrowsRange() {
         datetimeSelector = document.getElementById('date-selector');
     } else if (state === 3) {   // state = month
         datetimeSelector = document.getElementById('month-selector');
+    } else {
+        return;
     }
 
-    checkDateRange(datetimeSelector);
+    checkCurrentNavDate(datetimeSelector);
 }
 
-function checkDateRange(selector) {
+function checkCurrentNavDate(selector) {
     if (selector.value === selector.max) {
         document.getElementById("next-button").style.display = "none";
     }
@@ -285,45 +347,103 @@ function updateStatistics(kwhPrice) {
 }
 
 function modeChanged() {
+    /**
+     * Change UI and state according to the user selection
+     * **/
+
     const modeSelector = document.getElementById('mode-selector');
+
     if (modeSelector.value === "day") {
-        document.getElementById("day-options").style.display = "block";
-        document.getElementById("interval-options").style.display = "none";
-        document.getElementById("month-options").style.display = "none";
-        document.getElementById("year-options").style.display = "none";
-        state = 1; // Set state to day
+        setStateToDay();
     } else if (modeSelector.value === "interval") {
-        document.getElementById("day-options").style.display = "none";
-        document.getElementById("interval-options").style.display = "block";
-        document.getElementById("month-options").style.display = "none";
-        document.getElementById("year-options").style.display = "none";
-        state = 2; // Set state to custom
+        setStateToInterval();
     } else if (modeSelector.value === "month") {
-        document.getElementById("day-options").style.display = "none";
-        document.getElementById("interval-options").style.display = "none";
-        document.getElementById("month-options").style.display = "block";
-        document.getElementById("year-options").style.display = "none";
-        state = 3; // Set state to month
+        setStateToMonth();
     } else {
-        document.getElementById("day-options").style.display = "none";
-        document.getElementById("interval-options").style.display = "none";
-        document.getElementById("month-options").style.display = "none";
-        document.getElementById("year-options").style.display = "block";
-        state = 4; // Set state to year
+        setStateToYear();
     }
 }
 
+function setStateToDay() {
+    document.getElementById("day-options").style.display = "block";
+    document.getElementById("interval-options").style.display = "none";
+    document.getElementById("month-options").style.display = "none";
+    document.getElementById("year-options").style.display = "none";
+    state = 1; // Set state to day
+}
+
+function setStateToInterval() {
+    document.getElementById("day-options").style.display = "none";
+    document.getElementById("interval-options").style.display = "block";
+    document.getElementById("month-options").style.display = "none";
+    document.getElementById("year-options").style.display = "none";
+    state = 2; // Set state to custom
+}
+
+function setStateToMonth() {
+    document.getElementById("day-options").style.display = "none";
+    document.getElementById("interval-options").style.display = "none";
+    document.getElementById("month-options").style.display = "block";
+    document.getElementById("year-options").style.display = "none";
+    state = 3; // Set state to month
+}
+
+function setStateToYear() {
+    document.getElementById("day-options").style.display = "none";
+    document.getElementById("interval-options").style.display = "none";
+    document.getElementById("month-options").style.display = "none";
+    document.getElementById("year-options").style.display = "block";
+    state = 4; // Set state to year
+}
+
 function priceChanged() {
+    /**
+     * Change kWh price according to the user selection
+     * **/
+
     let currentPrice = document.getElementById("price-select").value / 100;
     document.getElementById("price-val").innerText = currentPrice.toFixed(2);
     document.getElementById("stat-price").innerText = formatNumber(responseObj.sumKwh * currentPrice);
     updateTable(currentPrice);
 }
 
-function updateUserInformation() {
+function meterReadingsSelectorChanged(checkbox) {
+    /**
+     * Add and remove the meter value line graph from the chart
+     * **/
+
+    if (checkbox.checked) { // Add line graph
+        if (myChart.data.datasets.length === 1) {   // Add line graph if not already in chart
+            myChart.data.datasets.push({
+                label: 'Zählerstand',
+                data: responseObj.meterReadings,
+                backgroundColor: "rgba(255, 0, 0, 0.2)",
+                borderColor: "rgb(255, 0, 0)",
+                borderWidth: 1,
+                type: "line",
+                yAxisID: 'y-axis-energy'
+            });
+            myChart.options.scales.yAxes[1].display = true;
+        } else {
+            myChart.data.datasets[1].data = responseObj.meterReadings;  // Update line graph values if already in chart
+        }
+    } else if (myChart.data.datasets.length === 2) {    // Remove line graph if already in chart
+        myChart.data.datasets.pop();
+        myChart.options.scales.yAxes[1].display = false;
+    }
+
+    myChart.update();
+}
+
+function getMinMaxInformation() {
+    /**
+     * Get the min/max values of the currently selected meter
+     * **/
+
     let userSelector = document.getElementById('user-selector');
 
-    if (userSelector[0].value === "default") {
+    // Remove user selector placeholder
+    if (userSelector[0].value === "") {
         userSelector[0].remove();
     }
 
@@ -337,95 +457,48 @@ function updateUserInformation() {
     http.send();
 }
 
-function meterReadingsSelectorChanged(checkbox) {
-    if (checkbox.checked) {
-        if (myChart.data.datasets.length === 1) {
-            myChart.data.datasets.push({
-                label: 'Zählerstand',
-                data: responseObj.meterReadings,
-                backgroundColor: "rgba(255, 0, 0, 0.2)",
-                borderColor: "rgb(255, 0, 0)",
-                borderWidth: 1,
-                type: "line",
-                yAxisID: 'y-axis-energy'
-            });
-            myChart.options.scales.yAxes[1].display = true;
-        } else {
-            myChart.data.datasets[1].data = responseObj.meterReadings;
-        }
-    } else if (myChart.data.datasets.length === 2) {
-        myChart.data.datasets.pop();
-        myChart.options.scales.yAxes[1].display = false;
-    }
-    myChart.update();
-}
-
-/** Parse response functions **/
-
-function parseUserResponse() {
-    let userInfo = document.getElementById("user-list-all");
-    let userSelector = document.getElementById("user-selector");
-
-    if (this.readyState === 4) {
-        if (this.status === 200) {
-            let response = JSON.parse(this.responseText);
-            response['users'].forEach(u => userList.push(u));   // Store users in array
-            userList.forEach(u =>
-                userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] +
-                    "</option>");
-            userList.forEach(u =>
-                userInfo.innerHTML += "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", " + u["city"] + " (" + u["zipcode"] + ")"
-            )
-        } else if (this.status === 400) {
-            window.alert(this.getResponseHeader(this.response));
-        } else if (this.status === 500) {
-            window.alert("Interner Server Fehler!");
-        } else {
-            window.alert("Server ist nicht verfügbar!");
-        }
-    }
-}
-
 function parseMinMaxResponse() {
-    if (this.readyState === 4) {
-        if (this.status === 200) {
+    /**
+     * Parse the response of /min-max and update the min/max values of the date inputs accordingly
+     * **/
 
+    if (this.readyState === 4) {    // 4 -> XMLHttpRequest status: DONE
+        if (this.status === 200) {  // 200 -> HTTP response status: OK
             let response = JSON.parse(this.responseText);
             let maxDate = response['max_date'];
             let minDate = response['min_date'];
 
-            document.getElementById('date-selector').max = maxDate;
-            document.getElementById('date-selector').min = minDate;
-            document.getElementById('first-date-selector').max = maxDate;
-            document.getElementById('first-date-selector').min = minDate;
-            document.getElementById('last-date-selector').max = maxDate;
-            document.getElementById('last-date-selector').min = minDate;
-            document.getElementById('month-selector').max = maxDate.match(/(\d+-\d+)(?=-)/g);
-            document.getElementById('month-selector').min = minDate.match(/(\d+-\d+)(?=-)/g);
-            document.getElementById('year-selector').innerHTML = "<option value=\"" +
-                minDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + minDate.match(/(\d\d\d\d)(?=-)/g) +
-                "</option>";
-        } else if (this.status === 500) {
-            window.alert("Interner Server Fehler!");
+            setDateSelectorRange(minDate, maxDate);
+            setIntervalSelectorRange(minDate, maxDate);
+            setMonthSelectorRange(minDate, maxDate);
+            setYearSelectorRange(minDate);  // TODO: Implement function
         } else {
-            window.alert("Server ist nicht verfügbar!");
+            window.alert("Server Fehler");
         }
     }
 }
 
-function parseDataResponse() {
-    if (this.readyState === 4) {
-        if (this.status === 200) {
-            storeResponseValues(JSON.parse(this.responseText));
-            updatePage();
-        } else if (this.status === 400) {
-            window.alert(this.responseText);
-        } else if (this.status === 500) {
-            window.alert("Interner Server Fehler!");
-        } else {
-            window.alert("Server ist nicht verfügbar!");
-        }
-    }
+function setDateSelectorRange(min, max) {
+    document.getElementById('date-selector').min = min;
+    document.getElementById('date-selector').max = max;
+}
+
+function setIntervalSelectorRange(min, max) {
+    document.getElementById('first-date-selector').min = min;
+    document.getElementById('first-date-selector').max = max;
+    document.getElementById('last-date-selector').min = min;
+    document.getElementById('last-date-selector').max = max;
+}
+
+function setMonthSelectorRange(min, max) {
+    document.getElementById('month-selector').min = min.match(/(\d+-\d+)(?=-)/g);
+    document.getElementById('month-selector').max = max.match(/(\d+-\d+)(?=-)/g);
+}
+
+function setYearSelectorRange(min) {
+    document.getElementById('year-selector').innerHTML =
+        "<option value=\"" + min.match(/(\d\d\d\d)(?=-)/g) + "\">" + min.match(/(\d\d\d\d)(?=-)/g)
+        + "</option>";
 }
 
 /** ## Helper functions ## **/
@@ -450,10 +523,8 @@ function checkSelections() {
     }
 
     if (valueList.indexOf("") >= 0) {
-        console.log("Fail");
         return false;
     } else {
-        console.log("True");
         return true;
     }
 }
@@ -502,16 +573,6 @@ function createArguments() {
             break;
     }
     return arguments;
-}
-
-function storeResponseValues(response) {
-    responseObj.labels = response['times'];
-    responseObj.loadDiffs = response['energy_diffs'];
-    responseObj.meterReadings = response['meter_readings'];
-    responseObj.avgKwh = response['avg'];
-    responseObj.maxKwh = response['max'];
-    responseObj.minKwh = response['min'];
-    responseObj.sumKwh = response['sum'];
 }
 
 function getCurrentUnit() {
@@ -577,6 +638,7 @@ function formatLabel(label) {
     }
 }
 
+// TODO: Convert to Moment.JS, fix reverse nav button skipping one month
 function increaseDate() {
     let date = new Date(document.getElementById('date-selector').value);
     date.setDate(date.getDate() + 1);
