@@ -2,7 +2,7 @@ const monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli"
 const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 let myChart;
-let state = 1;          // 1 - day, 2 - custom, 3 - month, 4 - year
+let state = 1;          // 1 - day, 2 - interval, 3 - month, 4 - year
 let userList = [];      // List for storing all available users
 let responseObj = {};   // Object for storing the response values
 
@@ -11,7 +11,6 @@ window.onload = function () {
     loadAvailableUsers();
 };
 
-/** onload functions **/
 function setupChart() {
     /**
      * Setup chart with the settings stored in the chart_settings.js file
@@ -36,13 +35,12 @@ function loadAvailableUsers() {
     http.send();
 }
 
-/** Main functions **/
 function requestData() {
     /**
      * Request the specified data from the server and parse the response
      * **/
 
-    if (!checkSelections()) {   // User selection is not complete
+    if (!checkSelections()) {   // Check if user has selected something
         return;
     }
 
@@ -74,7 +72,107 @@ function updatePage() {
     updateChart();
     updateTable(price);
     updateStatistics(price);
+}
 
+function updateHeader() {
+    /**
+     * Update the header according to the current response
+     * **/
+
+    switch (state) {
+        case 1: // state = day
+            let date = new Date(document.getElementById("date-selector").value);
+            buildDateHeader(date);
+            break;
+        case 2: // state = interval
+            let firstDate = new Date(document.getElementById("first-date-selector").value);
+            let lastDate = new Date(document.getElementById("last-date-selector").value);
+            buildIntervalHeader(firstDate, lastDate);
+            break;
+        case 3: // state = month
+            let month = new Date(document.getElementById("month-selector").value);
+            buildMonthHeader(month);
+            break;
+        case 4: // state = year
+            let year = new Date(document.getElementById("year-selector").value);
+            buildYearHeader(year);
+            break;
+    }
+
+    checkNavArrowsRange();  // Disable prev/next arrows if the current date is the last available date
+    buildUserHeader();
+}
+
+function buildDateHeader(date) {
+    document.getElementById("title").innerText =
+        weekdaysList[date.getDay()] + ", der " + String(date.getDate()).padStart(2, '0') + ". "
+        + monthsList[date.getMonth()] + " " + date.getFullYear();
+    showDayNavArrows();
+}
+
+function buildIntervalHeader(firstDate, lastDate) {
+    document.getElementById("title").innerText =
+        String(firstDate.getDate()).padStart(2, '0')
+        + ". " + monthsList[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - "
+        + String(lastDate.getDate()).padStart(2, '0') + ". " + monthsList[lastDate.getMonth()] + " "
+        + lastDate.getFullYear();
+    hideNavArrows();
+}
+
+function buildMonthHeader(month) {
+    document.getElementById("title").innerText = monthsList[month.getMonth()] + " " + month.getFullYear();
+    showMonthNavArrows();
+}
+
+function buildYearHeader(year) {
+    document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
+    hideNavArrows();
+}
+
+function showDayNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
+    document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
+}
+
+function showMonthNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
+    document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
+}
+
+function hideNavArrows() {
+    document.getElementById("prev").style.display = "none";
+    document.getElementById("next").style.display = "none";
+}
+
+function checkNavArrowsRange() {
+    let datetimeSelector;
+
+    if (state === 1) {  // state = day
+        datetimeSelector = document.getElementById('date-selector');
+    } else if (state === 3) {   // state = month
+        datetimeSelector = document.getElementById('month-selector');
+    }
+
+    checkDateRange(datetimeSelector);
+}
+
+function checkDateRange(selector) {
+    if (selector.value === selector.max) {
+        document.getElementById("next-button").style.display = "none";
+    }
+    else if (selector.value === selector.min) {
+        document.getElementById("prev-button").style.display = "none";
+    } else {
+        document.getElementById("next-button").style.display = "inline";
+        document.getElementById("prev-button").style.display = "inline";
+    }
+}
+
+function buildUserHeader() {
     let meterNumber = document.getElementById("user-selector").value;
     let user = null;
     userList.forEach(u => {
@@ -82,51 +180,8 @@ function updatePage() {
             user = u;
         }
     });
-    document.getElementById("user-info").innerHTML = user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
-}
-
-/** UI functions **/
-function updateHeader() {
-    switch (state) {
-        case 1:
-            let date = new Date(document.getElementById("date-selector").value);
-            document.getElementById("title").innerText = weekdaysList[date.getDay()] + ", der " +
-                String(date.getDate()).padStart(2, '0') + ". " + monthsList[date.getMonth()] +
-                " " + date.getFullYear();
-            break;
-        case 2:
-            let firstDate = new Date(document.getElementById("first-date-selector").value);
-            let lastDate = new Date(document.getElementById("last-date-selector").value);
-            document.getElementById("title").innerText = String(firstDate.getDate()).padStart(2, '0') + ". " +
-                monthsList[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - " + String(lastDate.getDate()).padStart(2, '0') +
-                ". " + monthsList[lastDate.getMonth()] + " " + lastDate.getFullYear();
-            break;
-        case 3:
-            let month = new Date(document.getElementById("month-selector").value);
-            document.getElementById("title").innerText = monthsList[month.getMonth()] + " " + month.getFullYear();
-            break;
-        case 4:
-            let year = new Date(document.getElementById("year-selector").value);
-            document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
-            break;
-    }
-
-    if (state === 1) {
-        document.getElementById("prev").style.display = "inline";
-        document.getElementById("next").style.display = "inline";
-        document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
-        document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
-    } else if (state === 3) {
-        document.getElementById("prev").style.display = "inline";
-        document.getElementById("next").style.display = "inline";
-        document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
-        document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
-    } else {
-        document.getElementById("prev").style.display = "none";
-        document.getElementById("next").style.display = "none";
-    }
-
-    checkPrevNextValid();
+    document.getElementById("user-info").innerHTML =
+        user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
 }
 
 function updateChart() {
@@ -283,8 +338,10 @@ function parseUserResponse() {
             )
         } else if (this.status === 400) {
             window.alert(this.getResponseHeader(this.response));
+        } else if (this.status === 500) {
+            window.alert("Interner Server Fehler!");
         } else {
-            window.alert("Server ist offline!");
+            window.alert("Server ist nicht verfügbar!");
         }
     }
 }
@@ -308,8 +365,10 @@ function parseMinMaxResponse() {
             document.getElementById('year-selector').innerHTML = "<option value=\"" +
                 minDate.match(/(\d\d\d\d)(?=-)/g) + "\">" + minDate.match(/(\d\d\d\d)(?=-)/g) +
                 "</option>";
+        } else if (this.status === 500) {
+            window.alert("Interner Server Fehler!");
         } else {
-            window.alert("Server ist offline!");
+            window.alert("Server ist nicht verfügbar!");
         }
     }
 }
@@ -321,8 +380,10 @@ function parseDataResponse() {
             updatePage();
         } else if (this.status === 400) {
             window.alert(this.responseText);
+        } else if (this.status === 500) {
+            window.alert("Interner Server Fehler!");
         } else {
-            window.alert("Server ist offline!");
+            window.alert("Server ist nicht verfügbar!");
         }
     }
 }
@@ -376,28 +437,6 @@ function calculatePrice(load, price) {
             break;
     }
     return money.toFixed(3)
-}
-
-function checkPrevNextValid() {
-    let datetimeSelector;
-
-    if (state === 1) {
-        datetimeSelector = document.getElementById('date-selector');
-    } else if (state === 3) {
-        datetimeSelector = document.getElementById('month-selector');
-    }
-
-    if (datetimeSelector.value === datetimeSelector.max) {
-        document.getElementById("next-button").style.display = "none";
-    } else if (document.getElementById("next-button").style.display === "none") {
-        document.getElementById("next-button").style.display = "inline";
-    }
-
-    if (datetimeSelector.value === datetimeSelector.min) {
-        document.getElementById("prev-button").style.display = "none";
-    } else if (document.getElementById("prev-button").style.display === "none") {
-        document.getElementById("prev-button").style.display = "inline";
-    }
 }
 
 function createArguments() {
