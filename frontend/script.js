@@ -11,6 +11,7 @@ window.onload = function () {
     loadAvailableUsers();
 };
 
+// Setup chart with the required parameters
 function setupChart() {
     let ctx = document.getElementById("myChart").getContext('2d');
     myChart = new Chart(ctx, {
@@ -93,6 +94,10 @@ function setupChart() {
 
 // Request data from server and process it
 function requestData() {
+    if (!checkSelections()) {
+        return;
+    }
+    
     document.getElementById("placeholder").style.display = "none";
     document.getElementById("content").style.display = "block";
 
@@ -250,7 +255,7 @@ function updateUserInformation() {
         }
     };
 
-    http.open("GET", "http://localhost:5000/boundaries?u=" + userSelector.value, true);
+    http.open("GET", "http://localhost:5000/min-max?u=" + userSelector.value, true);
     http.send();
 }
 
@@ -380,6 +385,36 @@ function updateStatistics(kwhPrice) {
 }
 
 /** Helper functions **/
+function checkSelections() {
+    let valueList = [];
+    valueList.push(document.getElementById("user-selector").value);
+
+    switch (state) {
+        case 1:
+            valueList.push(document.getElementById("date-selector").value);
+            break;
+        case 2:
+            valueList.push(document.getElementById("first-date-selector").value);
+            valueList.push(document.getElementById("last-date-selector"));
+            break;
+        case 3:
+            valueList.push(document.getElementById("month-selector").value);
+            break;
+        case 4:
+            valueList.push(document.getElementById("year-selector").value);
+            break;
+    }
+
+    if (valueList.indexOf("") >= 0) {
+        console.log("Fail");
+        return false;
+    }
+    else {
+        console.log("True")
+        return true;
+    }
+}
+
 function createArguments() {
     let arguments = "u=" + document.getElementById("user-selector").value;
     switch (state) {
