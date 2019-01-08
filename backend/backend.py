@@ -72,7 +72,7 @@ def add_month(date):
     str_list = date_string.split("-")
 
     if int(str_list[1]) == 12:
-        next_month = 1
+        next_month = str(1)
     else:
         next_month = str(int(str_list[1]) + 1)
 
