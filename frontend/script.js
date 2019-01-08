@@ -219,27 +219,51 @@ function assignChartYValues() {
 }
 
 function updateTable(kwhPrice) {
-    let tableData = "<table class=\"table table-striped table-sm table-hover text-center\"><tr class=\"d-flex\">" +
-        "<th id=\"datetime-title\" class=\"col\"></th><th class=\"col\">Lastgang [" + getCurrentUnit() + "]</th>" +
-        "<th class=\"col\">Zählerstand [kWh] </th><th class=\"col\">Kosten [€]</th></tr>";
+    /**
+     * Update the table according to the current response data
+     * **/
+
+    document.getElementById("data-table").innerHTML = buildTable(kwhPrice);
+    updateDatetimeTableTitle();
+}
+
+function buildTable(kwhPrice) {
+    let tableContent = "";
+
+    // Add table tag
+    tableContent += "<table class=\"table table-striped table-sm table-hover text-center\">";
+
+    // Add table header
+    tableContent += "<tr class=\"d-flex\"><th id=\"datetime-title\" class=\"col\"></th><th class=\"col\">"
+        + "Lastgang [" + getCurrentUnit() + "]</th>" + "<th class=\"col\">Zählerstand [kWh] </th>"
+        + "<th class=\"col\">Kosten [€]</th></tr>";
+
+    // Add table values
     for (let index in responseObj.labels) {
-        tableData += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.labels[index]) + "</td><td class=\"col\">" +
-            formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">" +
-            formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">" +
-            calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
+        tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.labels[index])
+            + "</td><td class=\"col\">" + formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
+            + formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
+            + calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
-    tableData += "</table>";
-    document.getElementById("data-table").innerHTML = tableData;
+
+    // Close table tag
+    tableContent += "</table>";
+
+    return tableContent;
+}
+
+function updateDatetimeTableTitle() {
     let title = document.getElementById('datetime-title');
+
     switch (state) {
-        case 1:
+        case 1: // state = day
             title.innerText = "Uhrzeit";
             break;
-        case 2:
-        case 3:
+        case 2: // state = interval
+        case 3: // state = month
             title.innerText = "Datum";
             break;
-        case 4:
+        case 4: // state = year
             title.innerText = "Monat"
     }
 }
