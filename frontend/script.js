@@ -76,7 +76,7 @@ function updatePage() {
 
 function updateHeader() {
     /**
-     * Update the header according to the current response
+     * Update the header according to the current response data
      * **/
 
     switch (state) {
@@ -185,23 +185,37 @@ function buildUserHeader() {
 }
 
 function updateChart() {
+    /**
+     * Update the chart according to the current response data
+     * **/
+
+    assignChartXValues();
+    assignChartYValues();
+    myChart.update();
+}
+
+function assignChartXValues() {
     switch (state) {
-        case 1:
+        case 1: // state = day
             myChart.data.labels = responseObj.labels;
             break;
-        case 2:
-        case 3:
+        case 2: // state = interval
+        case 3: // state = month
             myChart.data.labels = formatDays(responseObj.labels);
             break;
-        case 4:
+        case 4: // state = year
             myChart.data.labels = formatMonths(responseObj.labels)
     }
-    myChart.data.datasets[0].data = responseObj.loadDiffs;
+}
+
+function assignChartYValues() {
+    myChart.data.datasets[0].data = responseObj.loadDiffs;  // Add loadDiffs to chart
+
     if (document.getElementById('meter-readings-selector').checked) {
-        myChart.data.datasets[1].data = responseObj.meterReadings;
+        myChart.data.datasets[1].data = responseObj.meterReadings;  // Add meterReadings to chart
     }
+
     myChart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + getCurrentUnit() + "]";
-    myChart.update();
 }
 
 function updateTable(kwhPrice) {
