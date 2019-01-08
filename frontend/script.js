@@ -269,17 +269,19 @@ function updateDatetimeTableTitle() {
 }
 
 function updateStatistics(kwhPrice) {
+    /**
+     * Update the statistics data according to the current response data
+     * **/
+
     document.getElementById("stat").style.display = "block";
-    document.getElementById("stat-data").innerHTML = "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" +
-        responseObj.avgKwh + " " + getCurrentUnit() + "</li>";
-    document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" +
-        responseObj.maxKwh + " " + getCurrentUnit() + "</li>";
-    document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" +
-        responseObj.minKwh + " " + getCurrentUnit() + "</li>";
-    document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" +
-        responseObj.sumKwh + " kWh</li>";
-    document.getElementById("stat-data").innerHTML += "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" +
-        "<span id=\"stat-price\">" + formatNumber(responseObj.sumKwh * kwhPrice) + "</span> €</li>";
+
+    document.getElementById("stat-data").innerHTML =
+        "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" + responseObj.avgKwh + " " + getCurrentUnit() + "</li>"
+        + "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" + responseObj.maxKwh + " " + getCurrentUnit() + "</li>"
+        + "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" + responseObj.minKwh + " " + getCurrentUnit() + "</li>"
+        + "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" + responseObj.sumKwh + " kWh</li>"
+        + "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" + "<span id=\"stat-price\">"
+        + formatNumber(responseObj.sumKwh * kwhPrice) + "</span> €</li>";
 }
 
 function modeChanged() {
