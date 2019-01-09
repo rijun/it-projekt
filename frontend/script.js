@@ -1,5 +1,8 @@
 const monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+const dayFormat = "YYYY-MM-DD";
+const monthFormat = "YYYY-MM";
+const yearFormat = "YYYY";
 
 let myChart;
 let state = 1;          // 1 - day, 2 - interval, 3 - month, 4 - year
@@ -7,6 +10,7 @@ let userList = [];      // List for storing all available users
 let responseObj = {};   // Object for storing the response values
 
 window.onload = function () {
+    moment.locale('de');    // Set Moment.js to german language
     setupChart();
     loadAvailableUsers();
 };
@@ -78,7 +82,7 @@ function requestData() {
     }
 
     // Hide welcome screen
-    document.getElementById("placeholder").style.display = "none";
+    document.getElementById("startup").style.display = "none";
     document.getElementById("content").style.display = "block";
 
     let http = new XMLHttpRequest();
@@ -112,6 +116,9 @@ function parseDataResponse() {
 
 function storeResponseValues(response) {
     responseObj.labels = response['times'];
+    // TODO: Refactor
+    responseObj.datetimes = [];
+    response['times'].forEach(t => responseObj.datetimes.push(moment(t, "HH:mm")));
     responseObj.loadDiffs = response['energy_diffs'];
     responseObj.meterReadings = response['meter_readings'];
     responseObj.avgKwh = response['avg'];
@@ -266,7 +273,7 @@ function assignChartXValues() {
             myChart.data.labels = formatDays(responseObj.labels);
             break;
         case 4: // state = year
-            myChart.data.labels = formatMonths(responseObj.labels)
+            myChart.data.labels = formatMonths(responseObj.labels);
     }
 }
 
@@ -634,35 +641,30 @@ function formatLabel(label) {
     }
 }
 
-// TODO: Convert to Moment.JS, fix reverse nav button skipping one month
 function increaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() + 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    let daySelector = document.getElementById('date-selector');
+    let date = moment(daySelector.value);
+    daySelector.value = date.add(1, "days").format(dayFormat);
     requestData();
 }
 
 function decreaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() - 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    let daySelector = document.getElementById('date-selector');
+    let date = moment(daySelector.value);
+    daySelector.value = date.subtract(1, "days").format(dayFormat);
     requestData();
 }
 
 function increaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth + 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    let monthSelector = document.getElementById('month-selector');
+    let month = new moment(monthSelector.value);
+    monthSelector.value = month.add(1, "months").format(monthFormat);
     requestData();
 }
 
 function decreaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth - 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    let monthSelector = document.getElementById('month-selector');
+    let month = new moment(monthSelector.value);
+    monthSelector.value = month.subtract(1, "months").format(monthFormat);
     requestData();
 }
