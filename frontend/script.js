@@ -160,7 +160,7 @@ function updateHeader() {
     }
 
     checkNavArrowsRange();  // Disable prev/next arrows if the current date is the last available date
-    buildUserHeader();
+    buildUserInfoHeader();
 }
 
 function buildDateHeader(date) {
@@ -189,25 +189,6 @@ function buildYearHeader(year) {
     hideNavArrows();
 }
 
-function showDayNavArrows() {
-    document.getElementById("prev").style.display = "inline";
-    document.getElementById("next").style.display = "inline";
-    document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
-    document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
-}
-
-function showMonthNavArrows() {
-    document.getElementById("prev").style.display = "inline";
-    document.getElementById("next").style.display = "inline";
-    document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
-    document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
-}
-
-function hideNavArrows() {
-    document.getElementById("prev").style.display = "none";
-    document.getElementById("next").style.display = "none";
-}
-
 function checkNavArrowsRange() {
     let datetimeSelector;
 
@@ -234,7 +215,26 @@ function checkCurrentNavDate(selector) {
     }
 }
 
-function buildUserHeader() {
+function showDayNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
+    document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
+}
+
+function showMonthNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
+    document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
+}
+
+function hideNavArrows() {
+    document.getElementById("prev").style.display = "none";
+    document.getElementById("next").style.display = "none";
+}
+
+function buildUserInfoHeader() {
     let meterNumber = document.getElementById("user-selector").value;
     let user = null;
     userList.forEach(u => {
@@ -286,7 +286,7 @@ function updateTable(kwhPrice) {
      * **/
 
     document.getElementById("data-table").innerHTML = buildTable(kwhPrice);
-    updateDatetimeTableTitle();
+    updateTableTitle();
 }
 
 function buildTable(kwhPrice) {
@@ -314,7 +314,7 @@ function buildTable(kwhPrice) {
     return tableContent;
 }
 
-function updateDatetimeTableTitle() {
+function updateTableTitle() {
     let title = document.getElementById('datetime-title');
 
     switch (state) {
@@ -335,7 +335,7 @@ function updateStatistics(kwhPrice) {
      * Update the statistics data according to the current response data
      * **/
 
-    document.getElementById("stat").style.display = "block";
+    document.getElementById("stat").style.display = "block";    // Show statistics
 
     document.getElementById("stat-data").innerHTML =
         "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" + responseObj.avgKwh + " " + getCurrentUnit() + "</li>"
@@ -512,7 +512,7 @@ function checkSelections() {
             break;
         case 2:
             valueList.push(document.getElementById("first-date-selector").value);
-            valueList.push(document.getElementById("last-date-selector"));
+            valueList.push(document.getElementById("last-date-selector").value);
             break;
         case 3:
             valueList.push(document.getElementById("month-selector").value);
