@@ -41,31 +41,31 @@ function parseUserResponse() {
      * and display these on the start page
      * **/
 
-    let userInfo = document.getElementById("user-list-all");
-    let userSelector = document.getElementById("user-selector");
-
     if (this.readyState === 4) {    //  4 -> XMLHttpRequest status: DONE
         if (this.status === 200) {  // 200 -> HTTP response status: OK
             let response = JSON.parse(this.responseText);
 
             response['users'].forEach(u => userList.push(u));   // Store users in user list
 
-            // Add users to user selector
-            userList.forEach(u =>
-                userSelector.innerHTML += "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>");
+            addUsersToUserSelector();
+            addUsersToStartPage();
 
-            // Add users to start page
-            userList.forEach(u =>
-                userInfo.innerHTML +=
-                    "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", "
-                    + u["city"] + " (" + u["zipcode"] + ")</li>"
-            );
         } else if (this.status === 400) {   // 400 -> HTTP response status: Bad request
             window.alert(this.getResponseHeader(this.response));
         } else {
             window.alert("Server Fehler!");
         }
     }
+}
+
+function addUsersToUserSelector() {
+    userList.forEach(u => document.getElementById("user-selector").innerHTML +=
+            "<option value=\"" + u["number"] + "\">" + u["number"] + "</option>");
+}
+
+function addUsersToStartPage() {
+    userList.forEach(u => document.getElementById("user-list-all").innerHTML +=
+        "<li>" + u["number"] + " - " + u["firstname"] + " " + u["lastname"] + ", " + u["city"] + " (" + u["zipcode"] + ")</li>");
 }
 
 function requestData() {
