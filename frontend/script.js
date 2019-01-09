@@ -303,8 +303,8 @@ function buildTable(kwhPrice) {
     // Add table values
     for (let index in responseObj.labels) {
         tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.labels[index])
-            + "</td><td class=\"col\">" + formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
-            + formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
+            + "</td><td class=\"col\">" + roundTwoPlaces(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
+            + roundTwoPlaces(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
             + calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
 
@@ -343,7 +343,7 @@ function updateStatistics(kwhPrice) {
         + "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" + responseObj.minKwh + " " + getCurrentUnit() + "</li>"
         + "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" + responseObj.sumKwh + " kWh</li>"
         + "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" + "<span id=\"stat-price\">"
-        + formatNumber(responseObj.sumKwh * kwhPrice) + "</span> €</li>";
+        + roundTwoPlaces(responseObj.sumKwh * kwhPrice) + "</span> €</li>";
 }
 
 function modeChanged() {
@@ -403,7 +403,7 @@ function priceChanged() {
 
     let currentPrice = document.getElementById("price-select").value / 100;
     document.getElementById("price-val").innerText = currentPrice.toFixed(2);
-    document.getElementById("stat-price").innerText = formatNumber(responseObj.sumKwh * currentPrice);
+    document.getElementById("stat-price").innerText = roundTwoPlaces(responseObj.sumKwh * currentPrice);
     updateTable(currentPrice);
 }
 
@@ -501,69 +501,81 @@ function setYearSelectorRange(min) {
         + "</option>";
 }
 
-/** ## Helper functions ## **/
 function checkSelections() {
-    let valueList = [];
-    valueList.push(document.getElementById("user-selector").value);
+    /**
+     * Check the value of each input before allowing a request to be sent
+     * **/
 
+    let valueList = [];
+
+    // Add all values to a list
+    valueList.push(document.getElementById("user-selector").value);
     switch (state) {
-        case 1:
+        case 1: // state = day
             valueList.push(document.getElementById("date-selector").value);
             break;
-        case 2:
+        case 2: // state = interval
             valueList.push(document.getElementById("first-date-selector").value);
             valueList.push(document.getElementById("last-date-selector").value);
             break;
-        case 3:
+        case 3: // state = month
             valueList.push(document.getElementById("month-selector").value);
             break;
-        case 4:
+        case 4: // state = year
             valueList.push(document.getElementById("year-selector").value);
             break;
     }
 
-    return valueList.indexOf("") < 0;
+    return valueList.indexOf("") < 0;   // If at least one value is "", i.e. empty, the comparison returns false
 }
 
 function calculatePrice(load, price) {
+    /**
+     * Calculate the cost of the energy used
+     * **/
 
-    let money;
+    let cost;
 
     switch (state) {
         case 1:
-            money = load * price / 60 * document.getElementById("resolution-selector").value;
+            cost = load * price / 60 * document.getElementById("resolution-selector").value;
             break;
         case 2:
-            money = load * price / 24;
+            cost = load * price / 24;
             break;
         case 3:
-            money = load * price / 24;
+            cost = load * price / 24;
             break;
         case 4:
-            money = load * price / 60 * document.getElementById("resolution-selector").value;
+            cost = load * price / 60 * document.getElementById("resolution-selector").value;
             break;
     }
-    return money.toFixed(3)
+    return cost.toFixed(3)
 }
 
 function createArguments() {
+    /**
+     * Combine the selection values and parameter names to form the correct request arguments
+     * **/
+
     let arguments = "u=" + document.getElementById("user-selector").value;
+
     switch (state) {
-        case 1: // Day query
+        case 1: // state = day
             arguments += "&mode=" + document.getElementById("mode-selector").value +
                 "&d=" + document.getElementById("date-selector").value +
                 "&r=" + document.getElementById("resolution-selector").value;
             break;
-        case 2: // Interval query
+        case 2: // state = interval
             arguments += "&mode=" + document.getElementById("mode-selector").value +
                 "&sd=" + document.getElementById("first-date-selector").value +
                 "&ed=" + document.getElementById("last-date-selector").value;
             break;
-        case 3:
+        case 3: // state = month
             arguments += "&mode=" + document.getElementById("mode-selector").value +
                 "&m=" + document.getElementById("month-selector").value;
             break;
-        case 4:
+        case 4: // state = year
             arguments += "&mode=" + document.getElementById("mode-selector").value +
                 "&y=" + document.getElementById("year-selector").value;
             break;
@@ -572,29 +584,33 @@ function createArguments() {
 }
 
 function getCurrentUnit() {
+    /**
+     * Returns the current unit according to the currently selected state
+     * **/
+
     let unit = "";
     switch (state) {
-        case 1:
+        case 1: // state = day
             if (document.getElementById("resolution-selector").value === "15") {
                 unit = "kWh / Viertelstunde";
             } else {
                 unit = "kWh / Stunde";
             }
             break;
-        case 2:
+        case 2: // state = interval
             unit = "kWh / Tag";
             break;
-        case 3:
+        case 3: // state = month
             unit = "kWh / Tag";
             break;
-        case 4:
+        case 4: // state = year
             unit = "kWh / Monat";
             break;
     }
     return unit;
 }
 
-function formatNumber(number) {
+function roundTwoPlaces(number) {
     return Number.parseFloat(number).toFixed(2);
 }
 
