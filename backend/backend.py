@@ -120,7 +120,7 @@ def get_data():
             day = datetime.strptime(request.args['d'], date_format)
             next_day = day + timedelta(days=1)
             resolution = request.args['r']
-            query = "SELECT DATE_FORMAT(datum_zeit, '%H:%i'), obis_180 FROM zaehlwerte " \
+            query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d %H:%i'), obis_180 FROM zaehlwerte " \
                     "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND MINUTE (datum_zeit) % {2} = 0 " \
                     "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC".format(day.date(), next_day.date(), resolution, user)
             response = get_db_values(query)

@@ -1,5 +1,5 @@
 const monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
-const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+// const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 let myChart;
 let state = 1;          // 1 - day, 2 - interval, 3 - month, 4 - year
@@ -7,6 +7,7 @@ let userList = [];      // List for storing all available users
 let responseObj = {};   // Object for storing the response values
 
 window.onload = function () {
+    moment.locale('de');    // Set Moment.js to german language
     setupChart();
     loadAvailableUsers();
 };
@@ -78,7 +79,7 @@ function requestData() {
     }
 
     // Hide welcome screen
-    document.getElementById("placeholder").style.display = "none";
+    document.getElementById("startup").style.display = "none";
     document.getElementById("content").style.display = "block";
 
     let http = new XMLHttpRequest();
@@ -111,13 +112,27 @@ function parseDataResponse() {
 }
 
 function storeResponseValues(response) {
-    responseObj.labels = response['times'];
+    createDatetimeList(response['times']);
+    // responseObj.labels = response['times'];
     responseObj.loadDiffs = response['energy_diffs'];
     responseObj.meterReadings = response['meter_readings'];
     responseObj.avgKwh = response['avg'];
     responseObj.maxKwh = response['max'];
     responseObj.minKwh = response['min'];
     responseObj.sumKwh = response['sum'];
+}
+
+function createDatetimeList(responseList) {
+    responseObj.datetimes = [];
+    let datetimeFormat = "";
+
+    if (state === 1) {  // state = day
+        datetimeFormat = "YYYY-MM-DD HH:mm";
+    } else {
+        datetimeFormat = "YYYY-MM-DD";
+    }
+
+    responseList.forEach(t => responseObj.datetimes.push(moment(t, datetimeFormat)));
 }
 
 function updatePage() {
@@ -141,20 +156,22 @@ function updateHeader() {
 
     switch (state) {
         case 1: // state = day
-            let date = new Date(document.getElementById("date-selector").value);
+            let date = moment(document.getElementById("date-selector").value);
             buildDateHeader(date);
             break;
         case 2: // state = interval
-            let firstDate = new Date(document.getElementById("first-date-selector").value);
-            let lastDate = new Date(document.getElementById("last-date-selector").value);
+            let firstDate = moment(document.getElementById("first-date-selector").value);
+            let lastDate = moment(document.getElementById("last-date-selector").value);
             buildIntervalHeader(firstDate, lastDate);
             break;
         case 3: // state = month
-            let month = new Date(document.getElementById("month-selector").value);
+            let month = moment(document.getElementById("month-selector").value);
+            console.log(month);
             buildMonthHeader(month);
             break;
         case 4: // state = year
-            let year = new Date(document.getElementById("year-selector").value);
+            let year = moment(document.getElementById("year-selector").value);
+            console.log(year);
             buildYearHeader(year);
             break;
     }
@@ -165,27 +182,23 @@ function updateHeader() {
 
 function buildDateHeader(date) {
     document.getElementById("title").innerText =
-        weekdaysList[date.getDay()] + ", der " + String(date.getDate()).padStart(2, '0') + ". "
-        + monthsList[date.getMonth()] + " " + date.getFullYear();
+        date.format("dddd, Do MMMM YYYY");
     showDayNavArrows();
 }
 
 function buildIntervalHeader(firstDate, lastDate) {
     document.getElementById("title").innerText =
-        String(firstDate.getDate()).padStart(2, '0')
-        + ". " + monthsList[firstDate.getMonth()] + " " + firstDate.getFullYear() + " - "
-        + String(lastDate.getDate()).padStart(2, '0') + ". " + monthsList[lastDate.getMonth()] + " "
-        + lastDate.getFullYear();
+        firstDate.format("LL") + " - " + lastDate.format("LL");
     hideNavArrows();
 }
 
 function buildMonthHeader(month) {
-    document.getElementById("title").innerText = monthsList[month.getMonth()] + " " + month.getFullYear();
+    document.getElementById("title").innerText = month.format("[Lastgang vom] MMMM YYYY");
     showMonthNavArrows();
 }
 
 function buildYearHeader(year) {
-    document.getElementById("title").innerText = "Lastgang vom Jahr " + year.getFullYear();
+    document.getElementById("title").innerText = year.format("[Lastgang vom Jahr] YYYY");
     hideNavArrows();
 }
 
@@ -257,17 +270,21 @@ function updateChart() {
 }
 
 function assignChartXValues() {
+    let formattedLabels = [];
+
     switch (state) {
         case 1: // state = day
-            myChart.data.labels = responseObj.labels;
+            responseObj.datetimes.forEach(t => formattedLabels.push(t.format("LT")));
             break;
         case 2: // state = interval
         case 3: // state = month
-            myChart.data.labels = formatDays(responseObj.labels);
+            responseObj.datetimes.forEach(t => formattedLabels.push(t.format("L")));
             break;
         case 4: // state = year
-            myChart.data.labels = formatMonths(responseObj.labels)
+            responseObj.datetimes.forEach(t => formattedLabels.push(t.format("MMMM")));
     }
+
+    myChart.data.labels = formattedLabels;
 }
 
 function assignChartYValues() {
@@ -301,10 +318,10 @@ function buildTable(kwhPrice) {
         + "<th class=\"col\">Kosten [€]</th></tr>";
 
     // Add table values
-    for (let index in responseObj.labels) {
-        tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.labels[index])
-            + "</td><td class=\"col\">" + roundTwoPlaces(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
-            + roundTwoPlaces(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
+    for (let index in responseObj.datetimes) {
+        tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.datetimes[index])
+            + "</td><td class=\"col\">" + formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
+            + formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
             + calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
 
@@ -471,7 +488,7 @@ function parseMinMaxResponse() {
             setDateSelectorRange(minDate, maxDate);
             setIntervalSelectorRange(minDate, maxDate);
             setMonthSelectorRange(minDate, maxDate);
-            setYearSelectorRange(minDate);  // TODO: Implement function
+            setYearSelectorRange(minDate);
         } else {
             window.alert("Server Fehler");
         }
@@ -491,14 +508,13 @@ function setIntervalSelectorRange(min, max) {
 }
 
 function setMonthSelectorRange(min, max) {
-    document.getElementById('month-selector').min = min.match(/(\d+-\d+)(?=-)/g);
-    document.getElementById('month-selector').max = max.match(/(\d+-\d+)(?=-)/g);
+    document.getElementById('month-selector').min = moment(min).format("YYYY-MM");
+    document.getElementById('month-selector').max = moment(max).subtract(1, "months").format("YYYY-MM");
 }
 
 function setYearSelectorRange(min) {
     document.getElementById('year-selector').innerHTML =
-        "<option value=\"" + min.match(/(\d\d\d\d)(?=-)/g) + "\">" + min.match(/(\d\d\d\d)(?=-)/g)
-        + "</option>";
+        "<option value=\"" + moment(min).format("YYYY") + "\">" + moment(min).format("YYYY") + "</option>";
 }
 
 function checkSelections() {
@@ -635,50 +651,44 @@ function formatMonths(months) {
     return returnMonths;
 }
 
-function formatLabel(label) {
+function formatLabel(date_time) {
+    //let date_time = moment(label);
+
     switch (state) {
-        case 1:
-            return label;
-        case 2:
-        case 3:
-            let d = new Date(label);
-            return String(d.getDate()).padStart(2, '0') + "." + String(d.getMonth() + 1)
-                .padStart(2, '0') + "." + d.getFullYear();
-        case 4:
-            let m = new Date(label);
-            return monthsList[m.getMonth()];
+        case 1: // state = day
+            return date_time.format("HH:mm");
+        case 2: // state = interval
+        case 3: // state = month
+            return date_time.format("L");
+        case 4: // state = year
+            return date_time.format("MMMM");
     }
 }
 
-// TODO: Convert to Moment.JS, fix reverse nav button skipping one month
 function increaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() + 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    let daySelector = document.getElementById('date-selector');
+    let date = moment(daySelector.value);
+    daySelector.value = date.add(1, "days").format("YYYY-MM-DD");
     requestData();
 }
 
 function decreaseDate() {
-    let date = new Date(document.getElementById('date-selector').value);
-    date.setDate(date.getDate() - 1);
-    document.getElementById('date-selector').value = date.toISOString().substring(0, 10);
+    let daySelector = document.getElementById('date-selector');
+    let date = moment(daySelector.value);
+    daySelector.value = date.subtract(1, "days").format("YYYY-MM-DD");
     requestData();
 }
 
 function increaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth + 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    let monthSelector = document.getElementById('month-selector');
+    let month = new moment(monthSelector.value);
+    monthSelector.value = month.add(1, "months").format("YYYY-MM");
     requestData();
 }
 
 function decreaseMonth() {
-    let month = new Date(document.getElementById('month-selector').value);
-    let currentMonth = month.getMonth();
-    let nextMonth = currentMonth - 1;
-    month.setMonth(nextMonth);
-    document.getElementById('month-selector').value = month.toISOString().substring(0, 7);
+    let monthSelector = document.getElementById('month-selector');
+    let month = new moment(monthSelector.value);
+    monthSelector.value = month.subtract(1, "months").format("YYYY-MM");
     requestData();
 }
