@@ -112,27 +112,27 @@ function parseDataResponse() {
 }
 
 function storeResponseValues(response) {
-    responseObj.labels = response['times'];
+    createDatetimeList(response['times']);
+    // responseObj.labels = response['times'];
     responseObj.loadDiffs = response['energy_diffs'];
     responseObj.meterReadings = response['meter_readings'];
     responseObj.avgKwh = response['avg'];
     responseObj.maxKwh = response['max'];
     responseObj.minKwh = response['min'];
     responseObj.sumKwh = response['sum'];
-    createMomentList();
 }
 
-function createMomentList() {
+function createDatetimeList(responseList) {
     responseObj.datetimes = [];
     let datetimeFormat = "";
 
-    if (state === 1) {
+    if (state === 1) {  // state = day
         datetimeFormat = "YYYY-MM-DD HH:mm";
     } else {
         datetimeFormat = "YYYY-MM-DD";
     }
 
-    responseObj.labels.forEach(t => responseObj.datetimes.push(moment(t, datetimeFormat)));
+    responseList.forEach(t => responseObj.datetimes.push(moment(t, datetimeFormat)));
 }
 
 function updatePage() {
@@ -652,27 +652,27 @@ function formatLabel(date_time) {
 function increaseDate() {
     let daySelector = document.getElementById('date-selector');
     let date = moment(daySelector.value);
-    daySelector.value = date.add(1, "days").format("L");
+    daySelector.value = date.add(1, "days").format("YYYY-MM-DD");
     requestData();
 }
 
 function decreaseDate() {
     let daySelector = document.getElementById('date-selector');
     let date = moment(daySelector.value);
-    daySelector.value = date.subtract(1, "days").format("L");
+    daySelector.value = date.subtract(1, "days").format("YYYY-MM-DD");
     requestData();
 }
 
 function increaseMonth() {
     let monthSelector = document.getElementById('month-selector');
     let month = new moment(monthSelector.value);
-    monthSelector.value = month.add(1, "months").format("MMMM YYYY");
+    monthSelector.value = month.add(1, "months").format("YYYY-MM");
     requestData();
 }
 
 function decreaseMonth() {
     let monthSelector = document.getElementById('month-selector');
     let month = new moment(monthSelector.value);
-    monthSelector.value = month.subtract(1, "months").format("MMMM YYYY");
+    monthSelector.value = month.subtract(1, "months").format("YYYY-MM");
     requestData();
 }
