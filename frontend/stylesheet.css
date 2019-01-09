@@ -87,7 +87,7 @@ body {
 * Table
  */
 
-.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+.table-hover tbody tr:hover td {
     /*background-color: #343a40;*/
     background-color: #ff8000;
     color: #ffffff;

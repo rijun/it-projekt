@@ -171,7 +171,7 @@ def get_db_values(query):
     are calculated and added as well.
 
     :param query: The SQL query to be executed
-    :type query: dict
+    :type query: str
     :return: All entries from the SQL query result and some statistical data
     :rtype: dict
     """

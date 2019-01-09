@@ -522,11 +522,7 @@ function checkSelections() {
             break;
     }
 
-    if (valueList.indexOf("") >= 0) {
-        return false;
-    } else {
-        return true;
-    }
+    return valueList.indexOf("") < 0;
 }
 
 function calculatePrice(load, price) {
