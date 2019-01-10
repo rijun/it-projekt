@@ -320,8 +320,8 @@ function buildTable(kwhPrice) {
     // Add table values
     for (let index in responseObj.datetimes) {
         tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(responseObj.datetimes[index])
-            + "</td><td class=\"col\">" + formatNumber(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
-            + formatNumber(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
+            + "</td><td class=\"col\">" + roundTwoPlaces(responseObj.loadDiffs[index]) + "</td><td class=\"col\">"
+            + roundTwoPlaces(responseObj.meterReadings[index]) + "</td><td class=\"col\">"
             + calculatePrice(responseObj.loadDiffs[index], kwhPrice) + " €</td></tr>";
     }
 
