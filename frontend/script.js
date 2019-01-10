@@ -74,7 +74,10 @@ function requestData() {
      * Request the specified data from the server and parse the response
      * **/
 
-    if (!checkSelections()) {   // Check if user has selected something
+    let inputsValid = checkInputs();
+
+    if (!inputsValid) {   // Check if user has selected something
+        alert("Eingabe fehlerhaft!");
         return;
     }
 
@@ -176,7 +179,7 @@ function updateHeader() {
             break;
     }
 
-    checkNavArrowsRange();  // Disable prev/next arrows if the current date is the last available date
+    checkNavArrows();  // Disable prev/next arrows if the current date is the last available date
     buildUserInfoHeader();
 }
 
@@ -202,7 +205,7 @@ function buildYearHeader(year) {
     hideNavArrows();
 }
 
-function checkNavArrowsRange() {
+function checkNavArrows() {
     let datetimeSelector;
 
     if (state === 1) {  // state = day
@@ -213,10 +216,10 @@ function checkNavArrowsRange() {
         return;
     }
 
-    checkCurrentNavDate(datetimeSelector);
+    checkNavArrowsRange(datetimeSelector);
 }
 
-function checkCurrentNavDate(selector) {
+function checkNavArrowsRange(selector) {
     if (selector.value === selector.max) {
         document.getElementById("next-button").style.display = "none";
     }
@@ -517,11 +520,21 @@ function setYearSelectorRange(min) {
         "<option value=\"" + moment(min).format("YYYY") + "\">" + moment(min).format("YYYY") + "</option>";
 }
 
-function checkSelections() {
+function checkInputs() {
     /**
      * Check the value of each input before allowing a request to be sent
      * **/
 
+    let inputsValid = [];
+
+    inputsValid.push(checkInputAvailable());
+    inputsValid.push(checkInputRange());
+
+    return inputsValid.indexOf(false) < 0;
+}
+
+// TODO: Refactor
+function checkInputAvailable() {
     let valueList = [];
 
     // Add all values to a list
@@ -545,6 +558,28 @@ function checkSelections() {
     return valueList.indexOf("") < 0;   // If at least one value is "", i.e. empty, the comparison returns false
 }
 
+function checkInputRange() {
+    let selector;
+
+    switch (state) {
+        case 1: // state = day
+            selector = document.getElementById("date-selector");
+            return selector.min <= selector.value && selector.value <= selector.max;
+        case 2: // state = interval
+            let firstSelector = document.getElementById("first-date-selector");
+            let lastSelector = document.getElementById("last-date-selector");
+            let firstSelectorValid = firstSelector.min <= firstSelector.value && firstSelector.value <= firstSelector.max;
+            let lastSelectorValid = lastSelector.min <= lastSelector.value && lastSelector.value <= lastSelector.max;
+            let selectorIntervalValid = firstSelector.value <= lastSelector.value;
+            return firstSelectorValid && lastSelectorValid && selectorIntervalValid;
+        case 3: // state = month
+            selector = document.getElementById("month-selector");
+            return selector.min <= selector.value && selector.value <= selector.max;
+        case 4: // state = year
+            return true;
+    }
+}
+
 function calculatePrice(load, price) {
     /**
      * Calculate the cost of the energy used
@@ -553,16 +588,16 @@ function calculatePrice(load, price) {
     let cost;
 
     switch (state) {
-        case 1:
+        case 1: // state = day
             cost = load * price / 60 * document.getElementById("resolution-selector").value;
             break;
-        case 2:
+        case 2: // state = interval
             cost = load * price / 24;
             break;
-        case 3:
+        case 3: // state = month
             cost = load * price / 24;
             break;
-        case 4:
+        case 4: // state = year
             cost = load * price / 60 * document.getElementById("resolution-selector").value;
             break;
     }
