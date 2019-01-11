@@ -32,7 +32,7 @@ function loadAvailableUsers() {
         parseUserResponse.call(this);
     };
 
-    http.open("GET", "http://localhost:5000/users", true);
+    http.open("GET", "http://localhost/users", true);
     http.send();
 }
 
@@ -93,7 +93,7 @@ function requestData() {
 
     let urlArguments = createArguments();
 
-    http.open("GET", "http://localhost:5000/data?" + urlArguments, true);
+    http.open("GET", "http://localhost/data?" + urlArguments, true);
     http.send();
 }
 
@@ -473,7 +473,7 @@ function getMinMaxInformation() {
         parseMinMaxResponse.call(this);
     };
 
-    http.open("GET", "http://localhost:5000/min-max?u=" + userSelector.value, true);
+    http.open("GET", "http://localhost/min-max?u=" + userSelector.value, true);
     http.send();
 }
 

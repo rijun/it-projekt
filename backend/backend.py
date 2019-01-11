@@ -9,6 +9,7 @@ Requirements: flask, flask_cors, pymysql
 Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
         Request arguments can be used with: request.args["<request_variable_name>"]
 """
+import configparser
 
 from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
@@ -20,18 +21,43 @@ from statistics import mean
 app = Flask(__name__, static_url_path='', static_folder='../frontend')  # Create Flask application
 CORS(app)  # Enable CORS for allowing cross-origin requests
 
-# MySQL database settings
-my_Database = connect(
-    host="127.0.0.1",
-    user="root",
-    passwd="",
-    database="itp_2018"
-)
-
 # String templates
 date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
 year_format = "%Y"
+
+
+def setup_database_connector():
+    """
+    This function reads the MySQL database settings stored in the configuration file "config.ini".
+    The file should be located in the same folder as the script is running from.
+    """
+    global database
+
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    settings = {}
+
+    # Catch error if MySQL Settings section is not in configuration file
+    try:
+        for key in config["MySQL Settings"]:
+            settings[key] = config["MySQL Settings"][key]
+    except KeyError:
+        print("MySQL settings not available!")
+        quit()
+
+    # Catch error if one of the database settings is not in the configuration file
+    try:
+        database = connect(
+            host=settings["host"],
+            user=settings["user"],
+            passwd=settings["password"],
+            database=settings["database"]
+        )
+    except KeyError:
+        print("Host, user, password or database entry is missing in config.ini!")
+        quit()
 
 
 @app.route('/')
@@ -56,7 +82,7 @@ def get_users():
     :rtype: JSON
     """
     meter_list = []
-    cursor = my_Database.cursor()
+    cursor = database.cursor()
 
     cursor.execute("SELECT DISTINCT * FROM zaehlpunkte")
 
@@ -86,7 +112,7 @@ def get_min_max():
     :rtype: JSON
     """
     user = request.args['u']
-    cursor = my_Database.cursor()
+    cursor = database.cursor()
     max_date = ""
     min_date = ""
 
@@ -187,7 +213,7 @@ def get_db_values(query):
     times = []
     meter_readings = []
     energy_diffs = []
-    cursor = my_Database.cursor()
+    cursor = database.cursor()
 
     cursor.execute(query)
 
@@ -253,4 +279,5 @@ def add_year(date):
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
+    setup_database_connector()
     app.run(port='80', debug=True)
