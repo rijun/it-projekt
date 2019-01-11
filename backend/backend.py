@@ -17,15 +17,15 @@ from pymysql import connect
 from math import floor
 from statistics import mean
 
-app = Flask(__name__)  # Create Flask application
+app = Flask(__name__, static_url_path='', static_folder='../frontend')  # Create Flask application
 CORS(app)  # Enable CORS for allowing cross-origin requests
 
 # MySQL database settings
 my_Database = connect(
     host="127.0.0.1",
     user="root",
-    passwd="",  # Michel: root
-    database="itp_2018"  # Michel: itp2
+    passwd="",
+    database="itp_2018"
 )
 
 # String templates
@@ -34,17 +34,27 @@ month_format = "%Y-%m"
 year_format = "%Y"
 
 
+@app.route('/')
+def root():
+    """
+    This function returns the website which serves as the frontend for this application.
+
+    :return: Website index.html
+    :rtype: HTML file
+    """
+    return app.send_static_file('index.html')
+
+
 # Get all available users and their personal information stored in the database
 @app.route('/users')
 def get_users():
     """
     This function returns a JSON object containing a list of all people who are stored in the table 'zaehlpunkte',
-    with their meter number, name and address
+    with their meter number, name and address.
 
     :return: List of all rows in table 'zaehlpunkte'
     :rtype: JSON
     """
-
     meter_list = []
     cursor = my_Database.cursor()
 
@@ -75,7 +85,6 @@ def get_min_max():
     :return: Min/max date values of all entrys for a specified user
     :rtype: JSON
     """
-
     user = request.args['u']
     cursor = my_Database.cursor()
     max_date = ""
@@ -175,7 +184,6 @@ def get_db_values(query):
     :return: All entries from the SQL query result and some statistical data
     :rtype: dict
     """
-
     times = []
     meter_readings = []
     energy_diffs = []
@@ -216,7 +224,6 @@ def add_month(date):
     :return: The incremented month
     :rtype: datetime
     """
-
     date_string = datetime.strftime(date, month_format)
     str_list = date_string.split("-")
 
@@ -238,7 +245,6 @@ def add_year(date):
     :return: The incremented year
     :rtype: datetime
     """
-
     date_string = datetime.strftime(date, year_format)
     next_year = str(int(date_string) + 1)
     return_str = next_year
@@ -247,4 +253,4 @@ def add_year(date):
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
-    app.run(port='5000', debug=True)
+    app.run(port='80', debug=True)
