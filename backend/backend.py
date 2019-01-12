@@ -51,6 +51,7 @@ def setup_database_connector():
     try:
         database = connect(
             host=settings["host"],
+            port=int(settings["port"]),
             user=settings["user"],
             passwd=settings["password"],
             database=settings["database"]
