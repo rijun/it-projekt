@@ -126,8 +126,8 @@ def get_all_load_diffs(load_data):
 
 def calculate_load_diffs_statistics(week_dict):
     """
-    Creates a dictionary which contains a tuple of the minimal, maximal and average load differences of a specific
-    weekday and time. The return dictionary statistics_dict is sorted by weekday and time.
+    Creates a dictionary which contains the minimal, maximal and average load differences of a specific weekday
+    and time. The return dictionary statistics_dict is sorted by weekday and time.
 
     :param week_dict: All load diffs sorted by weekday and time
     :type week_dict: dict
@@ -137,7 +137,7 @@ def calculate_load_diffs_statistics(week_dict):
     statistics_dict = {}
 
     for key, value in week_dict.items():
-        current_weekday = key
+        current_weekday = str(key)  # key has to be converted to str for JSON dump
 
         # Add weekday if it is not already in statistics_dict
         if current_weekday not in statistics_dict:
@@ -155,7 +155,11 @@ def calculate_load_diffs_statistics(week_dict):
             max_load_diff = max(value[time])
             avg_load_diff = mean(value[time])
 
-            weekday_dict[time] = (min_load_diff, max_load_diff, avg_load_diff)
+            weekday_dict[time] = {
+                "min": min_load_diff,
+                "max": max_load_diff,
+                "avg": avg_load_diff
+            }
 
     return statistics_dict
 
@@ -165,8 +169,8 @@ def generate_load_profile(template=None):
     Generate a JSON file which maps every weekday and every quarter hour to a minimal, maximal and average load.
     This can later be used as a template for the load profile generation.
 
-    :rtype: dict
-    :return: The load profile template
+    :param template: The load profile template
+    :type template: dict
     """
 
     # Load JSON template if it is not passed as an argument
@@ -195,39 +199,48 @@ def generate_load_profile(template=None):
 
 def build_load_profile(template):
     """
-    Generate a JSON file which maps every weekday and every quarter hour to a minimal, maximal and average load.
-    This can later be used as a template for the load profile generation.
+    Builds a list of tuples which contain the entries for the database according to following template:
+    (current_date_and_time, meter_number, current_meter_reading(obis_180), current_load(obis_170)
+    The current_load is always 0, but required for the database.
 
-    :rtype: dict
-    :return: The load profile template
+    :param template: The load profile template
+    :type template: dict
+    :return: List of tuples containing the date/time, meter number, current meter reading and current load (always 0)
+    :rtype: list
     """
 
-    start, end, meter_number, meter_start_val = get_user_settings()
+    start, end, meter_number, meter_start_val = get_user_parameters()
 
     print("Building load profile... ", end='')
 
     load_profile = []
-    START_DATE = datetime.strptime(start, "%Y-%m-%d")
-    END_DATE = datetime.strptime(end, "%Y-%m-%d")
-    current_datetime = START_DATE
+    start_date = datetime.strptime(start, "%Y-%m-%d")
+    end_date = datetime.strptime(end, "%Y-%m-%d")
+    current_datetime = start_date
     current_meter_val = 0
 
-    while current_datetime <= END_DATE:
-        seed()
+    while current_datetime <= end_date:
+        seed()  # Initialize random generator
         month_factor = 0.25 * cos(2 * pi / 12 * (current_datetime.month - 0.5)) + 1.50
 
-        if current_datetime == START_DATE:
+        if current_datetime == start_date:
             current_meter_val = meter_start_val * month_factor
-            load_profile_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
+            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0)
         else:
-            current_weekday = current_datetime.weekday()
+            current_weekday = str(current_datetime.weekday())   # current_weekday must be str for the dict keys
             current_time = current_datetime.time().strftime("%H:%M")
-            current_time_data = template[current_weekday][current_time]
+            current_statistics = template[current_weekday][current_time]    # Get min, max and average values
 
-            current_load = triangular(current_time_data[0], current_time_data[1], current_time_data[2])
-            current_meter_val += current_load * month_factor
+            # Calculate the current load difference with a triangular distribution
+            current_load_diff = triangular(
+                low=current_statistics["min"],
+                high=current_statistics["max"],
+                mode=current_statistics["avg"]
+            )
 
-            load_profile_entry = [current_datetime, meter_number, round(current_meter_val, 2), 0]
+            current_meter_val += current_load_diff * month_factor
+
+            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0)
 
         load_profile.append(load_profile_entry)
         current_datetime += timedelta(minutes=15)
@@ -237,39 +250,40 @@ def build_load_profile(template):
     return load_profile
 
 
-def get_user_settings():
+def get_user_parameters():
     """
-    Generate a JSON file which maps every weekday and every quarter hour to a minimal, maximal and average load.
-    This can later be used as a template for the load profile generation.
+    Gets the required parameters from the user for building the database entries.
 
-    :rtype: dict
-    :return: The load profile template
+    :return: Start date, end date, meter number, first meter value
+    :rtype: int
     """
     start = input("Start date in YYYY-MM-DD format (2018-01-01): ")
-    if not start:
+    if not start:   # Default start date
         start = "2018-01-01"
+
     end = input("End date in YYYY-MM-DD format (2019-01-01): ")
-    if not end:
+    if not end:     # Default end date
         end = "2019-01-01"
+
     meter_number = input("Meter number (1ESY1312000000): ")
-    if not meter_number:
+    if not meter_number:    # Default meter number
         meter_number = "1ESY1312000000"
-    meter_start_val = float(input("Start value (1000): "))
-    if not meter_start_val:
-        meter_start_val = 1000.0
+
+    start_val_input = input("Start value (1000): ")
+    if not start_val_input:     # Default first meter value
+        start_val_input = 1000.0
+    meter_start_val = float(start_val_input)
 
     return start, end, meter_number, meter_start_val
 
 
 def menu():
     """
-    Generate a JSON file which maps every weekday and every quarter hour to a minimal, maximal and average load.
-    This can later be used as a template for the load profile generation.
+    Shows a menu in which the user can select the current mode of operation.
 
-    :rtype: dict
-    :return: The load profile template
+    :return: The selected option
+    :rtype: int
     """
-
     print("## Meter Readings Generation Tool ##\n")
     print("Select an option:\n")
     print("(1)\t\t-->\t\tGenerate template and database file (default)")
@@ -294,6 +308,7 @@ def menu():
 
 if __name__ == "__main__":
     user_selection = menu()
+
     if user_selection == 1:
         data_template = generate_template()
         generate_load_profile(template=data_template)
