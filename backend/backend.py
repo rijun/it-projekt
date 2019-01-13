@@ -27,6 +27,7 @@ month_format = "%Y-%m"
 year_format = "%Y"
 
 
+@app.before_first_request   # Run this function before accepting a request
 def setup_database_connector():
     """
     This function reads the MySQL database settings stored in the configuration file "config.ini".
@@ -280,5 +281,4 @@ def add_year(date):
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
-    setup_database_connector()
-    app.run(port='80', debug=True)
+    app.run(port='5000', debug=True)
