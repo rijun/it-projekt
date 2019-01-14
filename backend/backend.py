@@ -1,23 +1,20 @@
 """
-This script runs a flask server
+This script runs a flask server.
 
-Requirements: flask, flask_cors, pymysql
-
-- flask_cors is used to allow cross-origin requests
-- pymysql is the database connector, an alternative connector can also be used
+Requirements: flask, pymysql
 
 Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
-        Request arguments can be used with: request.args["<request_variable_name>"]
+        Request arguments can be accessed by: request.args["<request_variable_name>"]
 """
-import configparser
+from configparser import ConfigParser
+from datetime import datetime, timedelta
+from math import floor
+from os import chdir, path
+from statistics import mean
 
 from flask import Flask, request, jsonify, make_response
 # from flask_cors import CORS
-from datetime import datetime, timedelta
 from pymysql import connect
-from math import floor
-from statistics import mean
-from os import chdir, path
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend')  # Create Flask application
 # CORS(app)  # Enable CORS for allowing cross-origin requests
@@ -28,7 +25,7 @@ month_format = "%Y-%m"
 year_format = "%Y"
 
 
-@app.before_first_request   # Run this function before accepting a request
+@app.before_first_request   # Runs this function first before accepting a request
 def setup_database_connector():
     """
     This function reads the MySQL database settings stored in the configuration file "config.ini".
@@ -37,7 +34,7 @@ def setup_database_connector():
     global database
 
     chdir(path.dirname(__file__))   # Change working directory to the location of backend.py
-    config = configparser.ConfigParser()
+    config = ConfigParser()
     config.read("config.ini")
 
     settings = {}
@@ -61,7 +58,7 @@ def setup_database_connector():
         )
     except KeyError:
         print("Host, user, password or database entry is missing in config.ini!")
-        quit()
+        quit(-1)
 
 
 @app.route('/')
@@ -75,7 +72,6 @@ def root():
     return app.send_static_file('index.html')
 
 
-# Get all available users and their personal information stored in the database
 @app.route('/users')
 def get_users():
     """
@@ -123,12 +119,12 @@ def get_min_max():
     cursor.execute("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
 
     for result in cursor:
-        max_date = datetime.strftime(result[0], date_format)
+        max_date = datetime.strftime(result.pop(), date_format)     # result contains only one entry
 
     cursor.execute("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
 
     for result in cursor:
-        min_date = datetime.strftime(result[0], date_format)
+        min_date = datetime.strftime(result.pop(), date_format)     # result contains only one entry
 
     response_dict = {
         'max_date': max_date,
@@ -141,7 +137,7 @@ def get_min_max():
 @app.route('/data')
 def get_data():
     """
-    This function gets all meter readings and loads in a specified time interval and for a specified user.
+    This function gets all meter readings and  current loads in a specified time interval and for a specified user.
     Additionally, the min, max and average load are calculated.
 
     :return: All entries from the SQL query result and some statistical data, converted to JSON
@@ -159,45 +155,52 @@ def get_data():
             day = datetime.strptime(request.args['d'], date_format)
             next_day = day + timedelta(days=1)
             resolution = request.args['r']
+
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d %H:%i'), obis_180 FROM zaehlwerte " \
                     "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND MINUTE (datum_zeit) % {2} = 0 " \
-                    "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC".format(day.date(), next_day.date(), resolution, user)
+                    "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC"\
+                .format(day.date(), next_day.date(), resolution, user)
+
             response = get_db_values(query)
 
         elif mode == 'interval':
             start_day = datetime.strptime(request.args['sd'], date_format)
             end_day = datetime.strptime(request.args['ed'], date_format)
             next_day = end_day + timedelta(days=1)
+
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
                     "AND zaehler_id = '{2}' AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' ORDER BY datum_zeit ASC" \
                 .format(start_day.date(), next_day.date(), user)
+
             response = get_db_values(query)
 
         elif mode == 'month':
             month = datetime.strptime(request.args['m'], month_format)
             next_month = add_month(month)
+
             query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
                     "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
                 .format(month.strftime(date_format), next_month.strftime(date_format), user)
+
             response = get_db_values(query)
 
         elif mode == 'year':
             year = datetime.strptime(request.args['y'], year_format)
             next_year = add_year(year)
+
             query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
                     "WHERE YEAR (datum_zeit) BETWEEN '{0}' AND '{1}' AND DAY (datum_zeit) = '01' " \
                     "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'  AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
                 .format(year.strftime(year_format), next_year.strftime(year_format), user)
-            response = get_db_values(query)
 
+            response = get_db_values(query)
     # Send 400 (bad request) response with error details if an error occurred
     except ValueError:
         return make_response("Datum falsch oder nicht vorhanden!", 400)
     except IndexError:
         return make_response("Zählernummer falsch oder nicht vorhanden!", 400)
-
     else:
         return jsonify(response)
 
@@ -205,7 +208,7 @@ def get_data():
 # Get the database results according to the SQL query
 def get_db_values(query):
     """
-    This function executes the SQL querty which is passed as an argument. Afterwards, it calculates the load differences
+    This function executes the SQL query which is passed as an argument. Afterwards, it calculates the load differences
     between two following dates or times and adds this to the return dictionary. The min, max and average load values
     are calculated and added as well.
 
