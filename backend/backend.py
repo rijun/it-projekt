@@ -12,14 +12,15 @@ Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request 
 import configparser
 
 from flask import Flask, request, jsonify, make_response
-from flask_cors import CORS
+# from flask_cors import CORS
 from datetime import datetime, timedelta
 from pymysql import connect
 from math import floor
 from statistics import mean
+from os import chdir, path
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend')  # Create Flask application
-CORS(app)  # Enable CORS for allowing cross-origin requests
+# CORS(app)  # Enable CORS for allowing cross-origin requests
 
 # String templates
 date_format = "%Y-%m-%d"
@@ -35,6 +36,7 @@ def setup_database_connector():
     """
     global database
 
+    chdir(path.dirname(__file__))   # Change working directory to the location of backend.py
     config = configparser.ConfigParser()
     config.read("config.ini")
 
@@ -45,7 +47,7 @@ def setup_database_connector():
         for key in config["MySQL Settings"]:
             settings[key] = config["MySQL Settings"][key]
     except KeyError:
-        print("MySQL settings not available!")
+        print("MySQL settings section not found!")
         quit()
 
     # Catch error if one of the database settings is not in the configuration file
