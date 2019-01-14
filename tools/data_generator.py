@@ -221,7 +221,7 @@ def build_load_profile(template):
 
     while current_datetime <= end_date:
         seed()  # Initialize random generator
-        month_factor = 0.25 * cos(2 * pi / 12 * (current_datetime.month - 0.5)) + 1.50
+        month_factor = calculate_month_faktor(current_datetime.month)
 
         if current_datetime == start_date:
             current_meter_val = meter_start_val * month_factor
@@ -276,6 +276,8 @@ def get_user_parameters():
 
     return start, end, meter_number, meter_start_val
 
+def calculate_month_faktor(month):
+	return 0.25 * cos(2 * pi / 12 * (month - 0.5)) + 1.50
 
 def menu():
     """
