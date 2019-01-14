@@ -48,7 +48,7 @@ def read_csv_data():
     return_list = []
 
     filename = input("Name of CSV file (zaehlwerte.csv): ")
-    if not filename:    # Default filename
+    if not filename:  # Default filename
         filename = "zaehlwerte.csv"
 
     try:
@@ -56,7 +56,7 @@ def read_csv_data():
             row_count = sum(1 for row in reader(csv_file))
             print("Number of rows in file: ", row_count)
 
-            csv_file.seek(0)    # Reset csv_file index to 0
+            csv_file.seek(0)  # Reset csv_file index to 0
             csv_reader = reader(csv_file)
 
             # Go through each row in the .csv file and append a tuple containing the current date/time
@@ -176,7 +176,7 @@ def generate_load_profile(template=None):
     # Load JSON template if it is not passed as an argument
     if not template:
         filename = input("Name of JSON file (template.json): ")
-        if not filename:    # Default filename
+        if not filename:  # Default filename
             filename = "template.json"
 
         print("Opening template file... ", end='')
@@ -227,9 +227,9 @@ def build_load_profile(template):
             current_meter_val = meter_start_val * month_factor
             load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0)
         else:
-            current_weekday = str(current_datetime.weekday())   # current_weekday must be str for the dict keys
+            current_weekday = str(current_datetime.weekday())  # current_weekday must be str for the dict keys
             current_time = current_datetime.time().strftime("%H:%M")
-            current_statistics = template[current_weekday][current_time]    # Get min, max and average values
+            current_statistics = template[current_weekday][current_time]  # Get min, max and average values
 
             # Calculate the current load difference with a triangular distribution
             current_load_diff = triangular(
@@ -258,26 +258,28 @@ def get_user_parameters():
     :rtype: int
     """
     start = input("Start date in YYYY-MM-DD format (2018-01-01): ")
-    if not start:   # Default start date
+    if not start:  # Default start date
         start = "2018-01-01"
 
     end = input("End date in YYYY-MM-DD format (2019-01-01): ")
-    if not end:     # Default end date
+    if not end:  # Default end date
         end = "2019-01-01"
 
     meter_number = input("Meter number (1ESY1312000000): ")
-    if not meter_number:    # Default meter number
+    if not meter_number:  # Default meter number
         meter_number = "1ESY1312000000"
 
     start_val_input = input("Start value (1000): ")
-    if not start_val_input:     # Default first meter value
+    if not start_val_input:  # Default first meter value
         start_val_input = 1000.0
     meter_start_val = float(start_val_input)
 
     return start, end, meter_number, meter_start_val
 
+
 def calculate_month_factor(month):
-	return 0.25 * cos(2 * pi / 12 * (month - 0.5)) + 1.50
+    return 0.25 * cos(2 * pi / 12 * (month - 0.5)) + 1.50
+
 
 def menu():
     """
@@ -294,7 +296,7 @@ def menu():
 
     selection = input(">>> ")
 
-    if not selection:   # Default selection
+    if not selection:  # Default selection
         return 1
 
     else:
