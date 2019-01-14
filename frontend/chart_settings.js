@@ -1,6 +1,5 @@
 let chartSettings = {
     type: "bar",
-    // Chart data
     data: {
         datasets: [{
             label: "Lastgang",
@@ -10,7 +9,6 @@ let chartSettings = {
             yAxisID: "y-axis-load",
         }]
     },
-    // Chart options
     options: {
         scales: {
             xAxes: [{
@@ -24,7 +22,7 @@ let chartSettings = {
                 }
             }],
             yAxes: [{
-                type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                type: "linear",
                 display: true,
                 position: "left",
                 id: "y-axis-load",
@@ -37,7 +35,7 @@ let chartSettings = {
                     beginAtZero: true
                 }
             }, {
-                type: "linear", // only linear but allow scale type registration. This allows extensions to  exist solely for log scale for instance
+                type: "linear",
                 display: false,
                 position: "right",
                 id: "y-axis-energy",
@@ -47,12 +45,13 @@ let chartSettings = {
                     fontSize: 14
                 },
                 gridLines: {
-                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                    drawOnChartArea: false,
                 }
             }]
         },
         tooltips: {
             mode: "index",
+            // Custom tooltip settings
             callbacks: {
                 label: function (tooltipItem, data) {
                     if (tooltipItem.datasetIndex === 0) {
@@ -61,7 +60,6 @@ let chartSettings = {
                         return tooltipItem.yLabel + " kWh";
                     }
                 },
-                // Use the footer callback to display the sum of the items showing in the tooltip
                 footer: function (tooltipItem, data) {
                     let kwhPrice;
                     let load = tooltipItem[0].yLabel;

@@ -1,6 +1,3 @@
-const monthsList = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
-// const weekdaysList = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
-
 let myChart;
 let state = 1;          // 1 - day, 2 - interval, 3 - month, 4 - year
 let userList = [];      // List for storing all available users
@@ -665,29 +662,7 @@ function roundTwoPlaces(number) {
     return Number.parseFloat(number).toFixed(2);
 }
 
-function formatDays(days) {
-    let returnDays = [];
-    days.forEach(d => {
-        let date = new Date(d);
-        let returnDate = String(date.getDate()).padStart(2, '0') + "."
-            + String(date.getMonth() + 1).padStart(2, '0');
-        returnDays.push(returnDate);
-    });
-    return returnDays;
-}
-
-function formatMonths(months) {
-    let returnMonths = [];
-    months.forEach(m => {
-        let month = new Date(m);
-        let returnMonth = monthsList[month.getMonth()];
-        returnMonths.push(returnMonth);
-    });
-    return returnMonths;
-}
-
 function formatLabel(date_time) {
-    //let date_time = moment(label);
 
     switch (state) {
         case 1: // state = day
