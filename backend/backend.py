@@ -119,12 +119,12 @@ def get_min_max():
     cursor.execute("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
 
     for result in cursor:
-        max_date = datetime.strftime(result.pop(), date_format)     # result contains only one entry
+        max_date = datetime.strftime(result[0], date_format)     # result contains only one entry
 
     cursor.execute("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = '{}'".format(user))
 
     for result in cursor:
-        min_date = datetime.strftime(result.pop(), date_format)     # result contains only one entry
+        min_date = datetime.strftime(result[0], date_format)     # result contains only one entry
 
     response_dict = {
         'max_date': max_date,
