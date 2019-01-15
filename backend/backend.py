@@ -13,11 +13,9 @@ from os import chdir, path
 from statistics import mean
 
 from flask import Flask, request, jsonify, make_response
-# from flask_cors import CORS
 from pymysql import connect
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend')  # Create Flask application
-# CORS(app)  # Enable CORS for allowing cross-origin requests
 
 # String templates
 date_format = "%Y-%m-%d"
