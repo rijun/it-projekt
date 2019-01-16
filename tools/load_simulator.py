@@ -4,6 +4,7 @@ from json import dumps, load
 from math import cos, pi
 from random import seed, triangular
 from statistics import mean
+from os import chdir, path
 
 
 def generate_template():
@@ -312,6 +313,7 @@ def menu():
 
 if __name__ == "__main__":
     user_selection = menu()
+    chdir(path.dirname(__file__))   # Change working directory to the location of load_simulator.py
 
     if user_selection == 1:
         data_template = generate_template()
