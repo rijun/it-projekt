@@ -284,4 +284,5 @@ def add_year(date):
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
-    app.run(port='5000', debug=True)
+    app.run(host='0.0.0.0', port='5000', debug=False)   # Visible in network
+    # app.run(port='5000', debug=True)    # Not visible in network, only on localhost
