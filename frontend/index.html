@@ -17,12 +17,21 @@
 <body>
   <!-- Header -->
   <nav class="navbar d-md-none navbar-dark bg-dark shadow">
-    <button class="navbar-toggler" type="button" data-toggle="dropdown">
+    <!--<button class="navbar-toggler" type="button" data-toggle="dropdown">
       <span class="navbar-toggler-icon"></span>
-    </button>
+    </button>-->
     <a class="navbar-brand p-0 m-0" href="#">
       <img src="favicon.png" width="40" height="40" class="d-inline-block align-top" alt="">
     </a>
+    <div class="btn-toolbar d-md-none mb-2 mb-md-0">
+      <div class="btn-group mr-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
+        Neue Abfrage
+      </button>
+    </div>
   </nav>
   <img class="d-none d-md-block p-0" src="header.png" alt="logo.png" width="100%" />
   <!-- Content -->
@@ -31,7 +40,7 @@
       <div class="col-lg-10">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2 class="h2">Lastgangsvisualisierungsschnittstelle</h2>
-        <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
           <div class="btn-group mr-2">
             <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
             <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
