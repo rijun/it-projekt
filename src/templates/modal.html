@@ -1,0 +1,71 @@
+<!-- Abfrageoptionen -->
+<div class="modal fade" id="queryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Abfrageoptionen</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-group">
+          <!-- User selection -->
+          <div class="form-group">
+            <label for="user-selector">Zählernummer</label>
+            <select class="form-control" id="user-selector">
+              <option value="">Zähler auswählen...</option>
+            </select>
+          </div>
+          <!-- Mode selection -->
+          <div class="form-group">
+            <label for="mode-selector">Modus</label>
+            <select class="form-control" id="mode-selector">
+              <option value="day">Tagesansicht</option>
+              <option value="interval">Intervall</option>
+              <option value="month">Monat</option>
+              <option value="year">Jahr</option>
+            </select>
+          </div>
+          <!-- Date form -->
+          <div id="day-options">
+            <!-- Date selector -->
+            <div class="form-group">
+              <label for="date-selector">Datum</label>
+              <input type="date" class="form-control" id="date-selector">
+            </div>
+            <!-- Resolution selection -->
+            <div class="form-group">
+              <label for="resolution-selector">Auflösung</label>
+              <select class="form-control" id="resolution-selector">
+                <option value="15">Viertelstunde</option>
+                <option value="60">Stunde</option>
+              </select>
+            </div>
+          </div>
+          <!-- Interval form -->
+          <div class="form-group d-none" id="interval-options">
+            <label for="first-date-selector">Startdatum</label>
+            <input type="date" class="form-control" id="first-date-selector">
+            <label for="last-date-selector">Enddatum</label>
+            <input type="date" class="form-control" id="last-date-selector">
+          </div>
+          <!-- Month form -->
+          <div class="form-group d-none" id="month-options">
+            <label for="month-selector">Monat</label>
+            <input type="month" class="form-control" id="month-selector">
+          </div>
+          <!-- Year form -->
+          <div class="form-group d-none" id="year-options" style="display: none">
+            <label for="year-selector">Jahr</label>
+            <select class="form-control" id="year-selector"></select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+        <button type="button" class="btn btn-primary" id="sendButton">Abrufen</button>
+      </div>
+    </div>
+  </div>
+</div>
