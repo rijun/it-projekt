@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from csv import QUOTE_NONE, reader, writer
 from datetime import datetime, timedelta
 from json import dumps, load
@@ -219,6 +220,7 @@ def build_load_profile(template):
     end_date = datetime.strptime(end, "%Y-%m-%d")
     current_datetime = start_date
     current_meter_val = 0
+    current_meter_in_val = 0
 
     while current_datetime <= end_date:
         seed()  # Initialize random generator
@@ -226,7 +228,8 @@ def build_load_profile(template):
 
         if current_datetime == start_date:
             current_meter_val = meter_start_val * month_factor
-            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0)
+            current_meter_in_val = current_meter_val / 2
+            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0, round(current_meter_in_val, 2), 0)
         else:
             current_weekday = str(current_datetime.weekday())  # current_weekday must be str for the dict keys
             current_time = current_datetime.time().strftime("%H:%M")
@@ -240,8 +243,9 @@ def build_load_profile(template):
             )
 
             current_meter_val += current_load_diff * month_factor
+            current_meter_in_val += current_load_diff * month_factor * triangular(low=0.1, high=0.7)
 
-            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0)
+            load_profile_entry = (current_datetime, meter_number, round(current_meter_val, 2), 0, round(current_meter_in_val, 2), 0)
 
         load_profile.append(load_profile_entry)
         current_datetime += timedelta(minutes=15)
