@@ -676,3 +676,4 @@ ASALocalRun/
 *.json
 
 *.zip
+*.db
