@@ -11,11 +11,30 @@ from datetime import datetime, timedelta
 from math import floor
 from os import chdir, path
 from statistics import mean
-import sqlite3
 
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
+
+from dbhandler import DatabaseHandler
 
 app = Flask(__name__)  # Create Flask application
+db = DatabaseHandler()
+
+
+def get_available_meters():
+    meter_list = []
+    db_result = db.select("SELECT * FROM zaehlpunkte")
+
+    for result in db_result:
+        meter_list.append({
+            'id': result[0],        # result[0] --> zaehler_id
+            'lastname': result[1],      # result[1] --> kunde_name
+            'firstname': result[2],     # result[2] --> kunde_vorname
+            'zipcode': result[3],       # result[3] --> plz
+            'city': result[4]           # result[4] --> ort
+        })
+
+    return meter_list
+
 
 @app.route('/')
 def root():
@@ -26,9 +45,8 @@ def root():
     :rtype: HTML file
     """
 
-    return render_template('index.html')
-
-
+    meters = get_available_meters()
+    return render_template('index.html', meters=meters)
 
 
 # Run Flask server with the selected settings
