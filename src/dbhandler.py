@@ -9,4 +9,4 @@ class DatabaseHandler:
         res = []
         for row in self.con.execute(query, args):
             res.append(row)
-        return res
+        return res if len(res) > 1 else res[0][0]
