@@ -100,11 +100,17 @@
 <script>
     function addMetersToStorage() {
         let availableMeters = {{ meters | tojson }};
-        let meterIdList = [];
-        for (let meter of availableMeters) {
-            meterIdList.push(meter.id);
-        }
-        sessionStorage.setItem('meters', JSON.stringify(meterIdList));
+        let meters = {};
+        availableMeters.forEach(meter => {
+            meters[meter.id] = {
+                'id': meter.id,
+                'date': {
+                    'min': meter.min,
+                    'max': meter.max
+                }
+            };
+        });
+        sessionStorage.setItem('meters', JSON.stringify(meters));
     }
 </script>
 <script src="static/main.js"></script>

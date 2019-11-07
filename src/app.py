@@ -34,10 +34,10 @@ def get_available_meters():
         })
 
     for meter in meter_list:
-        meter_max = db.select("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
         meter_min = db.select("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
-        meter['max'] = meter_max
+        meter_max = db.select("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
         meter['min'] = meter_min
+        meter['max'] = meter_max
 
     return meter_list
 
