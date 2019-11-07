@@ -46,7 +46,7 @@ document.getElementById('meterSelector').onchange = setSelectorRanges;
 
 function setupMeterSelector() {
     let meterSelector = document.getElementById('meterSelector');
-    for (let meter in JSON.parse(sessionStorage.meters)) {
+    for (let meter in window.meters) {
         let opt = document.createElement('option');
         opt.value = meter;
         opt.innerHTML = meter;
@@ -86,11 +86,21 @@ function setSelectorRanges() {
         "<option value=\"" + moment(meterDates.min).format("YYYY") + "\">" + moment(meterDates.min).format("YYYY") + "</option>";
 }
 
+function setupChart() {
+    /**
+     * Setup chart with the settings stored in the chart_settings.js file
+     * **/
+
+    const ctx = document.getElementById("chart").getContext('2d');
+    window.chart = new Chart(ctx, chartSettings);
+}
+
 // Run on startup
 window.onload = function () {
     moment.locale('de');    // Set Moment.js to german language
     addMetersToStorage();
     setupMeterSelector();
     setMeterButtonEvents();
+    setupChart();
 };
 

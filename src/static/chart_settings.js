@@ -1,4 +1,4 @@
-let chartSettings = {
+const chartSettings = {
     type: "bar",
     data: {
         datasets: [{

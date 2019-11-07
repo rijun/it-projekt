@@ -59,7 +59,7 @@
             <div class="d-none" id="meterDisplay">
                 <!-- Chart -->
                 <div class="card card-body">
-                    <canvas id="myChart" class="card-text" width="75%" height="35%"></canvas>
+                    <canvas id="chart" class="card-text" width="75%" height="35%"></canvas>
                 </div>
                 <!-- Table -->
                 <div class="card card-body">
@@ -110,11 +110,11 @@
                 }
             };
         });
-        sessionStorage.setItem('meters', JSON.stringify(meters));
+        window.meters = meters; // Store available meters in a global object
     }
 </script>
 <script src="static/main.js"></script>
-<!--<script src="chart_settings.js"></script>-->
+<script src="static/chart_settings.js"></script>
 </body>
 
 </html>
