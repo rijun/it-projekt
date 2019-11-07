@@ -31,11 +31,11 @@ def get_available_meters():
 
     for result in db_result:
         meter_list.append({
-            'id': result[0],            # result[0] --> zaehler_id
-            'lastname': result[1],      # result[1] --> kunde_name
-            'firstname': result[2],     # result[2] --> kunde_vorname
-            'zipcode': result[3],       # result[3] --> plz
-            'city': result[4]           # result[4] --> ort
+            'id': result[0],  # result[0] --> zaehler_id
+            'lastname': result[1],  # result[1] --> kunde_name
+            'firstname': result[2],  # result[2] --> kunde_vorname
+            'zipcode': result[3],  # result[3] --> plz
+            'city': result[4]  # result[4] --> ort
         })
 
     for meter in meter_list:
@@ -115,37 +115,34 @@ def meters(meter_id, mode):
             next_day = day + timedelta(days=1)
             resolution = request.args['r']
 
-            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte " \
-                    "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND STRFTIME('%M', datum_zeit) % {2} = 0 " \
-                    "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC"\
-                .format(day.date(), next_day.date(), resolution, selected_meter)
+            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' " \
+                    "AND STRFTIME('%M', datum_zeit) % {2} = 0 AND zaehler_id = '{3}' ORDER BY datum_zeit " \
+                    "ASC".format(day.date(), next_day.date(), resolution, selected_meter)
 
         elif selected_mode == 'interval':
             start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
             end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
             next_day = end_day + timedelta(days=1)
 
-            query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
-                    "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
-                    "AND zaehler_id = '{2}' AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' ORDER BY datum_zeit ASC" \
+            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
+                    "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC"\
                 .format(start_day.date(), next_day.date(), selected_meter)
 
         elif selected_mode == 'month':
             month = datetime.strptime(request.args['m'], MONTH_FORMAT)
             next_month = add_month(month)
 
-            query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
-                    "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
-                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
+                    "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
                 .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), selected_meter)
 
         elif selected_mode == 'year':
             year = datetime.strptime(request.args['y'], YEAR_FORMAT)
             next_year = add_year(year)
 
-            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
-                    "WHERE YEAR (datum_zeit) BETWEEN '{0}' AND '{1}' AND DAY (datum_zeit) = '01' " \
-                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'  AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+            query = "SELECT DATE(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE STRFTIME('%Y', datum_zeit) " \
+                    "BETWEEN '{0}' AND '{1}' AND STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' " \
+                    "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
                 .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), selected_meter)
 
         response = db.select(query)
@@ -160,5 +157,5 @@ def meters(meter_id, mode):
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port='5000', debug=True)   # Visible in network
+    app.run(host='0.0.0.0', port='5000', debug=True)  # Visible in network
     # app.run(port='5000', debug=True)    # Not visible in network, only on localhost
