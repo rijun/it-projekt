@@ -12,12 +12,17 @@ from math import floor
 from os import chdir, path
 from statistics import mean
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 
 from dbhandler import DatabaseHandler
 
 app = Flask(__name__)  # Create Flask application
 db = DatabaseHandler()
+
+# String templates
+DATE_FORMAT = "%Y-%m-%d"
+MONTH_FORMAT = "%Y-%m"
+YEAR_FORMAT = "%Y"
 
 
 def get_available_meters():
@@ -42,6 +47,40 @@ def get_available_meters():
     return meter_list
 
 
+def add_month(date):
+    """This function increments a given month by one month.
+
+    :param date: The date which has to be increased by one month
+    :type date: datetime
+    :return: The incremented month
+    :rtype: datetime
+    """
+    date_string = datetime.strftime(date, MONTH_FORMAT)
+    str_list = date_string.split("-")
+
+    if int(str_list[1]) == 12:
+        next_month = str(1)
+    else:
+        next_month = str(int(str_list[1]) + 1)
+
+    return_str = str_list[0] + "-" + next_month
+    return datetime.strptime(return_str, MONTH_FORMAT)
+
+
+def add_year(date):
+    """This function increments a given year by one year.
+
+    :param date: The date which has to be increased by one year
+    :type date: datetime
+    :return: The incremented year
+    :rtype: datetime
+    """
+    date_string = datetime.strftime(date, YEAR_FORMAT)
+    next_year = str(int(date_string) + 1)
+    return_str = next_year
+    return datetime.strptime(return_str, YEAR_FORMAT)
+
+
 @app.route('/')
 def root():
     """
@@ -51,8 +90,72 @@ def root():
     :rtype: HTML file
     """
 
-    meters = get_available_meters()
-    return render_template('index.html', meters=meters)
+    stored_meters = get_available_meters()
+    return render_template('index.html', meters=stored_meters)
+
+
+@app.route('/meter/<meter_id>/<mode>')
+def meters(meter_id, mode):
+    """
+    This function gets all meter readings and  current loads in a specified time interval and for a specified meter.
+    Additionally, the min, max and average load are calculated.
+
+    :return: All entries from the SQL query result and some statistical data, converted to JSON
+    :rtype: JSON
+    """
+
+    try:
+        selected_mode = mode
+        selected_meter = meter_id
+        query = ""
+
+        # Generate SQL query according to selected mode and dates/times
+        if selected_mode == 'day':
+            day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+            next_day = day + timedelta(days=1)
+            resolution = request.args['r']
+
+            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte " \
+                    "WHERE datum_zeit BETWEEN '{0} 00:00:00' AND '{1}' AND STRFTIME('%M', datum_zeit) % {2} = 0 " \
+                    "AND zaehler_id = '{3}' ORDER BY datum_zeit ASC"\
+                .format(day.date(), next_day.date(), resolution, selected_meter)
+
+        elif selected_mode == 'interval':
+            start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
+            end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
+            next_day = end_day + timedelta(days=1)
+
+            query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
+                    "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
+                    "AND zaehler_id = '{2}' AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' ORDER BY datum_zeit ASC" \
+                .format(start_day.date(), next_day.date(), selected_meter)
+
+        elif selected_mode == 'month':
+            month = datetime.strptime(request.args['m'], MONTH_FORMAT)
+            next_month = add_month(month)
+
+            query = "SELECT DATE_FORMAT(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
+                    "WHERE DATE_FORMAT(datum_zeit, '%Y-%m-%d') BETWEEN '{0}' AND '{1}' " \
+                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+                .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), selected_meter)
+
+        elif selected_mode == 'year':
+            year = datetime.strptime(request.args['y'], YEAR_FORMAT)
+            next_year = add_year(year)
+
+            query = "SELECT  DATE_FORMAT (datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte " \
+                    "WHERE YEAR (datum_zeit) BETWEEN '{0}' AND '{1}' AND DAY (datum_zeit) = '01' " \
+                    "AND DATE_FORMAT(datum_zeit, '%T') = '00:00:00'  AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+                .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), selected_meter)
+
+        response = db.select(query)
+    # Send 400 (bad request) response with error details if an error occurred
+    except ValueError:
+        return make_response("Datum falsch oder nicht vorhanden!", 400)
+    except IndexError:
+        return make_response("Zählernummer falsch oder nicht vorhanden!", 400)
+    else:
+        return jsonify(response)
 
 
 # Run Flask server with the selected settings
