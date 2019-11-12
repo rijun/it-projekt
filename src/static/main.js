@@ -1,19 +1,14 @@
+// Event handlers
 document.getElementById('sendButton').onclick = () => {
-    // Setup event handlers
+    getMeterData();
     $('#queryModal').modal('hide');
-    fetch('/get-data', {
-        method: 'get'
-    }).then(response => {
-        return response.json();
-    }).then(json => {
-        console.log(json);
-    });
     document.getElementById('meterSelection').classList.add('d-none');
     document.getElementById('meterDisplay').classList.remove('d-none');
 };
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 
+// Setup functions
 function setupMeterSelector() {
     let meterSelector = document.getElementById('meterSelector');
     for (let meter in window.meters) {
@@ -38,11 +33,11 @@ function setMeterButtonEvents() {
 
 function setSelectorRanges() {
     const selectorOption = document.getElementById('meterSelector').value;
-    const meterDates = JSON.parse(sessionStorage.meters)[selectorOption].date;
+    const meterDates = window.meters[selectorOption].date;
     // Date selector
-    document.getElementById('date-selector').min = moment(meterDates.min).format("YYYY-MM-DD");
-    document.getElementById('date-selector').max = moment(meterDates.max).format("YYYY-MM-DD");
-    document.getElementById('date-selector').value = moment(meterDates.max).format("YYYY-MM-DD");
+    document.getElementById('dateSelector').min = moment(meterDates.min).format("YYYY-MM-DD");
+    document.getElementById('dateSelector').max = moment(meterDates.max).format("YYYY-MM-DD");
+    document.getElementById('dateSelector').value = moment(meterDates.max).format("YYYY-MM-DD");
     // Interval selector
     document.getElementById('first-date-selector').min = meterDates.min;
     document.getElementById('first-date-selector').max = meterDates.max;
@@ -74,3 +69,19 @@ window.onload = function () {
     setupChart();
 };
 
+function getMeterData() {
+    const meterId = document.getElementById('meterSelector').value;
+    const mode = document.getElementById('modeSelector').value;
+    const date = document.getElementById('dateSelector').value;
+    const res = document.getElementById('resSelector').value;
+
+    const url = '/meter' + '/' + meterId + '/' + mode + '?d=' + date + '&r=' + res;
+
+    fetch(url, {
+        method: 'get'
+    }).then(response => {
+        return response.json();
+    }).then(json => {
+        console.log(json);
+    });
+}
