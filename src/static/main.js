@@ -11,6 +11,10 @@ document.getElementById('sendButton').onclick = () => {
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 
+ window.onresize = () => {
+     setResponsiveChartSettings();
+ };
+
 // Setup functions
 function setupMeterSelector() {
     let meterSelector = document.getElementById('meterSelector');
@@ -60,7 +64,91 @@ function setupChart() {
      * **/
 
     const ctx = document.getElementById("chart").getContext('2d');
-    window.chart = new Chart(ctx, chartSettings);
+    window.chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            datasets: [{
+                label: "Lastgang",
+                backgroundColor: "rgba(255, 128, 0, 0.2)",
+                borderColor: "rgb(255, 128, 0)",
+                borderWidth: 1,
+                yAxisID: "y-axis-load",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Zeitpunkt",
+                    },
+                    gridLines: {
+                        offsetGridLines: true
+                    }
+                }],
+                yAxes: [{
+                    type: "linear",
+                    display: true,
+                    position: "left",
+                    id: "y-axis-load",
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Lastgang",
+                    },
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }, {
+                    type: "linear",
+                    display: false,
+                    position: "right",
+                    id: "y-axis-energy",
+                    scaleLabel: {
+                        display: true,
+                        labelString: "Zählerstand [kWh]",
+                    },
+                    gridLines: {
+                        drawOnChartArea: false,
+                    }
+                }]
+            },
+            tooltips: {
+                mode: "index",
+                // Custom tooltip settings
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        if (tooltipItem.datasetIndex === 0) {
+                            return tooltipItem.yLabel + ' ' + getCurrentUnit();
+                        } else {
+                            return tooltipItem.yLabel + " kWh";
+                        }
+                    },
+                    footer: function (tooltipItem, data) {
+                        let kwhPrice;
+                        let load = tooltipItem[0].yLabel;
+                        // let price = document.getElementById("priceSelector").value / 100;
+                        let price = 0.3;
+                        kwhPrice = calculatePrice(load, price);
+                        return "Kosten: " + kwhPrice + ' €';
+                    },
+                },
+                footerFontStyle: "normal"
+            }
+        }
+    });
+    setResponsiveChartSettings();
+}
+
+function setResponsiveChartSettings() {
+    if (window.chart === undefined) { return; }
+
+    if (window.outerWidth < 768) {
+        window.chart.options.scales.xAxes[0].scaleLabel.display = false;
+        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = false);
+    } else {
+        window.chart.options.scales.xAxes[0].scaleLabel.display = true;
+        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = true);
+    }
 }
 
 // Run on startup
@@ -119,12 +207,13 @@ function updatePage() {
      * Update the page according to the received response
      * **/
 
-    let price = document.getElementById("priceSelector").value / 100;    // Get current kWh price
+    // let price = document.getElementById("priceSelector").value / 100;    // Get current kWh price
+    let price = 0.30;
 
     // Update page contents
     // updateHeader();
     updateChart();
-    // updateTable(price);
+    updateTable(price);
     // updateStatistics(price);
 }
 
@@ -280,7 +369,7 @@ function updateTable(kwhPrice) {
      * Update the table according to the current response data
      * **/
 
-    document.getElementById("data-table").innerHTML = buildTable(kwhPrice);
+    document.getElementById("dataTable").innerHTML = buildTable(kwhPrice);
     updateTableTitle();
 }
 
@@ -312,15 +401,15 @@ function buildTable(kwhPrice) {
 function updateTableTitle() {
     let title = document.getElementById('datetime-title');
 
-    switch (state) {
-        case 1: // state = day
+    switch (window.state) {
+        case States.day: // state = day
             title.innerText = "Uhrzeit";
             break;
-        case 2: // state = interval
-        case 3: // state = month
+        case States.interval: // state = interval
+        case States.month: // state = month
             title.innerText = "Datum";
             break;
-        case 4: // state = year
+        case States.year: // state = year
             title.innerText = "Monat"
     }
 }
@@ -615,21 +704,21 @@ function getCurrentUnit() {
      * **/
 
     let unit = "";
-    switch (state) {
-        case 1: // state = day
-            if (document.getElementById("resolution-selector").value === "15") {
+    switch (window.state) {
+        case States.day: // state = day
+            if (document.getElementById("resSelector").value === "15") {
                 unit = "kWh / Viertelstunde";
             } else {
                 unit = "kWh / Stunde";
             }
             break;
-        case 2: // state = interval
+        case States.interval: // state = interval
             unit = "kWh / Tag";
             break;
-        case 3: // state = month
+        case States.month: // state = month
             unit = "kWh / Tag";
             break;
-        case 4: // state = year
+        case States.year: // state = year
             unit = "kWh / Monat";
             break;
     }
@@ -641,14 +730,13 @@ function roundTwoPlaces(number) {
 }
 
 function formatLabel(date_time) {
-
-    switch (state) {
-        case 1: // state = day
+    switch (window.state) {
+        case States.day: // state = day
             return date_time.format("HH:mm");
-        case 2: // state = interval
-        case 3: // state = month
+        case States.interval: // state = interval
+        case States.month: // state = month
             return date_time.format("L");
-        case 4: // state = year
+        case States.year: // state = year
             return date_time.format("MMMM");
     }
 }
