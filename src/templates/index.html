@@ -59,7 +59,19 @@
             <div class="d-none" id="meterDisplay">
                 <!-- Chart -->
                 <div class="card card-body">
-                    <canvas id="chart" class="card-text" width="75%" height="35%"></canvas>
+                    <canvas id="chart" class="card-text m-0"></canvas>
+                    <!-- Show meter value -->
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
+                        <label class="custom-control-label " for="meterReadingsSelector">Zählerstand anzeigen</label>
+                    </div>
+                    <!-- Set price per kWh -->
+                    <div class="custom-control custom-range my-3">
+                        <label for="priceSelector">Preis pro kWh: <span id="price-val">0.30</span> €</label>
+                        <input type="range" id="priceSelector" oninput="priceChanged()"
+                               class="form-control-range form-control-sm"
+                               min="10" max="50" value="30">
+                    </div>
                 </div>
                 <!-- Table -->
                 <div class="card card-body">

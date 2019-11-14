@@ -63,7 +63,7 @@ const chartSettings = {
                 footer: function (tooltipItem, data) {
                     let kwhPrice;
                     let load = tooltipItem[0].yLabel;
-                    let price = document.getElementById("price-select").value / 100;
+                    let price = document.getElementById("priceSelector").value / 100;
                     kwhPrice = calculatePrice(load, price);
                     return "Kosten: " + kwhPrice + ' €';
                 },
