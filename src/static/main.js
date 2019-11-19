@@ -11,6 +11,7 @@ document.getElementById('sendButton').onclick = () => {
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
+document.getElementById('changePrice').onclick = priceChanged;
 
 window.onresize = () => {
     if (window.chart === undefined) {
@@ -147,7 +148,6 @@ function setupChart() {
             }
         }
     });
-    window.onresize(undefined);
 }
 
 // Run on startup
@@ -206,14 +206,13 @@ function updatePage() {
      * Update the page according to the received response
      * **/
 
-        // let price = document.getElementById("priceSelector").value / 100;    // Get current kWh price
-    let price = 0.30;
+    let price = document.getElementById("priceInput").value / 100;    // Get current kWh price
 
     // Update page contents
     updateHeader();
     updateChart();
     updateTable(price);
-    // updateStatistics(price);
+    updateStatistics(price);
 }
 
 function updateHeader() {
@@ -422,15 +421,13 @@ function updateStatistics(kwhPrice) {
      * Update the statistics data according to the current response data
      * **/
 
-    document.getElementById("stat").style.display = "block";    // Show statistics
-
-    document.getElementById("stat-data").innerHTML =
-        "<li class=\"mb-3\"><h6>Durchschnittsverbrauch</h6>" + window.currentMeter.avgKwh + " " + getCurrentUnit() + "</li>"
-        + "<li class=\"mb-3\"><h6>Maximalverbrauch</h6>" + window.currentMeter.maxKwh + " " + getCurrentUnit() + "</li>"
-        + "<li class=\"mb-3\"><h6>Minimalverbrauch</h6>" + window.currentMeter.minKwh + " " + getCurrentUnit() + "</li>"
-        + "<li class=\"mb-3\"><h6>Gesamtverbrauch</h6>" + window.currentMeter.sumKwh + " kWh</li>"
-        + "<li class=\"mb-3\"><h6>Gesamtkosten</h6>" + "<span id=\"stat-price\">"
-        + roundTwoPlaces(window.currentMeter.sumKwh * kwhPrice) + "</span> €</li>";
+    document.getElementById("statData").innerHTML =
+        "<div class=\"col-md m-2 p-2 border border-secondary rounded\"><h6>Durchschnittsverbrauch</h6>" + window.currentMeter.avgKwh + " " + getCurrentUnit() + "</div>"
+        + "<div class=\"col-md m-2 p-2 border border-secondary rounded\"><h6>Maximalverbrauch</h6>" + window.currentMeter.maxKwh + " " + getCurrentUnit() + "</div>"
+        + "<div class=\"col-md m-2 p-2 border border-secondary rounded\"><h6>Minimalverbrauch</h6>" + window.currentMeter.minKwh + " " + getCurrentUnit() + "</div>"
+        + "<div class=\"col-md m-2 p-2 border border-secondary rounded\"><h6>Gesamtverbrauch</h6>" + window.currentMeter.sumKwh + " kWh</div>"
+        + "<div class=\"col-md m-2 p-2 border border-secondary rounded\"><h6>Gesamtkosten</h6>" + "<span id=\"statPrice\">"
+        + roundTwoPlaces(window.currentMeter.sumKwh * kwhPrice) + "</span> €</div>";
 }
 
 function modeChanged() {
@@ -488,9 +485,8 @@ function priceChanged() {
      * Change kWh price according to the user selection
      * **/
 
-    let currentPrice = document.getElementById("priceSelector").value / 100;
-    document.getElementById("price-val").innerText = currentPrice.toFixed(2);
-    document.getElementById("stat-price").innerText = roundTwoPlaces(window.currentMeter.sumKwh * currentPrice);
+    let currentPrice = document.getElementById("priceInput").value / 100;
+    document.getElementById("statPrice").innerText = roundTwoPlaces(window.currentMeter.sumKwh * currentPrice);
     updateTable(currentPrice);
 }
 
@@ -615,19 +611,19 @@ function getCurrentUnit() {
     switch (window.state) {
         case States.day: // state = day
             if (document.getElementById("resSelector").value === "15") {
-                unit = "kWh / Viertelstunde";
+                unit = "kWh / 15 min";
             } else {
-                unit = "kWh / Stunde";
+                unit = "kWh / 1 h";
             }
             break;
         case States.interval: // state = interval
-            unit = "kWh / Tag";
+            unit = "kWh / 1 d";
             break;
         case States.month: // state = month
-            unit = "kWh / Tag";
+            unit = "kWh / 1 d";
             break;
         case States.year: // state = year
-            unit = "kWh / Monat";
+            unit = "kWh / 1 m";
             break;
     }
     return unit;
@@ -650,17 +646,17 @@ function formatLabel(date_time) {
 }
 
 function increaseDate() {
-    let daySelector = document.getElementById('date-selector');
+    let daySelector = document.getElementById('dateSelector');
     let date = moment(daySelector.value);
     daySelector.value = date.add(1, "days").format("YYYY-MM-DD");
-    requestData();
+    getMeterData();
 }
 
 function decreaseDate() {
-    let daySelector = document.getElementById('date-selector');
+    let daySelector = document.getElementById('dateSelector');
     let date = moment(daySelector.value);
     daySelector.value = date.subtract(1, "days").format("YYYY-MM-DD");
-    requestData();
+    getMeterData();
 }
 
 function increaseMonth() {

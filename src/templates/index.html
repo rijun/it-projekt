@@ -13,6 +13,18 @@
         integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
   <!-- <link rel="stylesheet" type="text/css" media="screen" href="style.css"/> -->
+  <style>
+    .table-hover tbody tr:hover td {
+      /*background-color: #343a40;*/
+      background-color: #ff8000;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .border-secondary {
+      border-color: #ff8000 !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -42,9 +54,24 @@
       <div
               class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2 class="h2">Lastgang</h2>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" id="meterReadingsSelector">
-          <label class="form-check-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
+        <div class="mb-2 mb-md-0">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <label class="input-group-text form-control-label" for="priceInput"><i class="fas fa-money-bill-wave"></i></label>
+              <span class="input-group-text">0,</span>
+            </div>
+            <input class="form-control" type="number" id="priceInput" value="30" style="width: 4rem">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+              <button type="submit" class="btn btn-outline-secondary" id="changePrice">Ändern</button>
+            </div>
+          </div>
+        </div>
+        <div class="mb-2 mb-md-0">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
+            <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
+          </div>
         </div>
         <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
           <div class="btn-group mr-2">
@@ -78,14 +105,24 @@
           <p id="userInfo" class="lead text-center p-0 m-0">User</p>
         </div>
         <!-- Chart -->
-        <div class="card">
+        <div class="card my-2">
           <div class="card-img-top">
             <canvas id="chart" class="card-text m-0"></canvas>
           </div>
         </div>
+        <!-- Statistics -->
+        <div class="card my-2">
+          <div class="card-body">
+            <h5 class="card-title">Statistische Daten</h5>
+            <div class="row" id="statData"></div>
+          </div>
+        </div>
         <!-- Table -->
-        <div class="card card-body">
-          <div id="dataTable" class="card-text table-responsive"></div>
+        <div class="card my-2">
+          <div class="card-body">
+            <h5 class="card-title">Zählwerte</h5>
+            <div id="dataTable" class="card-text table-responsive"></div>
+          </div>
         </div>
       </div>
       <div class="list-group" id="meterSelection">
