@@ -2,85 +2,105 @@
 <html>
 
 <head>
-    <meta charset="utf-8"/>
-    <title>Lastgangsvisualisierungsschnittstelle</title>
-    <link rel="icon" type="image/png" href="static/favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Include required CSS files -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
-          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-    <!-- <link rel="stylesheet" type="text/css" media="screen" href="style.css"/> -->
+  <meta charset="utf-8"/>
+  <title>Lastgangsvisualisierungsschnittstelle</title>
+  <link rel="icon" type="image/png" href="static/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Include required CSS files -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+  <!-- <link rel="stylesheet" type="text/css" media="screen" href="style.css"/> -->
 </head>
 
 <body>
 <!-- Header -->
 <nav class="navbar d-md-none navbar-dark bg-dark shadow">
-    <!--<button class="navbar-toggler" type="button" data-toggle="dropdown">
-      <span class="navbar-toggler-icon"></span>
-    </button>-->
-    <a class="navbar-brand p-0 m-0" href="#">
-        <img src="static/favicon.png" width="40" height="40" class="d-inline-block align-top" alt="">
-    </a>
-    <div class="btn-toolbar d-md-none mb-2 mb-md-0">
-        <div class="btn-group mr-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-        </div>
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
-            Neue Abfrage
-        </button>
+  <!--<button class="navbar-toggler" type="button" data-toggle="dropdown">
+    <span class="navbar-toggler-icon"></span>
+  </button>-->
+  <a class="navbar-brand p-0 m-0" href="#">
+    <img src="static/favicon.png" width="40" height="40" class="d-inline-block align-top" alt="">
+  </a>
+  <div class="btn-toolbar d-md-none mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
     </div>
+    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
+      Neue Abfrage
+    </button>
+  </div>
 </nav>
 <img class="d-none d-md-block p-0" src="static/header.png" alt="logo.png" width="100%"/>
 <!-- Content -->
 <main class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-11">
-            <!-- Header -->
-            <div
-                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h2 class="h2">Lastgang</h2>
-                <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
-                    <div class="btn-group mr-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal"
-                            id="showModalButton">
-                        Neue Abfrage
-                    </button>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <!-- Header -->
+      <div
+              class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h2">Lastgang</h2>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="meterReadingsSelector">
+          <label class="form-check-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
         </div>
-    </div>
-    <!-- Content -->
-    <div class="row justify-content-center">
-        <div class="col-lg-11">
-            <div class="d-none" id="meterDisplay">
-                <!-- Chart -->
-                <div class="card">
-                    <div class="card-img-top">
-                        <canvas id="chart" class="card-text m-0"></canvas>
-                    </div>
-                </div>
-                <!-- Table -->
-                <div class="card card-body">
-                    <div id="dataTable" class="card-text table-responsive"></div>
-                </div>
-            </div>
-            <div class="list-group" id="meterSelection">
-                {% for meter in meters %}
-                    <button type="button" class="list-group-item list-group-item-action meter" id="{{ meter.id }}">
-                        {{ meter.id }}<br>
-                        {{ meter.firstname }} {{ meter.lastname }}<br>
-                        {{ meter.zipcode }}, {{ meter.city }}<br>
-                        Min: {{ meter.min }}<br>
-                        Max: {{ meter.max }}
-                    </button>
-                {% endfor %}
-            </div>
+        <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal"
+                  id="showModalButton">
+            Neue Abfrage
+          </button>
         </div>
+      </div>
     </div>
+  </div>
+  <!-- Content -->
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <div class="d-none" id="meterDisplay">
+        <!-- Title -->
+        <div class="card card-body p-2">
+          <h4 class="card-text text-center">
+                            <span id="prev"><button type="button" id="prevButton" onclick="decreaseDate()"
+                                                    style="background-color:transparent; border-color:transparent;">
+                                <i class="fas fa-angle-left"></i>
+                            </button></span>
+            <span id="title"></span>
+            <span id="next"><button type="button" id="nextButton" onclick="increaseDate()"
+                                    style="background-color:transparent; border-color:transparent;">
+                                <i class="fas fa-angle-right"></i>
+                            </button></span>
+          </h4>
+          <p id="userInfo" class="lead text-center p-0 m-0">User</p>
+        </div>
+        <!-- Chart -->
+        <div class="card">
+          <div class="card-img-top">
+            <canvas id="chart" class="card-text m-0"></canvas>
+          </div>
+        </div>
+        <!-- Table -->
+        <div class="card card-body">
+          <div id="dataTable" class="card-text table-responsive"></div>
+        </div>
+      </div>
+      <div class="list-group" id="meterSelection">
+        {% for meter in meters %}
+          <button type="button" class="list-group-item list-group-item-action meter" id="{{ meter.id }}">
+            {{ meter.id }}<br>
+            {{ meter.firstname }} {{ meter.lastname }}<br>
+            {{ meter.zipcode }}, {{ meter.city }}<br>
+            Min: {{ meter.min }}<br>
+            Max: {{ meter.max }}
+          </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </main>
 {% include 'modal.html' %}
 <!-- Scripts -->

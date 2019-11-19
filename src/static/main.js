@@ -10,6 +10,7 @@ document.getElementById('sendButton').onclick = () => {
 };
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
+document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
 
 window.onresize = () => {
     if (window.chart === undefined) {
@@ -146,7 +147,7 @@ function setupChart() {
             }
         }
     });
-    setResponsiveChartSettings();
+    window.onresize(undefined);
 }
 
 // Run on startup
@@ -209,120 +210,119 @@ function updatePage() {
     let price = 0.30;
 
     // Update page contents
-    // updateHeader();
+    updateHeader();
     updateChart();
     updateTable(price);
     // updateStatistics(price);
 }
 
-// function updateHeader() {
-//     /**
-//      * Update the header according to the current response data
-//      * **/
-//
-//     switch (state) {
-//         case 1: // state = day
-//             let date = moment(document.getElementById("date-selector").value);
-//             buildDateHeader(date);
-//             break;
-//         case 2: // state = interval
-//             let firstDate = moment(document.getElementById("first-date-selector").value);
-//             let lastDate = moment(document.getElementById("last-date-selector").value);
-//             buildIntervalHeader(firstDate, lastDate);
-//             break;
-//         case 3: // state = month
-//             let month = moment(document.getElementById("month-selector").value);
-//             console.log(month);
-//             buildMonthHeader(month);
-//             break;
-//         case 4: // state = year
-//             let year = moment(document.getElementById("year-selector").value);
-//             console.log(year);
-//             buildYearHeader(year);
-//             break;
-//     }
-//
-//     checkNavArrows();  // Disable prev/next arrows if the current date is the last available date
-//     buildUserInfoHeader();
-// }
-//
-// function buildDateHeader(date) {
-//     document.getElementById("title").innerText =
-//         date.format("dddd, Do MMMM YYYY");
-//     showDayNavArrows();
-// }
-//
-// function buildIntervalHeader(firstDate, lastDate) {
-//     document.getElementById("title").innerText =
-//         firstDate.format("LL") + " - " + lastDate.format("LL");
-//     hideNavArrows();
-// }
-//
-// function buildMonthHeader(month) {
-//     document.getElementById("title").innerText = month.format("[Lastgang vom] MMMM YYYY");
-//     showMonthNavArrows();
-// }
-//
-// function buildYearHeader(year) {
-//     document.getElementById("title").innerText = year.format("[Lastgang vom Jahr] YYYY");
-//     hideNavArrows();
-// }
-//
-// function checkNavArrows() {
-//     let datetimeSelector;
-//
-//     if (state === 1) {  // state = day
-//         datetimeSelector = document.getElementById('date-selector');
-//     } else if (state === 3) {   // state = month
-//         datetimeSelector = document.getElementById('month-selector');
-//     } else {
-//         return;
-//     }
-//
-//     checkNavArrowsRange(datetimeSelector);
-// }
-//
-// function checkNavArrowsRange(selector) {
-//     if (selector.value === selector.max) {
-//         document.getElementById("next-button").style.display = "none";
-//     } else if (selector.value === selector.min) {
-//         document.getElementById("prev-button").style.display = "none";
-//     } else {
-//         document.getElementById("next-button").style.display = "inline";
-//         document.getElementById("prev-button").style.display = "inline";
-//     }
-// }
-//
-// function showDayNavArrows() {
-//     document.getElementById("prev").style.display = "inline";
-//     document.getElementById("next").style.display = "inline";
-//     document.getElementById("prev-button").setAttribute("onclick", "decreaseDate()");
-//     document.getElementById("next-button").setAttribute("onclick", "increaseDate()");
-// }
-//
-// function showMonthNavArrows() {
-//     document.getElementById("prev").style.display = "inline";
-//     document.getElementById("next").style.display = "inline";
-//     document.getElementById("prev-button").setAttribute("onclick", "decreaseMonth()");
-//     document.getElementById("next-button").setAttribute("onclick", "increaseMonth()");
-// }
-//
-// function hideNavArrows() {
-//     document.getElementById("prev").style.display = "none";
-//     document.getElementById("next").style.display = "none";
-// }
-//
-// function buildUserInfoHeader() {
-//     let meterNumber = document.getElementById("user-selector").value;
-//     let user = null;
-//     userList.forEach(u => {
-//         if (u["number"] === meterNumber) {
-//             user = u;
-//         }
-//     });
-//     document.getElementById("user-info").innerHTML =
-//         user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
-// }
+function updateHeader() {
+    /**
+     * Update the header according to the current response data
+     * **/
+
+    switch (window.state) {
+        case States.day:
+            let date = moment(document.getElementById("dateSelector").value);
+            buildDateHeader(date);
+            break;
+        case States.interval:
+            let firstDate = moment(document.getElementById("first-date-selector").value);
+            let lastDate = moment(document.getElementById("last-date-selector").value);
+            buildIntervalHeader(firstDate, lastDate);
+            break;
+        case States.month:
+            let month = moment(document.getElementById("month-selector").value);
+            console.log(month);
+            buildMonthHeader(month);
+            break;
+        case States.year:
+            let year = moment(document.getElementById("year-selector").value);
+            console.log(year);
+            buildYearHeader(year);
+            break;
+    }
+
+    checkNavArrows();  // Disable prev/next arrows if the current date is the last available date
+    buildUserInfoHeader();
+}
+
+function buildDateHeader(date) {
+    document.getElementById("title").innerText =
+        date.format("dddd, Do MMMM YYYY");
+    showDayNavArrows();
+}
+
+function buildIntervalHeader(firstDate, lastDate) {
+    document.getElementById("title").innerText =
+        firstDate.format("LL") + " - " + lastDate.format("LL");
+    hideNavArrows();
+}
+
+function buildMonthHeader(month) {
+    document.getElementById("title").innerText = month.format("[Lastgang vom] MMMM YYYY");
+    showMonthNavArrows();
+}
+
+function buildYearHeader(year) {
+    document.getElementById("title").innerText = year.format("[Lastgang vom Jahr] YYYY");
+    hideNavArrows();
+}
+
+function checkNavArrows() {
+    let datetimeSelector;
+
+    if (window.state === States.day) {
+        datetimeSelector = document.getElementById('dateSelector');
+    } else if (window.state === States.month) {
+        datetimeSelector = document.getElementById('month-selector');
+    } else {
+        return;
+    }
+
+    checkNavArrowsRange(datetimeSelector);
+}
+
+function checkNavArrowsRange(selector) {
+    if (selector.value === selector.max) {
+        document.getElementById("nextButton").style.display = "none";
+    } else if (selector.value === selector.min) {
+        document.getElementById("prevButton").style.display = "none";
+    } else {
+        document.getElementById("nextButton").style.display = "inline";
+        document.getElementById("prevButton").style.display = "inline";
+    }
+}
+
+function showDayNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prevButton").onclick = decreaseDate;
+    document.getElementById("nextButton").onclick = increaseDate;
+}
+
+function showMonthNavArrows() {
+    document.getElementById("prev").style.display = "inline";
+    document.getElementById("next").style.display = "inline";
+    document.getElementById("prevButton").onclick = decreaseMonth;
+    document.getElementById("nextButton").onclick = increaseMonth;
+}
+
+function hideNavArrows() {
+    document.getElementById("prev").style.display = "none";
+    document.getElementById("next").style.display = "none";
+}
+
+function buildUserInfoHeader() {
+    // let meterNumber = document.getElementById("meterSelector").value;
+    // let selMeter = null;
+    // for (let meter in window.meters) {
+    //     if (meter['number'] === meterNumber) {
+    //         selMeter = meter;
+    //     }
+    // }
+    document.getElementById("userInfo").innerHTML = "Max Mustermann - Dortmund (44139)";
+}
 
 /* Chart Update */
 function updateChart() {
@@ -356,7 +356,7 @@ function assignChartXValues() {
 function assignChartYValues() {
     window.chart.data.datasets[0].data = window.currentMeter.loadDiffs;  // Add loadDiffs to chart
 
-    if (document.getElementById('meter-readings-selector').checked) {
+    if (document.getElementById('meterReadingsSelector').checked) {
         window.chart.data.datasets[1].data = window.currentMeter.meterReadings;  // Add meterReadings to chart
     }
 
@@ -494,12 +494,12 @@ function priceChanged() {
     updateTable(currentPrice);
 }
 
-function meterReadingsSelectorChanged(checkbox) {
+function meterReadingsSelectorChanged() {
     /**
      * Add and remove the meter value line graph from the chart
      * **/
 
-    if (checkbox.checked) { // Add line graph
+    if (this.checked) { // Add line graph
         if (window.chart.data.datasets.length === 1) {   // Add line graph if not already in chart
             window.chart.data.datasets.push({
                 label: 'Zählerstand',
