@@ -11,9 +11,19 @@ document.getElementById('sendButton').onclick = () => {
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 
- window.onresize = () => {
-     setResponsiveChartSettings();
- };
+window.onresize = () => {
+    if (window.chart === undefined) {
+        return;
+    }
+
+    if (window.outerWidth < 768) {
+        window.chart.options.scales.xAxes[0].scaleLabel.display = false;
+        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = false);
+    } else {
+        window.chart.options.scales.xAxes[0].scaleLabel.display = true;
+        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = true);
+    }
+};
 
 // Setup functions
 function setupMeterSelector() {
@@ -139,18 +149,6 @@ function setupChart() {
     setResponsiveChartSettings();
 }
 
-function setResponsiveChartSettings() {
-    if (window.chart === undefined) { return; }
-
-    if (window.outerWidth < 768) {
-        window.chart.options.scales.xAxes[0].scaleLabel.display = false;
-        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = false);
-    } else {
-        window.chart.options.scales.xAxes[0].scaleLabel.display = true;
-        window.chart.options.scales.yAxes.forEach(axis => axis.scaleLabel.display = true);
-    }
-}
-
 // Run on startup
 window.onload = function () {
     moment.locale('de');    // Set Moment.js to german language
@@ -207,7 +205,7 @@ function updatePage() {
      * Update the page according to the received response
      * **/
 
-    // let price = document.getElementById("priceSelector").value / 100;    // Get current kWh price
+        // let price = document.getElementById("priceSelector").value / 100;    // Get current kWh price
     let price = 0.30;
 
     // Update page contents
@@ -326,6 +324,7 @@ function updatePage() {
 //         user["firstname"] + " " + user["lastname"] + " - " + user["city"] + " (" + user["zipcode"] + ")";
 // }
 
+/* Chart Update */
 function updateChart() {
     /**
      * Update the chart according to the current response data
@@ -357,13 +356,14 @@ function assignChartXValues() {
 function assignChartYValues() {
     window.chart.data.datasets[0].data = window.currentMeter.loadDiffs;  // Add loadDiffs to chart
 
-    // if (document.getElementById('meter-readings-selector').checked) {
-    //     window.chart.data.datasets[1].data = window.currentMeter.meterReadings;  // Add meterReadings to chart
-    // }
+    if (document.getElementById('meter-readings-selector').checked) {
+        window.chart.data.datasets[1].data = window.currentMeter.meterReadings;  // Add meterReadings to chart
+    }
 
     window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + getCurrentUnit() + "]";
 }
 
+/* Table Update */
 function updateTable(kwhPrice) {
     /**
      * Update the table according to the current response data
@@ -386,10 +386,12 @@ function buildTable(kwhPrice) {
 
     // Add table values
     for (let index in window.currentMeter.datetimes) {
-        tableContent += "<tr class=\"d-flex\"><td class=\"col\">" + formatLabel(window.currentMeter.datetimes[index])
-            + "</td><td class=\"col\">" + roundTwoPlaces(window.currentMeter.loadDiffs[index]) + "</td><td class=\"col\">"
-            + roundTwoPlaces(window.currentMeter.meterReadings[index]) + "</td><td class=\"col\">"
-            + calculatePrice(window.currentMeter.loadDiffs[index], kwhPrice) + " €</td></tr>";
+        tableContent += `<tr class="d-flex">
+                        <td class="col">${formatLabel(window.currentMeter.datetimes[index])}</td>
+                        <td class="col">${roundTwoPlaces(window.currentMeter.loadDiffs[index])}</td>
+                        <td class="col">${roundTwoPlaces(window.currentMeter.meterReadings[index])}</td>
+                        <td class="col">${calculatePrice(window.currentMeter.loadDiffs[index], kwhPrice)} €</td>
+                        </tr>`;
     }
 
     // Close table tag
@@ -414,6 +416,7 @@ function updateTableTitle() {
     }
 }
 
+/* Statistics Update */
 function updateStatistics(kwhPrice) {
     /**
      * Update the statistics data according to the current response data
@@ -519,71 +522,6 @@ function meterReadingsSelectorChanged(checkbox) {
     window.chart.update();
 }
 
-function getMinMaxInformation() {
-    /**
-     * Get the min/max values of the currently selected meter
-     * **/
-
-    let userSelector = document.getElementById('user-selector');
-
-    // Remove user selector placeholder
-    if (userSelector[0].value === "") {
-        userSelector[0].remove();
-    }
-
-    let http = new XMLHttpRequest();
-
-    http.onreadystatechange = function () {
-        parseMinMaxResponse.call(this);
-    };
-
-    http.open("GET", "/min-max?u=" + userSelector.value, true);
-    http.send();
-}
-
-function parseMinMaxResponse() {
-    /**
-     * Parse the response of /min-max and update the min/max values of the date inputs accordingly
-     * **/
-
-    if (this.readyState === 4) {    // 4 -> XMLHttpRequest status: DONE
-        if (this.status === 200) {  // 200 -> HTTP response status: OK
-            let response = JSON.parse(this.responseText);
-            let maxDate = response['max_date'];
-            let minDate = response['min_date'];
-
-            setDateSelectorRange(minDate, maxDate);
-            setIntervalSelectorRange(minDate, maxDate);
-            setMonthSelectorRange(minDate, maxDate);
-            setYearSelectorRange(minDate);
-        } else {
-            window.alert("Server Fehler");
-        }
-    }
-}
-
-function setDateSelectorRange(min, max) {
-    document.getElementById('date-selector').min = min;
-    document.getElementById('date-selector').max = max;
-}
-
-function setIntervalSelectorRange(min, max) {
-    document.getElementById('first-date-selector').min = min;
-    document.getElementById('first-date-selector').max = max;
-    document.getElementById('last-date-selector').min = min;
-    document.getElementById('last-date-selector').max = max;
-}
-
-function setMonthSelectorRange(min, max) {
-    document.getElementById('month-selector').min = moment(min).format("YYYY-MM");
-    document.getElementById('month-selector').max = moment(max).subtract(1, "months").format("YYYY-MM");
-}
-
-function setYearSelectorRange(min) {
-    document.getElementById('year-selector').innerHTML =
-        "<option value=\"" + moment(min).format("YYYY") + "\">" + moment(min).format("YYYY") + "</option>";
-}
-
 function checkInputs() {
     /**
      * Check the value of each input before allowing a request to be sent
@@ -666,36 +604,6 @@ function calculatePrice(load, price) {
             break;
     }
     return cost.toFixed(3)
-}
-
-function createArguments() {
-    /**
-     * Combine the selection values and parameter names to form the correct request arguments
-     * **/
-
-    let arguments = "u=" + document.getElementById("user-selector").value;
-
-    switch (state) {
-        case 1: // state = day
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&d=" + document.getElementById("date-selector").value +
-                "&r=" + document.getElementById("resolution-selector").value;
-            break;
-        case 2: // state = interval
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&sd=" + document.getElementById("first-date-selector").value +
-                "&ed=" + document.getElementById("last-date-selector").value;
-            break;
-        case 3: // state = month
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&m=" + document.getElementById("month-selector").value;
-            break;
-        case 4: // state = year
-            arguments += "&mode=" + document.getElementById("mode-selector").value +
-                "&y=" + document.getElementById("year-selector").value;
-            break;
-    }
-    return arguments;
 }
 
 function getCurrentUnit() {
