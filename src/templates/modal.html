@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form class="form-group">
+        <form>
           <!-- Meter selection -->
           <div class="form-group">
             <label for="meterSelector">Zählernummer</label>
@@ -17,53 +17,72 @@
             </select>
           </div>
           <!-- Mode selection -->
-          <div class="form-group">
-            <label for="modeSelector">Modus</label>
-            <select class="form-control" id="modeSelector">
-              <option value="day">Tagesansicht</option>
-              <option value="interval">Intervall</option>
-              <option value="month">Monat</option>
-              <option value="year">Jahr</option>
-            </select>
-          </div>
-          <!-- Date form -->
-          <div id="day-options">
-            <!-- Date selector -->
-            <div class="form-group">
-              <label for="dateSelector">Datum</label>
-              <input type="date" class="form-control" id="dateSelector">
+          <ul class="nav nav-tabs nav-fill">
+            <li class="nav-item">
+              <a class="nav-link active" id="dayTab" data-toggle="tab" href="#day" role="tab">Tag</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="intervalTab" data-toggle="tab" href="#interval" role="tab">Intervall</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="monthTab" data-toggle="tab" href="#month" role="tab">Monat</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="yearTab" data-toggle="tab" href="#year" role="tab">Jahr</a>
+            </li>
+          </ul>
+          <div class="tab-content mt-2" id="modeTabContent">
+            <!-- Date form -->
+            <div class="tab-pane fade show active" id="day" role="tabpanel">
+              <div class="form-row">
+                <!-- Date selector -->
+                <div class="form-group col">
+                  <label for="dateSelector">Datum</label>
+                  <input type="date" class="form-control" id="dateSelector">
+                </div>
+                <!-- Resolution selection -->
+                <div class="form-group col">
+                  <label for="resSelector">Auflösung</label>
+                  <select class="form-control" id="resSelector">
+                    <option value="15">Viertelstunde</option>
+                    <option value="60">Stunde</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <!-- Resolution selection -->
-            <div class="form-group">
-              <label for="resSelector">Auflösung</label>
-              <select class="form-control" id="resSelector">
-                <option value="15">Viertelstunde</option>
-                <option value="60">Stunde</option>
-              </select>
+            <!-- Interval form -->
+            <div class="tab-pane fade" id="interval" role="tabpanel">
+              <div class="form-row">
+                <div class="form-group col">
+                  <label for="first-date-selector">Startdatum</label>
+                  <input type="date" class="form-control" id="firstDateSelector">
+                </div>
+                <div class="form-group col">
+                  <label for="last-date-selector">Enddatum</label>
+                  <input type="date" class="form-control" id="lastDateSelector">
+                </div>
+              </div>
             </div>
-          </div>
-          <!-- Interval form -->
-          <div class="form-group d-none" id="interval-options">
-            <label for="first-date-selector">Startdatum</label>
-            <input type="date" class="form-control" id="first-date-selector">
-            <label for="last-date-selector">Enddatum</label>
-            <input type="date" class="form-control" id="last-date-selector">
-          </div>
-          <!-- Month form -->
-          <div class="form-group d-none" id="month-options">
-            <label for="month-selector">Monat</label>
-            <input type="month" class="form-control" id="month-selector">
-          </div>
-          <!-- Year form -->
-          <div class="form-group d-none" id="year-options" style="display: none">
-            <label for="year-selector">Jahr</label>
-            <select class="form-control" id="year-selector"></select>
+            <!-- Month form -->
+            <div class="tab-pane fade" id="month" role="tabpanel">
+              <div class="form-group">
+                <label for="month-selector">Monat</label>
+                <input type="month" class="form-control" id="monthSelector">
+              </div>
+            </div>
+            <!-- Year form -->
+            <div class="tab-pane fade" id="year" role="tabpanel">
+              <div class="form-group">
+                <label for="year-selector">Jahr</label>
+                <select class="form-control" id="yearSelector"></select>
+              </div>
+            </div>
           </div>
         </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-        <button type="button" class="btn btn-primary" id="sendButton">Abrufen</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+          <button type="button" class="btn btn-primary" id="sendButton">Abrufen</button>
+        </div>
       </div>
     </div>
   </div>
