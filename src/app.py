@@ -119,6 +119,12 @@ def build_response_dict(result):
     return response_dict
 
 
+def generate_day_query(meter_id, start, end, res):
+    return "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{} 00:00:00' " \
+           "AND '{}' AND STRFTIME('%M', datum_zeit) % {} = 0 AND zaehler_id = '{}' ORDER BY datum_zeit " \
+           .format(start, end, res, meter_id)
+
+
 @app.route('/')
 def root():
     """
@@ -132,7 +138,64 @@ def root():
     return render_template('selection.html', meters=stored_meters)
 
 
-@app.route('/meter/<meter_id>/<mode>')
+@app.route('/meters/day/quarter/<meter_id>')
+def day_quarter_meter(meter_id):
+    day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+    next_day = day + timedelta(days=1)
+
+    query = generate_day_query(meter_id, day, next_day, 15)
+
+    response = build_response_dict(db.select(query))
+
+
+@app.route('/meters/day/hour/<meter_id>')
+def day_hour_meter(meter_id):
+    day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+    next_day = day + timedelta(days=1)
+
+    query = generate_day_query(meter_id, day, next_day, 60)
+
+    response = build_response_dict(db.select(query))
+
+
+@app.route('/meters/interval/<meter_id>')
+def interval_meter(meter_id):
+    start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
+    end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
+    next_day = end_day + timedelta(days=1)
+
+    query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
+            "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC" \
+        .format(start_day.date(), next_day.date(), meter_id)
+
+    response = build_response_dict(db.select(query))
+
+
+@app.route('/meters/month/<meter_id>')
+def month_meter(meter_id):
+    month = datetime.strptime(request.args['m'], MONTH_FORMAT)
+    next_month = add_month(month)
+
+    query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
+            "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+        .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), meter_id)
+
+    response = build_response_dict(db.select(query))
+
+
+@app.route('/meters/year/<meter_id>')
+def year_meter(meter_id):
+    year = datetime.strptime(request.args['y'], YEAR_FORMAT)
+    next_year = add_year(year)
+
+    query = "SELECT DATE(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE STRFTIME('%Y', datum_zeit) " \
+            "BETWEEN '{0}' AND '{1}' AND STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' " \
+            "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
+        .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), meter_id)
+
+    response = build_response_dict(db.select(query))
+
+
 def meters(meter_id, mode):
     """
     This function gets all meter readings and  current loads in a specified time interval and for a specified meter.
@@ -143,48 +206,6 @@ def meters(meter_id, mode):
     """
 
     try:
-        selected_mode = mode
-        selected_meter = meter_id
-        query = ""
-
-        # Generate SQL query according to selected mode and dates/times
-        if selected_mode == 'day':
-            day = datetime.strptime(request.args['d'], "%Y-%m-%d")
-            next_day = day + timedelta(days=1)
-            resolution = request.args['r']
-
-            query = "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{0} 00:00:00' " \
-                    "AND '{1}' AND STRFTIME('%M', datum_zeit) % {2} = 0 AND zaehler_id = '{3}' ORDER BY datum_zeit " \
-                    "ASC".format(day.date(), next_day.date(), resolution, selected_meter)
-
-        elif selected_mode == 'interval':
-            start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
-            end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
-            next_day = end_day + timedelta(days=1)
-
-            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
-                    "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC" \
-                .format(start_day.date(), next_day.date(), selected_meter)
-
-        elif selected_mode == 'month':
-            month = datetime.strptime(request.args['m'], MONTH_FORMAT)
-            next_month = add_month(month)
-
-            query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
-                    "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
-                .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), selected_meter)
-
-        elif selected_mode == 'year':
-            year = datetime.strptime(request.args['y'], YEAR_FORMAT)
-            next_year = add_year(year)
-
-            query = "SELECT DATE(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE STRFTIME('%Y', datum_zeit) " \
-                    "BETWEEN '{0}' AND '{1}' AND STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' " \
-                    "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
-                .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), selected_meter)
-
-        response = build_response_dict(db.select(query))
-
     # Send 400 (bad request) response with error details if an error occurred
     except ValueError:
         return make_response("Datum falsch oder nicht vorhanden!", 400)
