@@ -96,8 +96,8 @@ def build_response_dict(result):
     energy_diffs = []
 
     for res in result:
-        times.append(res[0])                    # res[0] --> datum_zeit
-        meter_readings.append(float(res[1]))    # res[1] --> obis_180
+        times.append(res[0])  # res[0] --> datum_zeit
+        meter_readings.append(float(res[1]))  # res[1] --> obis_180
 
     for i in range(len(times) - 1):
         energy_diffs.append((floor(meter_readings[i + 1] * 100) - floor(meter_readings[i] * 100)) / 100)
@@ -129,7 +129,7 @@ def root():
     """
 
     stored_meters = get_available_meters()
-    return render_template('index.html', meters=stored_meters)
+    return render_template('selection.html', meters=stored_meters)
 
 
 @app.route('/meter/<meter_id>/<mode>')
@@ -163,7 +163,7 @@ def meters(meter_id, mode):
             next_day = end_day + timedelta(days=1)
 
             query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
-                    "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC"\
+                    "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC" \
                 .format(start_day.date(), next_day.date(), selected_meter)
 
         elif selected_mode == 'month':
@@ -171,7 +171,7 @@ def meters(meter_id, mode):
             next_month = add_month(month)
 
             query = "SELECT DATE(datum_zeit), obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN '{0}' AND '{1}' " \
-                    "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
+                    "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
                 .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), selected_meter)
 
         elif selected_mode == 'year':
@@ -180,7 +180,7 @@ def meters(meter_id, mode):
 
             query = "SELECT DATE(datum_zeit, '%Y-%m-%d'), obis_180 FROM zaehlwerte WHERE STRFTIME('%Y', datum_zeit) " \
                     "BETWEEN '{0}' AND '{1}' AND STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' " \
-                    "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC"\
+                    "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
                 .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), selected_meter)
 
         response = build_response_dict(db.select(query))

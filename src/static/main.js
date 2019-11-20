@@ -38,18 +38,6 @@ function setupMeterSelector() {
     }
 }
 
-function setMeterButtonEvents() {
-    const meterButtonList = document.getElementsByClassName('meter');
-    for (let meterButton of meterButtonList) {
-        // Cannot use arrow function as "this" represents the function owner, not the function caller
-        meterButton.onclick = function () {
-            document.getElementById('showModalButton').click();
-            document.getElementById('meterSelector').value = this.id;
-            setSelectorRanges();    // Manual invocation as changing the value doesn't trigger the onchange event
-        }
-    }
-}
-
 function setSelectorRanges() {
     const selectorOption = document.getElementById('meterSelector').value;
     const meterDates = window.meters[selectorOption].date;

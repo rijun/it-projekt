@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8"/>
+  <title>Lastgangsdarstellung</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Include required CSS files -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+</head>
+
+<body>
+<!-- Header -->
+<nav class="navbar d-md-none navbar-dark bg-dark shadow">
+  <!--<button class="navbar-toggler" type="button" data-toggle="dropdown">
+    <span class="navbar-toggler-icon"></span>
+  </button>-->
+  <a class="navbar-brand p-0 m-0" href="#">
+    <img src="{{ url_for('static', filename='favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
+         alt="">
+  </a>
+  <div class="btn-toolbar d-md-none mb-2 mb-md-0">
+    <div class="btn-group mr-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+    </div>
+    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
+      Neue Abfrage
+    </button>
+  </div>
+</nav>
+<img class="d-none d-md-block p-0" src="{{ url_for('static', filename='header.png') }}" alt="logo.png" width="100%"/>
+<!-- Content -->
+<main class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <!-- Header -->
+      <div
+              class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h2 class="h2">Lastgang</h2>
+        <div class="mb-2 mb-md-0">
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <label class="input-group-text form-control-label" for="priceInput"><i class="fas fa-money-bill-wave"></i></label>
+              <span class="input-group-text">0,</span>
+            </div>
+            <input class="form-control" type="number" id="priceInput" value="30" style="width: 4rem">
+            <div class="input-group-append">
+              <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+              <button type="submit" class="btn btn-outline-secondary" id="changePrice">Ändern</button>
+            </div>
+          </div>
+        </div>
+        <div class="mb-2 mb-md-0">
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
+            <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
+          </div>
+        </div>
+        <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal"
+                  id="showModalButton">
+            Neue Abfrage
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Content -->
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</main>
+{% include 'modal.html' %}
+<!-- Scripts -->
+<!-- Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<!-- Moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<!-- Custom -->
+<script>
+    function addMetersToStorage() {
+        let availableMeters = {{ meters | tojson }};
+        let meters = {};
+        availableMeters.forEach(meter => {
+            meters[meter.id] = {
+                'id': meter.id,
+                'date': {
+                    'min': meter.min,
+                    'max': meter.max
+                }
+            };
+        });
+        window.meters = meters; // Store available meters in a global object
+    }
+</script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+{% block contentjs %}{% endblock %}
+</body>
+
+</html>
