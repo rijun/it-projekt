@@ -1,7 +1,7 @@
 """
 This script runs a flask server.
 
-Requirements: flask, pymysql
+Requirements: flask
 
 Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
         Request arguments can be accessed by: request.args["<request_variable_name>"]
@@ -13,6 +13,7 @@ from os import chdir, path
 from statistics import mean
 
 from flask import Flask, render_template, request, jsonify, make_response
+from werkzeug.exceptions import InternalServerError
 
 from dbhandler import DatabaseHandler
 
@@ -81,13 +82,13 @@ def add_year(date):
     return datetime.strptime(return_str, YEAR_FORMAT)
 
 
-def build_response_dict(result):
+def parse_meter_values(result):
     """
         Calculate the load differences between two following dates or times and adds this to the return dictionary.
         The min, max and average load values are calculated and added as well.
 
-        :param query: The result of a SQL query
-        :type query: list
+        :param result: The result of a SQL query
+        :type result: list
         :return: All entries from the SQL query result and some statistical data
         :rtype: dict
         """
@@ -106,10 +107,13 @@ def build_response_dict(result):
     times.pop()
     meter_readings.pop()
 
+    # Create list of meter data tuples
+    meter_data_list = []
+    for i, time in enumerate(times):
+        meter_data_list.append((time, meter_readings[i], energy_diffs[i]))
+
     response_dict = {
-        'times': times,
-        'energy_diffs': energy_diffs,
-        'meter_readings': meter_readings,
+        'meter_data': meter_data_list,
         'min': min(energy_diffs),
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
@@ -138,27 +142,40 @@ def root():
     return render_template('selection.html', meters=stored_meters)
 
 
-@app.route('/meters/day/quarter/<meter_id>')
+def get_meter_data(query):
+    db_result = db.select(query)
+    return parse_meter_values(db_result)
+
+
+@app.route('/meters/<meter_id>/day/quarter')
 def day_quarter_meter(meter_id):
+    """
+    response_dict = {
+        'meter_data': meter_data_list,
+        'min': min(energy_diffs),
+        'max': max(energy_diffs),
+        'avg': round(mean(energy_diffs), 3),
+        'sum': round(sum(energy_diffs), 2)
+    }
+    """
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
-
     query = generate_day_query(meter_id, day, next_day, 15)
 
-    response = build_response_dict(db.select(query))
+    data = get_meter_data(query)
+    return render_template("meter.html")
 
 
-@app.route('/meters/day/hour/<meter_id>')
+@app.route('/meters/<meter_id>/day/hour')
 def day_hour_meter(meter_id):
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
-
     query = generate_day_query(meter_id, day, next_day, 60)
 
-    response = build_response_dict(db.select(query))
+    response = parse_meter_values(db.select(query))
 
 
-@app.route('/meters/interval/<meter_id>')
+@app.route('/meters/<meter_id>/interval')
 def interval_meter(meter_id):
     start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
     end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
@@ -168,10 +185,10 @@ def interval_meter(meter_id):
             "AND zaehler_id = '{2}' AND TIME(datum_zeit) = '00:00:00' ORDER BY datum_zeit ASC" \
         .format(start_day.date(), next_day.date(), meter_id)
 
-    response = build_response_dict(db.select(query))
+    response = parse_meter_values(db.select(query))
 
 
-@app.route('/meters/month/<meter_id>')
+@app.route('/meters/<meter_id>/month')
 def month_meter(meter_id):
     month = datetime.strptime(request.args['m'], MONTH_FORMAT)
     next_month = add_month(month)
@@ -180,10 +197,10 @@ def month_meter(meter_id):
             "AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
         .format(month.strftime(DATE_FORMAT), next_month.strftime(DATE_FORMAT), meter_id)
 
-    response = build_response_dict(db.select(query))
+    response = parse_meter_values(db.select(query))
 
 
-@app.route('/meters/year/<meter_id>')
+@app.route('/meters/<meter_id>/year')
 def year_meter(meter_id):
     year = datetime.strptime(request.args['y'], YEAR_FORMAT)
     next_year = add_year(year)
@@ -193,26 +210,7 @@ def year_meter(meter_id):
             "AND zaehler_id = '{2}' ORDER BY datum_zeit ASC" \
         .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), meter_id)
 
-    response = build_response_dict(db.select(query))
-
-
-def meters(meter_id, mode):
-    """
-    This function gets all meter readings and  current loads in a specified time interval and for a specified meter.
-    Additionally, the min, max and average load are calculated.
-
-    :return: All entries from the SQL query result and some statistical data, converted to JSON
-    :rtype: JSON
-    """
-
-    try:
-    # Send 400 (bad request) response with error details if an error occurred
-    except ValueError:
-        return make_response("Datum falsch oder nicht vorhanden!", 400)
-    except IndexError:
-        return make_response("Zählernummer falsch oder nicht vorhanden!", 400)
-    else:
-        return jsonify(response)
+    response = parse_meter_values(db.select(query))
 
 
 # Run Flask server with the selected settings
