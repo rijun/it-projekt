@@ -33,7 +33,31 @@
   <div class="card my-2">
     <div class="card-body">
       <h5 class="card-title">Zählwerte</h5>
-      <div id="dataTable" class="card-text table-responsive"></div>
+      <div class="card-text table-responsive">
+        <table class="table table-striped table-sm table-hover text-center">
+          <tr class="d-flex">
+            <th class="col">{{ title }}</th>
+            <th class="col">Lastgang [{{ unit }}]</th>
+            <th class="col">Zählerstand [kWh] </th>
+            <th class="col">Kosten [€]</th>
+          </tr>
+          {% for meter in meters %}
+            <tr class="d-flex">
+              {% if g.day is defined %}
+                <td class="col">{{ meter.datetime|datetime('day') }}</td>
+              {% elif g.month is defined %}
+                <td class="col">{{ meter.datetime|datetime('month') }}</td>
+              {% else %}
+                <td class="col">{{ meter.datetime|datetime }}</td>
+              {% endif %}
+               <td class="col">{{ meter.datetime|datetime }}</td>
+               <td class="col diff">{{ meter.diff }}</td>
+               <td class="col">{{ meter.reading }}</td>
+               <td class="col price">-,--</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
     </div>
   </div>
 {% endblock %}

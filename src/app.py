@@ -6,13 +6,15 @@ Requirements: flask
 Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
         Request arguments can be accessed by: request.args["<request_variable_name>"]
 """
+# TODO: Refactor and create flight class
+
 from configparser import ConfigParser
 from datetime import datetime, timedelta
 from math import floor
 from os import chdir, path
 from statistics import mean
 
-from flask import Flask, render_template, request, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response, g
 from werkzeug.exceptions import InternalServerError
 
 from dbhandler import DatabaseHandler
@@ -110,7 +112,7 @@ def parse_meter_values(result):
     # Create list of meter data tuples
     meter_data_list = []
     for i, time in enumerate(times):
-        meter_data_list.append((time, meter_readings[i], energy_diffs[i]))
+        meter_data_list.append({'datetime': time, 'reading': meter_readings[i], 'diff': energy_diffs[i]})
 
     response_dict = {
         'meter_data': meter_data_list,
@@ -158,12 +160,13 @@ def day_quarter_meter(meter_id):
         'sum': round(sum(energy_diffs), 2)
     }
     """
+    g.hour = True   # Set format for datetime display
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, 15)
 
     data = get_meter_data(query)
-    return render_template("meter.html")
+    return render_template("meter.html", title='Uhrzeit', unit='kWh/15 min', meters=data['meter_data'])
 
 
 @app.route('/meters/<meter_id>/day/hour')
@@ -190,6 +193,7 @@ def interval_meter(meter_id):
 
 @app.route('/meters/<meter_id>/month')
 def month_meter(meter_id):
+    g.day = True    # Set format for datetime display
     month = datetime.strptime(request.args['m'], MONTH_FORMAT)
     next_month = add_month(month)
 
@@ -202,6 +206,7 @@ def month_meter(meter_id):
 
 @app.route('/meters/<meter_id>/year')
 def year_meter(meter_id):
+    g.month = True  # Set format for datetime display
     year = datetime.strptime(request.args['y'], YEAR_FORMAT)
     next_year = add_year(year)
 
@@ -211,6 +216,21 @@ def year_meter(meter_id):
         .format(year.strftime(YEAR_FORMAT), next_year.strftime(YEAR_FORMAT), meter_id)
 
     response = parse_meter_values(db.select(query))
+
+
+def format_datetime(value, fmt='hour'):
+    """Custom filter for datetimes"""
+    dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+    if fmt == 'hour':
+        fmt = '%H:%M'
+    elif fmt == 'day':
+        fmt = '%D.%m'
+    elif fmt == 'month':
+        fmt = '%B %Y'
+    return dt.strftime(fmt)
+
+
+app.jinja_env.filters['datetime'] = format_datetime
 
 
 # Run Flask server with the selected settings
