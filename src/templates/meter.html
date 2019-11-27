@@ -28,7 +28,7 @@
   <div class="card my-2">
     <div class="card-body">
       <h5 class="card-title">Statistische Daten</h5>
-        {% include 'statistics.html' %}
+      {% include 'statistics.html' %}
     </div>
   </div>
   <!-- Table -->
@@ -44,7 +44,164 @@
 
 {% block contentjs %}
   <script>
+      document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
       document.getElementById('changePrice').onclick = calcPrice;
+
+      function makeChart() {
+          /**
+           * Update the chart according to the current response data
+           * **/
+          moment.locale('de');    // Set Moment.js to german language
+          setupChart();
+
+          let requestData = {{ g.data['meter_data']|tojson }};
+          window.meterData = {
+              datetimes: [],
+              loadDiffs: [],
+              meterReadings: []
+          };
+
+          requestData.forEach(d => {
+              window.meterData.datetimes.push(d.datetime);
+              window.meterData.loadDiffs.push(d.diff);
+              window.meterData.meterReadings.push(d.reading);
+          });
+
+          assignChartXValues();
+          assignChartYValues();
+          window.chart.update();
+      }
+
+      function setupChart() {
+          /**
+           * Setup chart with the settings stored in the chart_settings.js file
+           * **/
+
+          const ctx = document.getElementById("chart").getContext('2d');
+          window.chart = new Chart(ctx, {
+              type: "bar",
+              data: {
+                  datasets: [{
+                      label: "Lastgang",
+                      backgroundColor: "rgba(255, 128, 0, 0.2)",
+                      borderColor: "rgb(255, 128, 0)",
+                      borderWidth: 1,
+                      yAxisID: "y-axis-load",
+                  }]
+              },
+              options: {
+                  scales: {
+                      xAxes: [{
+                          scaleLabel: {
+                              display: true,
+                              labelString: "Zeitpunkt",
+                          },
+                          gridLines: {
+                              offsetGridLines: true
+                          }
+                      }],
+                      yAxes: [{
+                          type: "linear",
+                          display: true,
+                          position: "left",
+                          id: "y-axis-load",
+                          scaleLabel: {
+                              display: true,
+                              labelString: "Lastgang",
+                          },
+                          ticks: {
+                              beginAtZero: true
+                          }
+                      }, {
+                          type: "linear",
+                          display: false,
+                          position: "right",
+                          id: "y-axis-energy",
+                          scaleLabel: {
+                              display: true,
+                              labelString: "Zählerstand [kWh]",
+                          },
+                          gridLines: {
+                              drawOnChartArea: false,
+                          }
+                      }]
+                  },
+                  tooltips: {
+                      mode: "index",
+                      // Custom tooltip settings
+                      callbacks: {
+                          label: function (tooltipItem, data) {
+                              if (tooltipItem.datasetIndex === 0) {
+                                  return tooltipItem.yLabel + ' ' + getCurrentUnit();
+                              } else {
+                                  return tooltipItem.yLabel + " kWh";
+                              }
+                          },
+                          footer: function (tooltipItem, data) {
+                              let kwhPrice;
+                              let load = tooltipItem[0].yLabel;
+                              // let price = document.getElementById("priceSelector").value / 100;
+                              let price = 0.3;
+                              kwhPrice = calculatePrice(load, price);
+                              return "Kosten: " + kwhPrice + ' €';
+                          },
+                      },
+                      footerFontStyle: "normal"
+                  }
+              }
+          });
+      }
+
+      function assignChartXValues() {
+          let formattedLabels = [];
+
+          {% if g.fmt == 'day' %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("L")));
+          {% elif g.fmt == 'month' %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
+          {% else %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
+          {% endif %}
+          window.chart.data.labels = formattedLabels;
+      }
+
+      function assignChartYValues() {
+          window.chart.data.datasets[0].data = window.meterData.loadDiffs;  // Add loadDiffs to chart
+
+          if (document.getElementById('meterReadingsSelector').checked) {
+              window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Add meterReadings to chart
+          }
+
+          window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + getCurrentUnit() + "]";
+      }
+
+      function meterReadingsSelectorChanged() {
+          /**
+           * Add and remove the meter value line graph from the chart
+           * **/
+
+          if (this.checked) { // Add line graph
+              if (window.chart.data.datasets.length === 1) {   // Add line graph if not already in chart
+                  window.chart.data.datasets.push({
+                      label: 'Zählerstand',
+                      data: window.meterData.meterReadings,
+                      backgroundColor: "rgba(255, 0, 0, 0.2)",
+                      borderColor: "rgb(255, 0, 0)",
+                      borderWidth: 1,
+                      type: "line",
+                      yAxisID: 'y-axis-energy'
+                  });
+                  window.chart.options.scales.yAxes[1].display = true;
+              } else {
+                  window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Update line graph values if already in chart
+              }
+          } else if (window.chart.data.datasets.length === 2) {    // Remove line graph if already in chart
+              window.chart.data.datasets.pop();
+              window.chart.options.scales.yAxes[1].display = false;
+          }
+
+          window.chart.update();
+      }
 
       function calcPrice() {
           let priceCollection = document.getElementsByClassName('cost');
@@ -69,6 +226,7 @@
           }
       }
 
+      makeChart();
       calcPrice();
   </script>
 {% endblock %}
