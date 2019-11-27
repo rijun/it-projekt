@@ -6,7 +6,7 @@ Requirements: flask
 Usage:  @app.route('/foo') creates an API endpoint to which an GET/POST request can be sent, e.g. http://bar.com/foo
         Request arguments can be accessed by: request.args["<request_variable_name>"]
 """
-# TODO: Refactor and create flight class
+# TODO: Refactor and create meter class
 
 from configparser import ConfigParser
 from datetime import datetime, timedelta
@@ -160,13 +160,12 @@ def day_quarter_meter(meter_id):
         'sum': round(sum(energy_diffs), 2)
     }
     """
-    g.hour = True   # Set format for datetime display
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, 15)
 
-    data = get_meter_data(query)
-    return render_template("meter.html", title='Uhrzeit', unit='kWh/15 min', meters=data['meter_data'], mode='day')
+    g.data = get_meter_data(query)
+    return render_template('meter.html', tbl_title='Uhrzeit', unit='kWh / 15 min')
 
 
 @app.route('/meters/<meter_id>/day/hour')
@@ -181,6 +180,7 @@ def day_hour_meter(meter_id):
 
 @app.route('/meters/<meter_id>/interval')
 def interval_meter(meter_id):
+    g.mode = 'day'  # Set format for datetime display
     start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
     end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
     next_day = end_day + timedelta(days=1)
@@ -194,7 +194,7 @@ def interval_meter(meter_id):
 
 @app.route('/meters/<meter_id>/month')
 def month_meter(meter_id):
-    g.day = True    # Set format for datetime display
+    g.mode = 'day'  # Set format for datetime display
     month = datetime.strptime(request.args['m'], MONTH_FORMAT)
     next_month = add_month(month)
 
