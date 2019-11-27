@@ -166,7 +166,7 @@ def day_quarter_meter(meter_id):
     query = generate_day_query(meter_id, day, next_day, 15)
 
     data = get_meter_data(query)
-    return render_template("meter.html", title='Uhrzeit', unit='kWh/15 min', meters=data['meter_data'])
+    return render_template("meter.html", title='Uhrzeit', unit='kWh/15 min', meters=data['meter_data'], mode='day')
 
 
 @app.route('/meters/<meter_id>/day/hour')
@@ -175,7 +175,8 @@ def day_hour_meter(meter_id):
     next_day = day + timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, 60)
 
-    response = parse_meter_values(db.select(query))
+    data = get_meter_data(query)
+    return render_template("meter.html", title='Uhrzeit', unit='kWh/1 h', meters=data['meter_data'], mode='day')
 
 
 @app.route('/meters/<meter_id>/interval')

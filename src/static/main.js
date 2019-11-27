@@ -11,7 +11,6 @@ document.getElementById('sendButton').onclick = () => {
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
-document.getElementById('changePrice').onclick = priceChanged;
 
 window.onresize = () => {
     if (window.chart === undefined) {
@@ -199,7 +198,6 @@ function updatePage() {
     // Update page contents
     updateHeader();
     updateChart();
-    updateTable(price);
     updateStatistics(price);
 }
 
@@ -350,59 +348,6 @@ function assignChartYValues() {
     window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + getCurrentUnit() + "]";
 }
 
-/* Table Update */
-function updateTable(kwhPrice) {
-    /**
-     * Update the table according to the current response data
-     * **/
-
-    document.getElementById("dataTable").innerHTML = buildTable(kwhPrice);
-    updateTableTitle();
-}
-
-function buildTable(kwhPrice) {
-    let tableContent = "";
-
-    // Add table tag
-    tableContent += "<table class=\"table table-striped table-sm table-hover text-center\">";
-
-    // Add table header
-    tableContent += "<tr class=\"d-flex\"><th id=\"datetime-title\" class=\"col\"></th><th class=\"col\">"
-        + "Lastgang [" + getCurrentUnit() + "]</th>" + "<th class=\"col\">Zählerstand [kWh] </th>"
-        + "<th class=\"col\">Kosten [€]</th></tr>";
-
-    // Add table values
-    for (let index in window.currentMeter.datetimes) {
-        tableContent += `<tr class="d-flex">
-                        <td class="col">${formatLabel(window.currentMeter.datetimes[index])}</td>
-                        <td class="col">${roundTwoPlaces(window.currentMeter.loadDiffs[index])}</td>
-                        <td class="col">${roundTwoPlaces(window.currentMeter.meterReadings[index])}</td>
-                        <td class="col">${calculatePrice(window.currentMeter.loadDiffs[index], kwhPrice)} €</td>
-                        </tr>`;
-    }
-
-    // Close table tag
-    tableContent += "</table>";
-
-    return tableContent;
-}
-
-function updateTableTitle() {
-    let title = document.getElementById('datetime-title');
-
-    switch (window.state) {
-        case States.day: // state = day
-            title.innerText = "Uhrzeit";
-            break;
-        case States.interval: // state = interval
-        case States.month: // state = month
-            title.innerText = "Datum";
-            break;
-        case States.year: // state = year
-            title.innerText = "Monat"
-    }
-}
-
 /* Statistics Update */
 function updateStatistics(kwhPrice) {
     /**
@@ -475,7 +420,6 @@ function priceChanged() {
 
     let currentPrice = document.getElementById("priceInput").value / 100;
     document.getElementById("statPrice").innerText = roundTwoPlaces(window.currentMeter.sumKwh * currentPrice);
-    updateTable(currentPrice);
 }
 
 function meterReadingsSelectorChanged() {
@@ -564,30 +508,6 @@ function checkInputRange() {
         case 4: // state = year
             return true;
     }
-}
-
-function calculatePrice(load, price) {
-    /**
-     * Calculate the cost of the energy used
-     * **/
-
-    let cost;
-
-    switch (window.state) {
-        case States.day: // state = day
-            cost = load * price / 60 * document.getElementById("resSelector").value;
-            break;
-        case States.interval: // state = interval
-            cost = load * price / 24;
-            break;
-        case States.month: // state = month
-            cost = load * price / 24;
-            break;
-        case States.year: // state = year
-            cost = load * price / 60 * document.getElementById("resSelector").value;
-            break;
-    }
-    return cost.toFixed(3)
 }
 
 function getCurrentUnit() {

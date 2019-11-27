@@ -38,7 +38,7 @@
           <tr class="d-flex">
             <th class="col">{{ title }}</th>
             <th class="col">Lastgang [{{ unit }}]</th>
-            <th class="col">Zählerstand [kWh] </th>
+            <th class="col">Zählerstand [kWh]</th>
             <th class="col">Kosten [€]</th>
           </tr>
           {% for meter in meters %}
@@ -50,14 +50,48 @@
               {% else %}
                 <td class="col">{{ meter.datetime|datetime }}</td>
               {% endif %}
-               <td class="col">{{ meter.datetime|datetime }}</td>
-               <td class="col diff">{{ meter.diff }}</td>
-               <td class="col">{{ meter.reading }}</td>
-               <td class="col price">-,--</td>
+              <td class="col diff">{{ meter.diff }}</td>
+              <td class="col">{{ meter.reading }}</td>
+              <td class="col price">-,--</td>
             </tr>
           {% endfor %}
         </table>
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block contentjs %}
+  <script>
+      const requestMode = '{{ mode }}';
+
+      document.getElementById('changePrice').onclick = calcPrice;
+
+      function calcPrice() {
+          let priceCollection = document.getElementsByClassName('price');
+          const diffCollection = document.getElementsByClassName('diff');
+          const price = document.getElementById("priceInput").value / 100;
+          const res = document.getElementById("resSelector").value;
+
+          for (let i = 0; i < priceCollection.length; i++) {
+              let cost = 0.0;
+              switch (requestMode) {
+                  case 'day':
+                      cost = parseFloat(diffCollection[i].innerHTML) * price / 60 * parseInt(res);
+                      break;
+                  case 'interval':
+                  case 'month':
+                      cost = parseFloat(diffCollection[i].innerHTML) * price / 24;
+                      break;
+                  default:
+                      cost = parseFloat(diffCollection[i].innerHTML) * price / 12;
+                      break;
+              }
+
+              priceCollection[i].innerHTML = cost.toFixed(3)
+          }
+      }
+
+      calcPrice();
+  </script>
 {% endblock %}
