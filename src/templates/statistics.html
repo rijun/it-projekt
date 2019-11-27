@@ -1,0 +1,42 @@
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Gesamtverbrauch</h5>
+        <p class="card-text">{{ g.data['sum'] }} kWh</p>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Durchschnittsverbrauch</h5>
+        <p class="card-text">{{ g.data['avg'] }} kWh</p>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Minimalverbrauch</h5>
+        <p class="card-text">{{ g.data['min'] }} kWh</p>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Maximalverbrauch</h5>
+        <p class="card-text">{{ g.data['max'] }} kWh</p>
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Gesamtkosten</h5>
+        <p class="card-text" id="cost">-,-- €</p>
+      </div>
+    </div>
+  </div>
+</div>

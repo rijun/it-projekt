@@ -28,48 +28,7 @@
   <div class="card my-2">
     <div class="card-body">
       <h5 class="card-title">Statistische Daten</h5>
-      <div class="row">
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Gesamtverbrauch</h5>
-              <p class="card-text">{{ g.data['sum'] }} kWh</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Durchschnittsverbrauch</h5>
-              <p class="card-text">{{ g.data['avg'] }} kWh</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Minimalverbrauch</h5>
-              <p class="card-text">{{ g.data['min'] }} kWh</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Maximalverbrauch</h5>
-              <p class="card-text">{{ g.data['max'] }} kWh</p>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Gesamtkosten</h5>
-              <p class="card-text" id="cost">-,-- €</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        {% include 'statistics.html' %}
     </div>
   </div>
   <!-- Table -->
@@ -77,28 +36,7 @@
     <div class="card-body">
       <h5 class="card-title">Zählwerte</h5>
       <div class="card-text table-responsive">
-        <table class="table table-striped table-sm table-hover text-center">
-          <tr class="d-flex">
-            <th class="col">{{ tbl_title }}</th>
-            <th class="col">Lastgang [{{ unit }}]</th>
-            <th class="col">Zählerstand [kWh]</th>
-            <th class="col">Kosten [€]</th>
-          </tr>
-          {% for meter in g.data['meter_data'] %}
-            <tr class="d-flex">
-              {% if g.fmt == 'day' %}
-                <td class="col">{{ meter.datetime|datetime('day') }}</td>
-              {% elif g.fmt == 'month' %}
-                <td class="col">{{ meter.datetime|datetime('month') }}</td>
-              {% else %}
-                <td class="col">{{ meter.datetime|datetime }}</td>
-              {% endif %}
-              <td class="col diff">{{ meter.diff }}</td>
-              <td class="col">{{ meter.reading }}</td>
-              <td class="col cost">-,--</td>
-            </tr>
-          {% endfor %}
-        </table>
+        {% include 'table.html' %}
       </div>
     </div>
   </div>
