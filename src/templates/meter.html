@@ -4,19 +4,23 @@
   <!-- Title -->
   <div class="card card-body p-2">
     <h4 class="card-text text-center">
+      {% if g.mode == 'day' or g.mode == 'month' %}
       <span id="prev">
         <button type="button" id="prevButton" style="background-color:transparent; border-color:transparent;">
           <i class="fas fa-angle-left"></i>
         </button>
       </span>
-      <span id="title"></span>
+      {% endif %}
+      <span id="title">{{ datetime }}</span>
+      {% if g.mode == 'day' or g.mode == 'month' %}
       <span id="next">
         <button type="button" id="nextButton" style="background-color:transparent; border-color:transparent;">
           <i class="fas fa-angle-right"></i>
         </button>
       </span>
+      {% endif %}
     </h4>
-    <p id="userInfo" class="lead text-center p-0 m-0">User</p>
+    <p id="userInfo" class="lead text-center p-0 m-0">{{ meter_id }}</p>
   </div>
   <!-- Chart -->
   <div class="card my-2">
@@ -70,9 +74,9 @@
 
           // x-Axis values and settings
           let formattedLabels = [];
-          {% if g.fmt == 'day' %}
+          {% if g.mode == 'interval' or g.mode == 'month' %}
               window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("L")));
-          {% elif g.fmt == 'month' %}
+          {% elif g.mode == 'year' %}
               window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
           {% else %}
               window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
@@ -159,9 +163,9 @@
                               const res = document.getElementById("resSelector").value;
                               // let price = 0.3;
                               // kwhPrice = calculatePrice(load, price);
-                              {% if g.fmt == 'day' %}
+                              {% if g.mode == 'interval' or g.mode == 'month' %}
                                   kwhPrice = load * price / 24;
-                              {% elif g.fmt == 'month' %}
+                              {% elif g.fmt == 'year' %}
                                   kwhPrice = load * price / 12;
                               {% else %}
                                   kwhPrice = load * price / 60 * parseInt(res);
@@ -216,9 +220,9 @@
 
           for (let i = 0; i < priceCollection.length; i++) {
               let cost = 0.0;
-              {% if g.fmt == 'day' %}
+              {% if g.mode == 'interval' or g.mode == 'month' %}
                   cost = parseFloat(diffCollection[i].innerHTML) * price / 24;
-              {% elif g.fmt == 'month' %}
+              {% elif g.mode == 'year' %}
                   cost = parseFloat(diffCollection[i].innerHTML) * price / 12;
               {% else %}
                   cost = parseFloat(diffCollection[i].innerHTML) * price / 60 * parseInt(res);

@@ -151,6 +151,7 @@ def get_meter_data(query):
 
 @app.route('/meters/<meter_id>/day/<int:res>')
 def day_quarter_meter(meter_id, res):
+    g.mode = 'day'
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, res)
@@ -161,12 +162,17 @@ def day_quarter_meter(meter_id, res):
         unit = "kWh / {} min".format(res)
 
     g.data = get_meter_data(query)
-    return render_template('meter.html', tbl_title='Uhrzeit', unit=unit)
+    return render_template('meter.html',
+                           meter_id=meter_id,
+                           datetime=day.strftime('%A, %d. %B %Y'),
+                           unit=unit,
+                           tbl_title='Uhrzeit'
+                           )
 
 
 @app.route('/meters/<meter_id>/interval')
 def interval_meter(meter_id):
-    g.mode = 'day'  # Set format for datetime display
+    g.mode = 'interval'
     start_day = datetime.strptime(request.args['sd'], DATE_FORMAT)
     end_day = datetime.strptime(request.args['ed'], DATE_FORMAT)
     next_day = end_day + timedelta(days=1)
@@ -180,7 +186,7 @@ def interval_meter(meter_id):
 
 @app.route('/meters/<meter_id>/month')
 def month_meter(meter_id):
-    g.mode = 'day'  # Set format for datetime display
+    g.mode = 'month'
     month = datetime.strptime(request.args['m'], MONTH_FORMAT)
     next_month = add_month(month)
 
@@ -193,7 +199,7 @@ def month_meter(meter_id):
 
 @app.route('/meters/<meter_id>/year')
 def year_meter(meter_id):
-    g.month = True  # Set format for datetime display
+    g.mode = 'year'
     year = datetime.strptime(request.args['y'], YEAR_FORMAT)
     next_year = add_year(year)
 
