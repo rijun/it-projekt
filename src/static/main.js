@@ -59,8 +59,6 @@ function setSelectorRanges() {
 // Run on startup
 window.onload = function () {
     setupMeterSelector();
-    setMeterButtonEvents();
-    setupChart();
     window.state = States.day;
 };
 
@@ -114,7 +112,6 @@ function updatePage() {
 
     // Update page contents
     updateHeader();
-    updateChart();
 }
 
 function updateHeader() {

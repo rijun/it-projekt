@@ -149,33 +149,19 @@ def get_meter_data(query):
     return parse_meter_values(db_result)
 
 
-@app.route('/meters/<meter_id>/day/quarter')
-def day_quarter_meter(meter_id):
-    """
-    response_dict = {
-        'meter_data': meter_data_list,
-        'min': min(energy_diffs),
-        'max': max(energy_diffs),
-        'avg': round(mean(energy_diffs), 3),
-        'sum': round(sum(energy_diffs), 2)
-    }
-    """
+@app.route('/meters/<meter_id>/day/<int:res>')
+def day_quarter_meter(meter_id, res):
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
-    query = generate_day_query(meter_id, day, next_day, 15)
+    query = generate_day_query(meter_id, day, next_day, res)
+
+    if res == 60:
+        unit = "kWh / 1 h"
+    else:
+        unit = "kWh / {} min".format(res)
 
     g.data = get_meter_data(query)
-    return render_template('meter.html', tbl_title='Uhrzeit', unit='kWh / 15 min')
-
-
-@app.route('/meters/<meter_id>/day/hour')
-def day_hour_meter(meter_id):
-    day = datetime.strptime(request.args['d'], "%Y-%m-%d")
-    next_day = day + timedelta(days=1)
-    query = generate_day_query(meter_id, day, next_day, 60)
-
-    data = get_meter_data(query)
-    return render_template("meter.html", title='Uhrzeit', unit='kWh/1 h', meters=data['meter_data'], mode='day')
+    return render_template('meter.html', tbl_title='Uhrzeit', unit=unit)
 
 
 @app.route('/meters/<meter_id>/interval')

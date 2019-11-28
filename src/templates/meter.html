@@ -47,12 +47,13 @@
       document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
       document.getElementById('changePrice').onclick = calcPrice;
 
+      /* Chart functions */
       function makeChart() {
           /**
            * Update the chart according to the current response data
            * **/
           moment.locale('de');    // Set Moment.js to german language
-          setupChart();
+          setChartSettings();
 
           let requestData = {{ g.data['meter_data']|tojson }};
           window.meterData = {
@@ -67,12 +68,26 @@
               window.meterData.meterReadings.push(d.reading);
           });
 
-          assignChartXValues();
-          assignChartYValues();
+          // x-Axis values and settings
+          let formattedLabels = [];
+          {% if g.fmt == 'day' %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("L")));
+          {% elif g.fmt == 'month' %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
+          {% else %}
+              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
+          {% endif %}
+          window.chart.data.labels = formattedLabels;
+
+          // y-Axis values and settings
+          window.chart.data.datasets[0].data = window.meterData.loadDiffs;  // Add loadDiffs to chart
+          if (document.getElementById('meterReadingsSelector').checked) {
+              window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Add meterReadings to chart
+          }
           window.chart.update();
       }
 
-      function setupChart() {
+      function setChartSettings() {
           /**
            * Setup chart with the settings stored in the chart_settings.js file
            * **/
@@ -107,7 +122,7 @@
                           id: "y-axis-load",
                           scaleLabel: {
                               display: true,
-                              labelString: "Lastgang",
+                              labelString: "Lastgang [{{ unit }}]",
                           },
                           ticks: {
                               beginAtZero: true
@@ -132,7 +147,7 @@
                       callbacks: {
                           label: function (tooltipItem, data) {
                               if (tooltipItem.datasetIndex === 0) {
-                                  return tooltipItem.yLabel + ' ' + getCurrentUnit();
+                                  return tooltipItem.yLabel + ' {{ unit }}';
                               } else {
                                   return tooltipItem.yLabel + " kWh";
                               }
@@ -140,39 +155,25 @@
                           footer: function (tooltipItem, data) {
                               let kwhPrice;
                               let load = tooltipItem[0].yLabel;
-                              // let price = document.getElementById("priceSelector").value / 100;
-                              let price = 0.3;
-                              kwhPrice = calculatePrice(load, price);
-                              return "Kosten: " + kwhPrice + ' €';
+                              let price = document.getElementById("priceInput").value / 100;
+                              const res = document.getElementById("resSelector").value;
+                              // let price = 0.3;
+                              // kwhPrice = calculatePrice(load, price);
+                              {% if g.fmt == 'day' %}
+                                  kwhPrice = load * price / 24;
+                              {% elif g.fmt == 'month' %}
+                                  kwhPrice = load * price / 12;
+                              {% else %}
+                                  kwhPrice = load * price / 60 * parseInt(res);
+                              {% endif %}
+
+                              return "Kosten: " + kwhPrice.toFixed(2) + ' €';
                           },
                       },
                       footerFontStyle: "normal"
                   }
               }
           });
-      }
-
-      function assignChartXValues() {
-          let formattedLabels = [];
-
-          {% if g.fmt == 'day' %}
-              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("L")));
-          {% elif g.fmt == 'month' %}
-              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
-          {% else %}
-              window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
-          {% endif %}
-          window.chart.data.labels = formattedLabels;
-      }
-
-      function assignChartYValues() {
-          window.chart.data.datasets[0].data = window.meterData.loadDiffs;  // Add loadDiffs to chart
-
-          if (document.getElementById('meterReadingsSelector').checked) {
-              window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Add meterReadings to chart
-          }
-
-          window.chart.options.scales.yAxes[0].scaleLabel.labelString = "Lastgang [" + getCurrentUnit() + "]";
       }
 
       function meterReadingsSelectorChanged() {
@@ -203,6 +204,7 @@
           window.chart.update();
       }
 
+      /* Price functions */
       function calcPrice() {
           let priceCollection = document.getElementsByClassName('cost');
           const diffCollection = document.getElementsByClassName('diff');
