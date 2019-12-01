@@ -44,8 +44,8 @@ def get_available_meters():
     for meter in meter_list:
         meter_min = db.select("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
         meter_max = db.select("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
-        meter['min'] = meter_min
-        meter['max'] = meter_max
+        meter['min'] = datetime.strptime(meter_min, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        meter['max'] = (datetime.strptime(meter_max, '%Y-%m-%d %H:%M:%S') - timedelta(days=1)).strftime('%Y-%m-%d')
 
     return meter_list
 

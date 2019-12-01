@@ -103,6 +103,23 @@
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
 <!-- Custom -->
+<script>
+    function addMetersToStorage() {
+        let availableMeters = {{ meters | tojson }};
+        let meters = {};
+        availableMeters.forEach(meter => {
+            meters[meter.id] = {
+                'id': meter.id,
+                'date': {
+                    'min': meter.min,
+                    'max': meter.max
+                }
+            };
+        });
+        window.meters = meters; // Store available meters in a global object
+    }
+    addMetersToStorage()
+</script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 {% block contentjs %}{% endblock %}
 </body>

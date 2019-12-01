@@ -44,15 +44,15 @@ function setSelectorRanges() {
     document.getElementById('dateSelector').max = moment(meterDates.max).format("YYYY-MM-DD");
     document.getElementById('dateSelector').value = moment(meterDates.max).format("YYYY-MM-DD");
     // Interval selector
-    document.getElementById('first-date-selector').min = meterDates.min;
-    document.getElementById('first-date-selector').max = meterDates.max;
-    document.getElementById('last-date-selector').min = meterDates.min;
-    document.getElementById('last-date-selector').max = meterDates.max;
+    document.getElementById('firstDateSelector').min = meterDates.min;
+    document.getElementById('firstDateSelector').max = meterDates.max;
+    document.getElementById('lastDateSelector').min = meterDates.min;
+    document.getElementById('lastDateSelector').max = meterDates.max;
     // Month selector
-    document.getElementById('month-selector').min = moment(meterDates.min).format("YYYY-MM");
-    document.getElementById('month-selector').max = moment(meterDates.max).subtract(1, "months").format("YYYY-MM");
+    document.getElementById('monthSelector').min = moment(meterDates.min).format("YYYY-MM");
+    document.getElementById('monthSelector').max = moment(meterDates.max).subtract(1, "months").format("YYYY-MM");
     // Year selector
-    document.getElementById('year-selector').innerHTML =
+    document.getElementById('yearSelector').innerHTML =
         "<option value=\"" + moment(meterDates.min).format("YYYY") + "\">" + moment(meterDates.min).format("YYYY") + "</option>";
 }
 
