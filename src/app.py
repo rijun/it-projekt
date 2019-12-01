@@ -154,6 +154,7 @@ def day_quarter_meter(meter_id, res):
     g.mode = 'day'
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
+    prev_day = day - timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, res)
 
     if res == 60:
@@ -161,12 +162,17 @@ def day_quarter_meter(meter_id, res):
     else:
         unit = "kWh / {} min".format(res)
 
+    next_url = "/meters/{}/day/{}?d={}".format(meter_id, res, next_day.strftime('%Y-%m-%d'))
+    prev_url = "/meters/{}/day/{}?d={}".format(meter_id, res, prev_day.strftime('%Y-%m-%d'))
+
     g.data = get_meter_data(query)
     return render_template('meter.html',
                            meter_id=meter_id,
                            datetime=day.strftime('%A, %d. %B %Y'),
                            unit=unit,
-                           tbl_title='Uhrzeit'
+                           tbl_title='Uhrzeit',
+                           next_url=next_url,
+                           prev_url=prev_url,
                            )
 
 

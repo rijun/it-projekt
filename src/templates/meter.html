@@ -5,19 +5,15 @@
   <div class="card card-body p-2">
     <h4 class="card-text text-center">
       {% if g.mode == 'day' or g.mode == 'month' %}
-      <span id="prev">
-        <button type="button" id="prevButton" style="background-color:transparent; border-color:transparent;">
-          <i class="fas fa-angle-left"></i>
-        </button>
-      </span>
+      <a href="{{ prev_url }}">
+        <i class="fas fa-angle-left"></i>
+      </a>
       {% endif %}
       <span id="title">{{ datetime }}</span>
       {% if g.mode == 'day' or g.mode == 'month' %}
-      <span id="next">
-        <button type="button" id="nextButton" style="background-color:transparent; border-color:transparent;">
-          <i class="fas fa-angle-right"></i>
-        </button>
-      </span>
+      <a href="{{ next_url }}">
+        <i class="fas fa-angle-right"></i>
+      </a>
       {% endif %}
     </h4>
     <p id="userInfo" class="lead text-center p-0 m-0">{{ meter_id }}</p>
