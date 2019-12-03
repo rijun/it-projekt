@@ -8,11 +8,11 @@
         </button>
       </div>
       <div class="modal-body">
-        <form>
+        <form action="/meters" method="get">
           <!-- Meter selection -->
           <div class="form-group">
             <label for="meterSelector">Zählernummer</label>
-            <select class="form-control" id="meterSelector">
+            <select class="form-control" name="id" id="meterSelector">
               <option value="">Zähler auswählen...</option>
             </select>
           </div>
@@ -38,12 +38,12 @@
                 <!-- Date selector -->
                 <div class="form-group col">
                   <label for="dateSelector">Datum</label>
-                  <input type="date" class="form-control" id="dateSelector">
+                  <input type="date" class="form-control" name="d" id="dateSelector">
                 </div>
                 <!-- Resolution selection -->
                 <div class="form-group col">
                   <label for="resSelector">Auflösung</label>
-                  <select class="form-control" id="resSelector">
+                  <select class="form-control" name="r" id="resSelector">
                     <option value="15">15 min</option>
                     <option value="60">1 h</option>
                   </select>
@@ -54,35 +54,35 @@
             <div class="tab-pane fade" id="interval" role="tabpanel">
               <div class="form-row">
                 <div class="form-group col">
-                  <label for="first-date-selector">Startdatum</label>
-                  <input type="date" class="form-control" id="firstDateSelector">
+                  <label for="firstDateSelector">Startdatum</label>
+                  <input type="date" class="form-control" name="fd" id="firstDateSelector">
                 </div>
                 <div class="form-group col">
-                  <label for="last-date-selector">Enddatum</label>
-                  <input type="date" class="form-control" id="lastDateSelector">
+                  <label for="lastDateSelector">Enddatum</label>
+                  <input type="date" class="form-control" name="ld" id="lastDateSelector">
                 </div>
               </div>
             </div>
             <!-- Month form -->
             <div class="tab-pane fade" id="month" role="tabpanel">
               <div class="form-group">
-                <label for="month-selector">Monat</label>
-                <input type="month" class="form-control" id="monthSelector">
+                <label for="monthSelector">Monat</label>
+                <input type="month" class="form-control" name="m" id="monthSelector">
               </div>
             </div>
             <!-- Year form -->
             <div class="tab-pane fade" id="year" role="tabpanel">
               <div class="form-group">
-                <label for="year-selector">Jahr</label>
-                <select class="form-control" id="yearSelector"></select>
+                <label for="yearSelector">Jahr</label>
+                <select class="form-control" name="y" id="yearSelector"></select>
               </div>
             </div>
           </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+            <button type="submit" class="btn btn-primary" id="sendButton">Abrufen</button>
+          </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-          <button type="button" class="btn btn-primary" id="sendButton">Abrufen</button>
-        </div>
       </div>
     </div>
   </div>

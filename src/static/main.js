@@ -2,12 +2,6 @@
 const States = Object.freeze({"day": {}, "interval": {}, "month": {}, "year": {}});
 
 // Event handlers
-document.getElementById('sendButton').onclick = () => {
-    getMeterData();
-    $('#queryModal').modal('hide');
-    document.getElementById('meterSelection').classList.add('d-none');
-    document.getElementById('meterDisplay').classList.remove('d-none');
-};
 
 document.getElementById('meterSelector').onchange = setSelectorRanges;
 

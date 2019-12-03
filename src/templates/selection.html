@@ -28,6 +28,22 @@
           }
       }
 
+      function addMetersToStorage() {
+          let availableMeters = {{ meters | tojson }};
+          let meters = {};
+          availableMeters.forEach(meter => {
+              meters[meter.id] = {
+                  'id': meter.id,
+                  'date': {
+                      'min': meter.min,
+                      'max': meter.max
+                  }
+              };
+          });
+          window.meters = meters; // Store available meters in a global object
+      }
+
       setMeterButtonEvents();
+      addMetersToStorage();
   </script>
 {% endblock %}

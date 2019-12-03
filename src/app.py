@@ -128,7 +128,7 @@ def parse_meter_values(result):
 def generate_day_query(meter_id, start, end, res):
     return "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{} 00:00:00' " \
            "AND '{}' AND STRFTIME('%M', datum_zeit) % {} = 0 AND zaehler_id = '{}' ORDER BY datum_zeit " \
-           .format(start, end, res, meter_id)
+        .format(start, end, res, meter_id)
 
 
 @app.route('/')
@@ -149,10 +149,24 @@ def get_meter_data(query):
     return parse_meter_values(db_result)
 
 
+@app.route('/meters')
+def meters():
+    res = (None, None)
+    if 'd' in request.args and 'r' in request.args:
+        res = day_meter(request.args['id'], request.args['r'], request.args['d'])
+    else:
+        pass
+    g.data = res[0]
+    return render_template('meter.html', **res[1])
+
+
 @app.route('/meters/<meter_id>/day/<int:res>')
-def day_quarter_meter(meter_id, res):
+def day_meter(meter_id, res, day=None):
     g.mode = 'day'
-    day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+    if day is None:
+        day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+    else:
+        day = datetime.strptime(day, "%Y-%m-%d")
     next_day = day + timedelta(days=1)
     prev_day = day - timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day, res)
@@ -165,15 +179,17 @@ def day_quarter_meter(meter_id, res):
     next_url = "/meters/{}/day/{}?d={}".format(meter_id, res, next_day.strftime('%Y-%m-%d'))
     prev_url = "/meters/{}/day/{}?d={}".format(meter_id, res, prev_day.strftime('%Y-%m-%d'))
 
-    g.data = get_meter_data(query)
-    return render_template('meter.html',
-                           meter_id=meter_id,
-                           datetime=day.strftime('%A, %d. %B %Y'),
-                           unit=unit,
-                           tbl_title='Uhrzeit',
-                           next_url=next_url,
-                           prev_url=prev_url,
-                           )
+    data = get_meter_data(query)
+    return (data,
+            {
+                'meter_id': meter_id,
+                'datetime': day.strftime('%A, %d. %B %Y'),
+                'unit': unit,
+                'tbl_title': 'Uhrzeit',
+                'next_url': next_url,
+                'prev_url': prev_url
+            }
+            )
 
 
 @app.route('/meters/<meter_id>/interval')
@@ -230,7 +246,6 @@ def format_datetime(value, fmt='hour'):
 
 
 app.jinja_env.filters['datetime'] = format_datetime
-
 
 # Run Flask server with the selected settings
 if __name__ == '__main__':
