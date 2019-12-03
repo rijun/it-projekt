@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block content_main %}
   <div class="list-group" id="meterSelection">
     {% for meter in meters %}
-      <button type="button" class="list-group-item list-group-item-action meter" id="{{ meter.id }}">
+      <button type="button" class="list-group-item list-group-item-action meter" id="{{ meter.id }}" data-toggle="modal" data-target="#queryModal">
         {{ meter.id }}<br>
         {{ meter.firstname }} {{ meter.lastname }}<br>
         {{ meter.zipcode }}, {{ meter.city }}<br>
@@ -14,14 +14,13 @@
   </div>
 {% endblock %}
 
-{% block contentjs %}
+{% block content_js %}
   <script>
       function setMeterButtonEvents() {
           const meterButtonList = document.getElementsByClassName('meter');
           for (let meterButton of meterButtonList) {
               // Cannot use arrow function as "this" represents the function owner, not the function caller
               meterButton.onclick = function () {
-                  document.getElementById('showModalButton').click();
                   document.getElementById('meterSelector').value = this.id;
                   setSelectorRanges();    // Manual invocation as changing the value doesn't trigger the onchange event
               }

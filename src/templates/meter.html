@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block content_main %}
   <!-- Title -->
   <div class="card card-body p-2">
     <h4 class="card-text text-center">
@@ -42,7 +42,7 @@
   </div>
 {% endblock %}
 
-{% block contentjs %}
+{% block content_js %}
   <script>
       document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
       document.getElementById('changePrice').onclick = calcPrice;

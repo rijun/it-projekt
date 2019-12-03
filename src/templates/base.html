@@ -30,14 +30,9 @@
     <img src="{{ url_for('static', filename='favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
          alt="">
   </a>
-  <div class="btn-toolbar d-md-none mb-2 mb-md-0">
-    <div class="btn-group mr-2">
-      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-    </div>
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
-      Neue Abfrage
-    </button>
-  </div>
+  {% if g.data is defined %}
+  {% include 'toolbar.html' %}
+  {% endif %}
 </nav>
 <img class="d-none d-md-block p-0" src="{{ url_for('static', filename='header.png') }}" alt="logo.png" width="100%"/>
 <!-- Content -->
@@ -48,6 +43,7 @@
       <div
               class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2 class="h2">Lastgang</h2>
+        {% if g.data is defined %}
         <div class="mb-2 mb-md-0">
           <div class="input-group input-group-sm">
             <div class="input-group-prepend">
@@ -67,22 +63,15 @@
             <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
           </div>
         </div>
-        <div class="btn-toolbar d-none d-md-block mb-2 mb-md-0">
-          <div class="btn-group mr-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-          </div>
-          <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal"
-                  id="showModalButton">
-            Neue Abfrage
-          </button>
-        </div>
+        {% include 'toolbar.html' %}
+        {% endif %}
       </div>
     </div>
   </div>
   <!-- Content -->
   <div class="row justify-content-center">
     <div class="col-lg-11">
-      {% block content %}{% endblock %}
+      {% block content_main %}{% endblock %}
     </div>
   </div>
 </main>
@@ -103,7 +92,7 @@
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
 <!-- Custom -->
-{% block contentjs %}{% endblock %}
+{% block content_js %}{% endblock %}
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 
