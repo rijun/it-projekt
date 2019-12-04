@@ -47,9 +47,11 @@
         <h2 class="h2">Lastgang</h2>
         {% if g.data is defined %}
           <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="custom-control custom-switch mr-2 mt-1">
-              <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
-              <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
+            <div class="btn-group mr-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="meterReadingsButton" data-toggle="button">
+                <i class="d-md-none fas fa-chart-area"></i>
+                <span class="d-none d-md-block">Zählerstände</span>
+              </button>
             </div>
             <div class="d-none d-md-block">
               {% include 'toolbar.html' %}

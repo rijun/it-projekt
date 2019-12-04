@@ -44,7 +44,7 @@
 
 {% block content_js %}
   <script>
-      document.getElementById('meterReadingsSelector').onchange = meterReadingsSelectorChanged;
+      document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
       // document.getElementById('priceInput').onchange = alert(1);
 
       /* Chart functions */
@@ -81,7 +81,7 @@
 
           // y-Axis values and settings
           window.chart.data.datasets[0].data = window.meterData.loadDiffs;  // Add loadDiffs to chart
-          if (document.getElementById('meterReadingsSelector').checked) {
+          if (document.getElementById('meterReadingsButton').classList.contains('active')) {
               window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Add meterReadings to chart
           }
           window.chart.update();
@@ -176,12 +176,12 @@
           });
       }
 
-      function meterReadingsSelectorChanged() {
+      function meterReadingsChanged() {
           /**
            * Add and remove the meter value line graph from the chart
            * **/
 
-          if (this.checked) { // Add line graph
+          if (!document.getElementById('meterReadingsButton').classList.contains('active')) { // Add line graph
               if (window.chart.data.datasets.length === 1) {   // Add line graph if not already in chart
                   window.chart.data.datasets.push({
                       label: 'Zählerstand',
