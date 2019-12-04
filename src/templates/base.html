@@ -31,7 +31,9 @@
          alt="">
   </a>
   {% if g.data is defined %}
-  {% include 'toolbar.html' %}
+    <div class="btn-toolbar d-md-none mb-2 mb-md-0">
+      {% include 'toolbar.html' %}
+    </div>
   {% endif %}
 </nav>
 <img class="d-none d-md-block p-0" src="{{ url_for('static', filename='header.png') }}" alt="logo.png" width="100%"/>
@@ -44,26 +46,15 @@
               class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2 class="h2">Lastgang</h2>
         {% if g.data is defined %}
-        <div class="mb-2 mb-md-0">
-          <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
-              <label class="input-group-text form-control-label" for="priceInput"><i class="fas fa-money-bill-wave"></i></label>
-              <span class="input-group-text">0,</span>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="custom-control custom-switch mr-2 mt-1">
+              <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
+              <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
             </div>
-            <input class="form-control" type="number" id="priceInput" value="30" style="width: 4rem">
-            <div class="input-group-append">
-              <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
-              <button type="submit" class="btn btn-outline-secondary" id="changePrice">Ändern</button>
+            <div class="d-none d-md-block">
+              {% include 'toolbar.html' %}
             </div>
           </div>
-        </div>
-        <div class="mb-2 mb-md-0">
-          <div class="custom-control custom-switch">
-            <input type="checkbox" class="custom-control-input" id="meterReadingsSelector">
-            <label class="custom-control-label" for="meterReadingsSelector"><i class="fas fa-chart-area"></i></label>
-          </div>
-        </div>
-        {% include 'toolbar.html' %}
         {% endif %}
       </div>
     </div>

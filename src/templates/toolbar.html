@@ -1,8 +1,17 @@
-<div class="btn-toolbar d-md-none mb-2 mb-md-0">
-  <div class="btn-group mr-2">
-    <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+<div class="btn-group">
+  <div class="input-group input-group-sm mr-1">
+    <div class="input-group-prepend">
+      <label class="input-group-text form-control-label" for="priceInput"><i
+              class="fas fa-money-bill-wave"></i></label>
+      <span class="input-group-text">0,</span>
+    </div>
+    <input class="form-control" type="number" id="priceInput" value="30" style="width: 4rem">
+    <div class="input-group-append">
+      <span class="input-group-text"><i class="fas fa-euro-sign"></i></span>
+    </div>
   </div>
-  <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
-    Neue Abfrage
-  </button>
+  <!--<button type="button" class="btn btn-sm btn-outline-secondary">Export</button>-->
 </div>
+<button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#queryModal">
+  Neue Abfrage
+</button>
