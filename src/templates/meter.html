@@ -28,7 +28,7 @@
   <div class="card my-2">
     <div class="card-body">
       <h5 class="card-title">Statistische Daten</h5>
-      {% include 'statistics.html' %}
+      {% include "statistics.html" %}
     </div>
   </div>
   <!-- Table -->
@@ -36,16 +36,19 @@
     <div class="card-body">
       <h5 class="card-title">Zählwerte</h5>
       <div class="card-text table-responsive">
-        {% include 'table.html' %}
+        {% include "table.html" %}
       </div>
     </div>
   </div>
 {% endblock %}
 
+{% include "price_modal.html" %}
+
 {% block content_js %}
   <script>
       document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
-      // document.getElementById('priceInput').onchange = alert(1);
+      document.getElementById('priceInput').oninput = priceInputChanged;
+      document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
 
       /* Chart functions */
       function makeChart() {
@@ -204,11 +207,23 @@
           window.chart.update();
       }
 
+      function priceInputChanged() {
+          const currentVal = document.getElementById('priceInput').value;
+          document.getElementById('priceInputRange').value = currentVal;
+          calcPrice(currentVal);
+      }
+
+      function priceInputRangeChanged() {
+          const currentVal = document.getElementById('priceInputRange').value;
+          document.getElementById('priceInput').value = currentVal;
+          calcPrice(currentVal);
+      }
+
       /* Price functions */
-      function calcPrice() {
+      function calcPrice(val) {
           let priceCollection = document.getElementsByClassName('cost');
           const diffCollection = document.getElementsByClassName('diff');
-          const price = document.getElementById("priceInput").value / 100;
+          const price = val / 100;
           const res = document.getElementById("resSelector").value;
 
           let priceSum = price * {{ g.data['sum'] }};

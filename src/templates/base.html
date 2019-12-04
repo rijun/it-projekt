@@ -48,6 +48,10 @@
         {% if g.data is defined %}
           <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group mr-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="priceModalButton" data-toggle="modal" data-target="#priceModal">
+                <i class="d-md-none fas fa-money-bill-wave"></i>
+                <span class="d-none d-md-block"><i class="mr-2 fas fa-money-bill-wave"></i>Preis anpassen</span>
+              </button>
               <button type="button" class="btn btn-sm btn-outline-secondary" id="meterReadingsButton" data-toggle="button">
                 <i class="d-md-none fas fa-chart-area"></i>
                 <span class="d-none d-md-block"><i class="mr-2 fas fa-chart-area"></i>Zählerstand</span>
@@ -68,7 +72,7 @@
     </div>
   </div>
 </main>
-{% include 'modal.html' %}
+{% include 'query_modal.html' %}
 <!-- Scripts -->
 <!-- Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
