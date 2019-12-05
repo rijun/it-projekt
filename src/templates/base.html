@@ -7,8 +7,7 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Include required CSS files -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
         integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   <style>
@@ -31,7 +30,7 @@
          alt="">
   </a>
   {% if g.data is defined %}
-    <div class="btn-toolbar d-md-none mb-2 mb-md-0">
+    <div class="btn-toolbar d-md-none mb-1">
       {% include 'toolbar.html' %}
     </div>
   {% endif %}
@@ -44,20 +43,20 @@
       <!-- Header -->
       <div
               class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h2 class="h2">Lastgang</h2>
+        <h3 class="h3">Lastgang</h3>
         {% if g.data is defined %}
           <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group mr-2">
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="priceModalButton" data-toggle="modal" data-target="#priceModal">
+            <div class="btn-group">
+              <button type="button" class="btn btn-icon btn-outline-secondary" id="priceModalButton" data-toggle="modal" data-target="#priceModal">
                 <i class="d-md-none fas fa-money-bill-wave"></i>
                 <span class="d-none d-md-block"><i class="mr-2 fas fa-money-bill-wave"></i>Preis anpassen</span>
               </button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="meterReadingsButton" data-toggle="button">
+              <button type="button" class="btn btn-icon btn-outline-secondary" id="meterReadingsButton" data-toggle="button">
                 <i class="d-md-none fas fa-chart-area"></i>
                 <span class="d-none d-md-block"><i class="mr-2 fas fa-chart-area"></i>Zählerstand</span>
               </button>
             </div>
-            <div class="d-none d-md-block">
+            <div class="d-none d-md-block ml-2">
               {% include 'toolbar.html' %}
             </div>
           </div>

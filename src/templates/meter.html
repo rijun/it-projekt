@@ -3,7 +3,7 @@
 {% block content_main %}
   <!-- Title -->
   <div class="card card-body p-2">
-    <h4 class="card-text text-center">
+    <p class="lead card-text text-center mb-2">
       {% if g.mode == 'day' or g.mode == 'month' %}
       <a href="{{ prev_url }}">
         <i class="fas fa-angle-left"></i>
@@ -15,8 +15,8 @@
         <i class="fas fa-angle-right"></i>
       </a>
       {% endif %}
-    </h4>
-    <p id="userInfo" class="lead text-center p-0 m-0">{{ meter_id }}</p>
+    </p>
+    <p class="text-muted text-center p-0 m-0">{{ meter_id }}</p>
   </div>
   <!-- Chart -->
   <div class="card my-2">
