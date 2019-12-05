@@ -9926,21 +9926,19 @@ h3 {
     border-color: #dee2e6;
   }
 }
-/* Use normal button sizes on small displays */
+
 .btn-icon {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
   line-height: 1.5;
-  border-radius: 0.2rem;
+  border-radius: 0.25rem;
 }
 
-@media (max-width: 767.98px) {
+@media (min-width: 768px) {
   .btn-icon {
-    padding: 0.375rem 0.75rem;
-    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
     line-height: 1.5;
-    border-radius: 0.25rem;
+    border-radius: 0.2rem;
   }
 }
-
-/*# sourceMappingURL=style.css.map */
