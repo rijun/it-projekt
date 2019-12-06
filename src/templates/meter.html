@@ -19,18 +19,13 @@
     <p class="text-muted text-center p-0 m-0">{{ meter_id }}</p>
   </div>
   <!-- Chart -->
-  <div class="card my-2">
+  <div class="card mt-2 mb-4">
     <div class="card-img-top">
       <canvas id="chart" class="card-text m-0"></canvas>
     </div>
   </div>
   <!-- Statistics -->
-  <div class="card my-2">
-    <div class="card-body">
-      <h5 class="card-title">Statistische Daten</h5>
-      {% include "statistics.html" %}
-    </div>
-  </div>
+  {% include "statistics.html" %}
   <!-- Table -->
   <div class="card my-2">
     <div class="card-body">
