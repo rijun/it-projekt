@@ -5,15 +5,15 @@
   <div class="card card-body p-2">
     <p class="lead card-text text-center mb-2">
       {% if g.mode == 'day' or g.mode == 'month' %}
-      <a href="{{ prev_url }}">
-        <i class="fas fa-angle-left"></i>
-      </a>
+        <a href="{{ prev_url }}">
+          <i class="fas fa-angle-left"></i>
+        </a>
       {% endif %}
       <span id="title">{{ datetime }}</span>
       {% if g.mode == 'day' or g.mode == 'month' %}
-      <a href="{{ next_url }}">
-        <i class="fas fa-angle-right"></i>
-      </a>
+        <a href="{{ next_url }}">
+          <i class="fas fa-angle-right"></i>
+        </a>
       {% endif %}
     </p>
     <p class="text-muted text-center p-0 m-0">{{ meter_id }}</p>
@@ -27,14 +27,7 @@
   <!-- Statistics -->
   {% include "statistics.html" %}
   <!-- Table -->
-  <div class="card my-2">
-    <div class="card-body">
-      <h5 class="card-title">Zählwerte</h5>
-      <div class="card-text table-responsive">
-        {% include "table.html" %}
-      </div>
-    </div>
-  </div>
+  {% include "table.html" %}
 {% endblock %}
 
 {% include "price_modal.html" %}
