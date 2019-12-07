@@ -58,6 +58,17 @@
         <h3 class="h3">Lastgang</h3>
         {% if g.data is defined %}
           <div class="btn-toolbar mb-2 mb-md-0">
+            <!-- Options buttons -->
+            {% if g.mode == 'day' %}
+            <div class="btn-group btn-group-toggle mr-2" data-toggle="buttons">
+              <label class="btn btn-icon btn-outline-secondary active">
+                <input type="radio" name="res" value=15 checked>15 min
+              </label>
+              <label class="btn btn-icon btn-outline-secondary">
+                <input type="radio" name="res" value=60>60 min
+              </label>
+            </div>
+            {% endif %}
             <div class="btn-group">
               <button type="button" class="btn btn-icon btn-outline-secondary" id="priceModalButton" data-toggle="modal" data-target="#priceModal">
                 <i class="d-md-none fas fa-money-bill-wave"></i>
@@ -68,6 +79,7 @@
                 <span class="d-none d-md-block"><i class="mr-2 fas fa-chart-area"></i>Zählerstand</span>
               </button>
             </div>
+            <!-- Query button -->
             <div class="d-none d-md-block ml-2">
               {% include 'toolbar.html' %}
             </div>
