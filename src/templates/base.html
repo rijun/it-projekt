@@ -6,17 +6,29 @@
   <title>Lastgangsdarstellung</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Include required CSS files -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   <style>
+    /* Reformat table headers for two rows */
+    .table .th-t {
+      padding-bottom: 0;
+      border-bottom-width: 0;
+    }
+
+    .table .th-b {
+      padding-top: 0;
+      border-top-width: 0;
+    }
+
+    /* Style the table highlighting */
     .table-hover tbody tr:hover td {
       background-color: #ff8000;
       color: #ffffff;
       font-weight: bold;
     }
   </style>
+  <!-- Include required CSS files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 </head>
 
 <body>
