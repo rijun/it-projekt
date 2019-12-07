@@ -9,7 +9,7 @@
           <i class="fas fa-angle-left"></i>
         </a>
       {% endif %}
-      <span id="title">{{ datetime }}</span>
+      <span>{{ datetime }}</span>
       {% if g.mode == 'day' or g.mode == 'month' %}
         <a href="{{ next_url }}">
           <i class="fas fa-angle-right"></i>
@@ -38,6 +38,16 @@
       document.getElementById('priceInput').oninput = priceInputChanged;
       document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
 
+      function setResInputEvents() {
+          const resInputList = document.getElementsByName('res');
+          for (let resInput of resInputList) {
+              // Cannot use arrow function as "this" represents the function owner, not the function caller
+              resInput.onchange = function () {
+                  setResolution(this.value);
+              }
+          }
+      }
+
       /* Chart functions */
       function makeChart() {
           /**
@@ -47,17 +57,46 @@
           setChartSettings();
 
           let requestData = {{ g.data['meter_data']|tojson }};
-          window.meterData = {
+          window.meterData = {  // Object for storing meter data
               datetimes: [],
               loadDiffs: [],
-              meterReadings: []
+              meterReadings: [],
+              hour: {
+                  datetimes: [],
+                  loadDiffs: [],
+                  meterReadings: []
+              },
+              quarter: {
+                  datetimes: [],
+                  loadDiffs: [],
+                  meterReadings: []
+              }
           };
 
           requestData.forEach(d => {
-              window.meterData.datetimes.push(d.datetime);
-              window.meterData.loadDiffs.push(d.diff);
-              window.meterData.meterReadings.push(d.reading);
+              window.meterData.quarter.datetimes.push(d.datetime);
+              window.meterData.quarter.loadDiffs.push(d.diff);
+              window.meterData.quarter.meterReadings.push(d.reading);
+
+              if (moment(d.datetime).minute() % 60 === 0) {
+                  window.meterData.hour.datetimes.push(d.datetime);
+                  window.meterData.hour.loadDiffs.push(d.diff);
+                  window.meterData.hour.meterReadings.push(d.reading);
+              }
           });
+
+          let res = {{ g.res }};
+          if (res === 60) {
+              window.meterData.datetimes = window.meterData.hour.datetimes;
+              window.meterData.loadDiffs = window.meterData.hour.loadDiffs;
+              window.meterData.meterReadings = window.meterData.hour.meterReadings;
+          } else {
+              window.meterData.datetimes = window.meterData.quarter.datetimes;
+              window.meterData.loadDiffs = window.meterData.quarter.loadDiffs;
+              window.meterData.meterReadings = window.meterData.quarter.meterReadings;
+          }
+
+          setResInputEvents();
 
           // x-Axis values and settings
           let formattedLabels = [];
@@ -195,6 +234,26 @@
           window.chart.update();
       }
 
+      function setResolution(res) {
+          if (res === "60") {
+              window.meterData.datetimes = window.meterData.hour.datetimes;
+              window.meterData.loadDiffs = window.meterData.hour.loadDiffs;
+              window.meterData.meterReadings = window.meterData.hour.meterReadings;
+          } else {
+              window.meterData.datetimes = window.meterData.quarter.datetimes;
+              window.meterData.loadDiffs = window.meterData.quarter.loadDiffs;
+              window.meterData.meterReadings = window.meterData.quarter.meterReadings;
+          }
+          let formattedLabels = [];
+          window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
+          window.chart.data.labels = formattedLabels;
+          window.chart.data.datasets[0].data = window.meterData.loadDiffs;
+          if (window.chart.data.datasets.length === 2) {
+              window.chart.data.datasets[1].data = window.meterData.meterReadings;
+          }
+          window.chart.update();
+      }
+
       function priceInputChanged() {
           const currentVal = document.getElementById('priceInput').value;
           document.getElementById('priceInputRange').value = currentVal;
@@ -232,6 +291,6 @@
       }
 
       makeChart();
-      calcPrice();
+      calcPrice(document.getElementById('priceInput').value);
   </script>
 {% endblock %}

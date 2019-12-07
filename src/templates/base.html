@@ -62,10 +62,14 @@
             {% if g.mode == 'day' %}
             <div class="btn-group btn-group-toggle mr-2" data-toggle="buttons">
               <label class="btn btn-icon btn-outline-secondary active">
-                <input type="radio" name="res" value=15 checked>15 min
+                <input type="radio" name="res" value=15 checked>
+                <span class="d-md-none">15</span>
+                <span class="d-none d-md-block">15 min</span>
               </label>
               <label class="btn btn-icon btn-outline-secondary">
-                <input type="radio" name="res" value=60>60 min
+                <input type="radio" name="res" value=60>
+                <span class="d-md-none">60</span>
+                <span class="d-none d-md-block">60 min</span>
               </label>
             </div>
             {% endif %}
