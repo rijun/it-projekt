@@ -27,8 +27,8 @@
               {% else %}
                 <td class="col">{{ meter.datetime|datetime }}</td>
               {% endif %}
-              <td class="col diff">{{ meter.diff }}</td>
-              <td class="col">{{ meter.reading }}</td>
+              <td class="col diff">{{ '%0.2f' | format(meter.diff | float) }}</td>
+              <td class="col">{{ '%0.2f' | format(meter.reading | float) }}</td>
               <td class="col cost">-,--</td>
             </tr>
           {% endfor %}
