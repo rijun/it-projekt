@@ -152,18 +152,18 @@ def get_meter_data(query):
 @app.route('/meters')
 def meters():
     res = (None, None)
-    if 'd' in request.args and 'r' in request.args:
-        res = day_meter(request.args['id'], request.args['r'], request.args['d'])
+    if 'd' in request.args:
+        res = day_meter(request.args['id'], request.args['d'])
     else:
         pass
     g.data = res[0]
     return render_template('meter.html', **res[1])
 
 
-@app.route('/meters/<meter_id>/day/<int:res>')
-def day_meter(meter_id, res, day=None):
+@app.route('/meters/<meter_id>/day/')
+def day_meter(meter_id, day=None):
     g.mode = 'day'
-    g.res = res
+    g.res = 60
     if day is None:
         day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     else:
@@ -172,10 +172,10 @@ def day_meter(meter_id, res, day=None):
     prev_day = day - timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day)
 
-    unit = "kWh / {} min".format(res)
+    unit = "kWh / {} min".format(60)
 
-    next_url = "/meters/{}/day/{}?d={}".format(meter_id, res, next_day.strftime('%Y-%m-%d'))
-    prev_url = "/meters/{}/day/{}?d={}".format(meter_id, res, prev_day.strftime('%Y-%m-%d'))
+    next_url = "/meters/{}/day/?d={}".format(meter_id, next_day.strftime('%Y-%m-%d'))
+    prev_url = "/meters/{}/day/?d={}".format(meter_id, prev_day.strftime('%Y-%m-%d'))
 
     data = get_meter_data(query)
     return (data,

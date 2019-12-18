@@ -34,6 +34,11 @@
 
 {% block content_js %}
   <script>
+      {% if g.mode == 'day' %}
+          window.resolution = 60;
+      {% endif %}
+
+
       document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
       document.getElementById('priceInput').oninput = priceInputChanged;
       document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
@@ -186,7 +191,6 @@
                               let kwhPrice;
                               let load = tooltipItem[0].yLabel;
                               let price = document.getElementById("priceInput").value / 100;
-                              const res = document.getElementById("resSelector").value;
                               // let price = 0.3;
                               // kwhPrice = calculatePrice(load, price);
                               {% if g.mode == 'interval' or g.mode == 'month' %}
@@ -194,7 +198,7 @@
                               {% elif g.fmt == 'year' %}
                                   kwhPrice = load * price / 12;
                               {% else %}
-                                  kwhPrice = load * price / 60 * parseInt(res);
+                                  kwhPrice = load * price / 60 * window.resolution;
                               {% endif %}
 
                               return "Kosten: " + kwhPrice.toFixed(2) + ' €';
@@ -271,7 +275,6 @@
           let priceCollection = document.getElementsByClassName('cost');
           const diffCollection = document.getElementsByClassName('diff');
           const price = val / 100;
-          const res = document.getElementById("resSelector").value;
 
           let priceSum = price * {{ g.data['sum'] }};
           document.getElementById('cost').innerText = `${priceSum.toFixed(2)} €`;
@@ -283,7 +286,7 @@
               {% elif g.mode == 'year' %}
                   cost = parseFloat(diffCollection[i].innerHTML) * price / 12;
               {% else %}
-                  cost = parseFloat(diffCollection[i].innerHTML) * price / 60 * parseInt(res);
+                  cost = parseFloat(diffCollection[i].innerHTML) * price / 60 * window.resolution;
               {% endif %}
 
               priceCollection[i].innerHTML = cost.toFixed(3)
