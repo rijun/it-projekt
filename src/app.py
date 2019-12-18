@@ -126,7 +126,7 @@ def parse_meter_values(result):
 
 
 def generate_day_query(meter_id, start, end):
-    return "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{} 00:00:00' " \
+    return "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{}' " \
            "AND '{}' AND STRFTIME('%M', datum_zeit) % 15 = 0 AND zaehler_id = '{}' ORDER BY datum_zeit " \
         .format(start, end, meter_id)
 
@@ -146,6 +146,7 @@ def root():
 
 def get_meter_data(query):
     db_result = db.select(query)
+    print(db_result)
     return parse_meter_values(db_result)
 
 
@@ -171,6 +172,7 @@ def day_meter(meter_id, day=None):
     next_day = day + timedelta(days=1)
     prev_day = day - timedelta(days=1)
     query = generate_day_query(meter_id, day, next_day)
+    print(query)
 
     unit = "kWh / {} min".format(60)
 
