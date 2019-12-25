@@ -43,7 +43,7 @@
   </a>
   {% if g.data is defined %}
     <div class="btn-toolbar d-md-none mb-1">
-      {% include 'toolbar.html' %}
+      {% include 'dashboard/toolbar.html' %}
     </div>
   {% endif %}
 </nav>
@@ -85,7 +85,7 @@
             </div>
             <!-- Query button -->
             <div class="d-none d-md-block ml-2">
-              {% include 'toolbar.html' %}
+              {% include 'dashboard/toolbar.html' %}
             </div>
           </div>
         {% endif %}
@@ -99,7 +99,7 @@
     </div>
   </div>
 </main>
-{% include 'query_modal.html' %}
+{% include 'modals/query_modal.html' %}
 <!-- Scripts -->
 <!-- Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
