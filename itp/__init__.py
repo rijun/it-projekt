@@ -22,5 +22,9 @@ def create_app():
 
     from . import index
     app.register_blueprint(index.bp)
+    app.add_url_rule('/', endpoint='index')
+
+    from . import dashboard
+    app.register_blueprint(dashboard.bp)
 
     return app

@@ -27,29 +27,6 @@ DATE_FORMAT = "%Y-%m-%d"
 MONTH_FORMAT = "%Y-%m"
 YEAR_FORMAT = "%Y"
 
-
-def get_available_meters():
-    meter_list = []
-    db_result = db.select("SELECT * FROM zaehlpunkte")
-
-    for result in db_result:
-        meter_list.append({
-            'id': result[0],  # result[0] --> zaehler_id
-            'lastname': result[1],  # result[1] --> kunde_name
-            'firstname': result[2],  # result[2] --> kunde_vorname
-            'zipcode': result[3],  # result[3] --> plz
-            'city': result[4]  # result[4] --> ort
-        })
-
-    for meter in meter_list:
-        meter_min = db.select("SELECT MIN(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
-        meter_max = db.select("SELECT MAX(datum_zeit) FROM zaehlwerte WHERE zaehler_id = ?", meter['id'])
-        meter['min'] = datetime.strptime(meter_min, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-        meter['max'] = (datetime.strptime(meter_max, '%Y-%m-%d %H:%M:%S') - timedelta(days=1)).strftime('%Y-%m-%d')
-
-    return meter_list
-
-
 def add_month(date):
     """This function increments a given month by one month.
 
@@ -129,19 +106,6 @@ def generate_day_query(meter_id, start, end):
     return "SELECT DATETIME(datum_zeit), obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN '{}' " \
            "AND '{}' AND STRFTIME('%M', datum_zeit) % 15 = 0 AND zaehler_id = '{}' ORDER BY datum_zeit " \
         .format(start, end, meter_id)
-
-
-@app.route('/')
-def root():
-    """
-    This function returns the website which serves as the frontend for this application.
-
-    :return: Website index.html
-    :rtype: HTML file
-    """
-
-    stored_meters = get_available_meters()
-    return render_template('selection.html', meters=stored_meters)
 
 
 def get_meter_data(query):

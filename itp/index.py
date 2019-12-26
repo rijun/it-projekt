@@ -1,4 +1,3 @@
-import sqlite3
 from datetime import datetime, timedelta
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
