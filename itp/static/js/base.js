@@ -1,10 +1,8 @@
 // State enum
 const States = Object.freeze({"day": {}, "interval": {}, "month": {}, "year": {}});
 
-// Event handlers
-
+// Set event handlers
 document.getElementById('meterSelector').onchange = setSelectorRanges;
-
 window.onresize = () => {
     if (window.chart === undefined) {
         return;
@@ -19,10 +17,11 @@ window.onresize = () => {
     }
 };
 
-// Setup functions
+
+/* Query modal functions */
 function setupMeterSelector() {
     let meterSelector = document.getElementById('meterSelector');
-    for (let meter in window.meters) {
+    for (let meter in store.get('meters')) {
         let opt = document.createElement('option');
         opt.value = meter;
         opt.innerHTML = meter;
@@ -32,7 +31,7 @@ function setupMeterSelector() {
 
 function setSelectorRanges() {
     const selectorOption = document.getElementById('meterSelector').value;
-    const meterDates = window.meters[selectorOption].date;
+    const meterDates = store.get('meters')[selectorOption].date;
     // Date selector
     document.getElementById('dateSelector').min = moment(meterDates.min).format("YYYY-MM-DD");
     document.getElementById('dateSelector').max = moment(meterDates.max).format("YYYY-MM-DD");

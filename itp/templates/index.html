@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block content_js %}
-  <script src="{{ url_for('static', filename='index.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
   <script>
       initSelection({{ meters | tojson }});
   </script>

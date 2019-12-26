@@ -4,29 +4,10 @@
 <head>
   <meta charset="utf-8"/>
   <title>Lastgangsdarstellung</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    /* Reformat table headers for two rows */
-    .table .th-t {
-      padding-bottom: 0;
-      border-bottom-width: 0;
-    }
-
-    .table .th-b {
-      padding-top: 0;
-      border-top-width: 0;
-    }
-
-    /* Style the table highlighting */
-    .table-hover tbody tr:hover td {
-      background-color: #ff8000;
-      color: #ffffff;
-      font-weight: bold;
-    }
-  </style>
-  <!-- Include required CSS files -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bs4.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
         integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 </head>
@@ -34,20 +15,18 @@
 <body>
 <!-- Header -->
 <nav class="navbar d-md-none navbar-dark bg-dark shadow">
-  <!--<button class="navbar-toggler" type="button" data-toggle="dropdown">
-    <span class="navbar-toggler-icon"></span>
-  </button>-->
   <a class="navbar-brand p-0 m-0" href="#">
-    <img src="{{ url_for('static', filename='favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
+    <img src="{{ url_for('static', filename='img/favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
          alt="">
   </a>
+  {# Show toolbar if the meter data is showed #}
   {% if g.data is defined %}
     <div class="btn-toolbar d-md-none mb-1">
       {% include 'dashboard/toolbar.html' %}
     </div>
   {% endif %}
 </nav>
-<img class="d-none d-md-block p-0" src="{{ url_for('static', filename='header.png') }}" alt="logo.png" width="100%"/>
+<img class="d-none d-md-block p-0" src="{{ url_for('static', filename='img/header.png') }}" alt="logo.png" width="100%"/>
 <!-- Content -->
 <main class="container-fluid">
   <div class="row justify-content-center">
@@ -99,7 +78,7 @@
     </div>
   </div>
 </main>
-{% include 'modals/query_modal.html' %}
+{% include 'modals/query.html' %}
 <!-- Scripts -->
 <!-- Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -115,9 +94,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<!-- Store.js -->
+<script src="{{ url_for('static', filename='js/store.js') }}"></script>
 <!-- Custom -->
 {% block content_js %}{% endblock %}
-<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
 
 </html>

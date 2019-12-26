@@ -1,0 +1,17 @@
+/* Reformat table headers for two rows */
+.table .th-t {
+    padding-bottom: 0;
+    border-bottom-width: 0;
+}
+
+.table .th-b {
+    padding-top: 0;
+    border-top-width: 0;
+}
+
+/* Style the table highlighting */
+.table-hover tbody tr:hover td {
+    background-color: #ff8000;
+    color: #ffffff;
+    font-weight: bold;
+}
