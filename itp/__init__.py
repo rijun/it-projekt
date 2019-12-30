@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from flask import Flask
 
@@ -27,4 +28,20 @@ def create_app():
     from . import dashboard
     app.register_blueprint(dashboard.bp)
 
+    app.jinja_env.filters['datetime'] = format_datetime
+
     return app
+
+
+def format_datetime(value, fmt='hour'):
+    """Custom filter for datetimes"""
+    dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+    if fmt == 'hour':
+        fmt = '%H:%M'
+    elif fmt == 'day':
+        fmt = '%D.%m'
+    elif fmt == 'month':
+        fmt = '%B %Y'
+    return dt.strftime(fmt)
+
+

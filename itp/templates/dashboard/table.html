@@ -17,21 +17,8 @@
             <td class="col th-b">[€]</td>
           </tr>
         </thead>
-        <tbody>
-          {% for meter in g.data['meter_data'] %}
-            <tr class="d-flex">
-              {% if g.fmt == 'day' %}
-                <td class="col">{{ meter.datetime|datetime('day') }}</td>
-              {% elif g.fmt == 'month' %}
-                <td class="col">{{ meter.datetime|datetime('month') }}</td>
-              {% else %}
-                <td class="col">{{ meter.datetime|datetime }}</td>
-              {% endif %}
-              <td class="col diff">{{ '%0.2f' | format(meter.diff | float) }}</td>
-              <td class="col">{{ '%0.2f' | format(meter.reading | float) }}</td>
-              <td class="col cost">-,--</td>
-            </tr>
-          {% endfor %}
+        <tbody id="tbody">
+        <!-- Filled via JS -->
         </tbody>
       </table>
     </div>

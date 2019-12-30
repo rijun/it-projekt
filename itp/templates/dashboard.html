@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content_main %}
+  <!-- Title -->
+  <div class="card card-body p-2">
+    <p class="lead card-text text-center mb-2">
+      {% if g.mode == 'day' or g.mode == 'month' %}
+        <a href="{{ prev_url }}">
+          <i class="fas fa-angle-left"></i>
+        </a>
+      {% endif %}
+      <span>{{ datetime }}</span>
+      {% if g.mode == 'day' or g.mode == 'month' %}
+        <a href="{{ next_url }}">
+          <i class="fas fa-angle-right"></i>
+        </a>
+      {% endif %}
+    </p>
+    <p class="text-muted text-center p-0 m-0">{{ meter_id }}</p>
+  </div>
+  <!-- Chart -->
+  <div class="card mt-2 mb-4">
+    <div class="card-img-top">
+      <canvas id="chart" class="card-text m-0"></canvas>
+    </div>
+  </div>
+  <!-- Statistics -->
+  {% include "dashboard/statistics.html" %}
+  <!-- Table -->
+  {% include "dashboard/table.html" %}
+{% endblock %}
+
+{% include "modals/price.html" %}
+
+{% block content_js %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  <script>
+      initDashboard('{{ g.mode }}',  '{{ g.meter_id }}', '{{ g.datetime }}');
+  </script>
+{% endblock %}

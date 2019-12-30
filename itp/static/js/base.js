@@ -55,47 +55,6 @@ window.onload = function () {
     window.state = States.day;
 };
 
-function getMeterData() {
-    const meterId = document.getElementById('meterSelector').value;
-    const mode = document.getElementById('modeSelector').value;
-    const date = document.getElementById('dateSelector').value;
-    const res = document.getElementById('resSelector').value;
-
-    const url = '/meter' + '/' + meterId + '/' + mode + '?d=' + date + '&r=' + res;
-
-    fetch(url, {method: 'get'})
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                console.log(response);
-                throw new Error('Something went wrong');
-            }
-        })
-        .then(json => {
-            window.currentMeter = {};
-            let meter = window.currentMeter;
-            meter.loadDiffs = json['energy_diffs'];
-            meter.meterReadings = json['meter_readings'];
-            meter.avgKwh = json['avg'];
-            meter.maxKwh = json['max'];
-            meter.minKwh = json['min'];
-            meter.sumKwh = json['sum'];
-            meter.datetimes = [];
-            let datetimeFormat = "";
-            if (window.state === States.day) {  // state = day
-                datetimeFormat = "YYYY-MM-DD HH:mm:SS";
-            } else {
-                datetimeFormat = "YYYY-MM-DD";
-            }
-            json['times'].forEach(t => meter.datetimes.push(moment(t, datetimeFormat)));
-            updatePage();
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-}
-
 function updatePage() {
     /**
      * Update the page according to the received response
