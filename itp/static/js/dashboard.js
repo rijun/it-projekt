@@ -1,12 +1,10 @@
-function initDashboard(mode, meterId, date) {
-    if (mode === 'day') {
-        window.resolution = 60;
-    }
+const datetimeFormats = Object.freeze({'day': 'LT', 'interval': 'L', 'month': 'L', 'year': 'YYYY'});
+
+function initDashboard() {
+    moment.locale('de');    // Set Moment.js to german language
+    window.resolution = 60; // Used only in day mode
     setEventHandlers();
-    getMeterData(mode, meterId, date);
-    makeChart();
-    buildTableData();
-    calcPrice(mode, document.getElementById('priceInput').value);
+    getMeterData();
 }
 
 function setEventHandlers() {
@@ -14,16 +12,33 @@ function setEventHandlers() {
     document.getElementById('priceInput').oninput = priceInputChanged;
     document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
 
-    for (let resInput of document.getElementsByName('res')) {
+    for (let resSelector of document.getElementsByName('res')) {
         // Cannot use arrow function as "this" represents the function owner, not the function caller
-        resInput.onchange = function () {
+        resSelector.onchange = function () {
             setResolution(this.value);
         }
     }
 }
 
-function getMeterData(mode, meterId, date) {
-    const url = `/meters/${mode}/${meterId}?d=${date}`;
+function getMeterData() {
+    const url = `/meters/${window.mode}/${window.meterId}?d=${window.date}`;
+
+    function storeMeterData(json) {
+        if (typeof window.meterData != "undefined") {
+            console.log("Defined");
+        }
+        window.meterData = {
+            loadDiffs: [],
+            meterReadings: [],
+            datetimes: []
+        };
+        json.forEach(data => {
+            window.meterData.loadDiffs.push(data['diff']);
+            window.meterData.meterReadings.push(data['reading']);
+            let datetimeFormat = window.mode === 'day' ? "YYYY-MM-DD HH:mm:SS" : "YYYY-MM-DD";
+            window.meterData.datetimes.push(moment(data['datetime'], datetimeFormat));
+        });
+    }
 
     fetch(url, {method: 'get'})
         .then(response => {
@@ -34,21 +49,11 @@ function getMeterData(mode, meterId, date) {
                 throw new Error('Something went wrong');
             }
         })
-        .then(json => {  // Clear meterData
-            if (typeof window.meterData != "undefined") {
-                console.log("Defined");
-            }
-            window.meterData = {
-                loadDiffs: [],
-                meterReadings: [],
-                datetimes: []
-            };
-            json.forEach(data => {
-                window.meterData.loadDiffs.push(data['diff']);
-                window.meterData.meterReadings.push(data['reading']);
-                let datetimeFormat = mode === 'day' ? "YYYY-MM-DD HH:mm:SS" : "YYYY-MM-DD";
-                window.meterData.datetimes.push(moment(json['datetime'], datetimeFormat));
-            })
+        .then(json => {
+            storeMeterData(json);
+            makeChart();
+            buildTableData();
+            calcPrice(document.getElementById('priceInput').value);
         })
         .catch((err) => {
             console.log(err);
@@ -61,7 +66,6 @@ function makeChart() {
      * Update the chart according to the current response data
      * **/
     return;
-    moment.locale('de');    // Set Moment.js to german language
     setChartSettings();
 
     // let requestData = {{ g.data['meter_data']|tojson }};
@@ -260,21 +264,28 @@ function setResolution(res) {
         window.chart.data.datasets[1].data = window.meterData.meterReadings;
     }
     window.chart.update();
+    buildTableData(res)
 }
 
-function buildTableData() {
+function buildTableData(res = "60") {
     let tableBody = document.getElementById('tbody');
 
     window.meterData.datetimes.forEach((date, idx) => {
+
+        // Show only hourly values if resolution is set to 60 min
+        if (res === '60' && date.minute() % 60 !== 0) {
+            return;
+        }
+
         let tr = document.createElement('tr');
         tr.classList.add('d-flex');
         for (let i = 0; i < 4; i++) {
             tr.appendChild(document.createElement('td')).classList.add('col');
         }
-        tr.cells[0].appendChild(document.createTextNode(date));
-        tr.cells[1].appendChild(document.createTextNode(window.meterData.loadDiffs[idx]));
-        tr.cells[1].classList.add('cost');
-        tr.cells[2].appendChild(document.createTextNode(window.meterData.meterReadings[idx]));
+        tr.cells[0].appendChild(document.createTextNode(date.format(datetimeFormats[window.mode])));
+        tr.cells[1].appendChild(document.createTextNode(window.meterData.loadDiffs[idx].toFixed(2)));
+        tr.cells[1].classList.add('diff');
+        tr.cells[2].appendChild(document.createTextNode(window.meterData.meterReadings[idx].toFixed(2)));
         tr.cells[3].appendChild(document.createTextNode('-,--'));
         tr.cells[3].classList.add('cost');
         tableBody.appendChild(tr);
@@ -294,20 +305,20 @@ function priceInputRangeChanged() {
     calcPrice(currentVal);
 }
 
-function calcPrice(mode, val) {
+function calcPrice(val) {
     let priceCollection = document.getElementsByClassName('cost');
     const diffCollection = document.getElementsByClassName('diff');
     const price = val / 100;
 
-    //let priceSum = price * {{ g.data['sum'] }};
+    let priceSum = price * window.sum;
     document.getElementById('cost').innerText = `${priceSum.toFixed(2)} €`;
 
     for (let i = 0; i < priceCollection.length; i++) {
         let cost = 0.0;
 
-        if (mode === 'interval' || mode === 'month') {
+        if (window.mode === 'interval' || window.mode === 'month') {
             cost = parseFloat(diffCollection[i].innerHTML) * price / 24;
-        } else if (mode === 'year') {
+        } else if (window.mode === 'year') {
             cost = parseFloat(diffCollection[i].innerHTML) * price / 12;
         } else {
             cost = parseFloat(diffCollection[i].innerHTML) * price / 60 * window.resolution;

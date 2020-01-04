@@ -166,9 +166,9 @@ function hideNavArrows() {
 function buildUserInfoHeader() {
     // let meterNumber = document.getElementById("meterSelector").value;
     // let selMeter = null;
-    // for (let meter in window.meters) {
-    //     if (meter['number'] === meterNumber) {
-    //         selMeter = meter;
+    // for (let meter_id in window.meters) {
+    //     if (meter_id['number'] === meterNumber) {
+    //         selMeter = meter_id;
     //     }
     // }
     document.getElementById("userInfo").innerHTML = "Max Mustermann - Dortmund (44139)";

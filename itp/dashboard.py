@@ -31,7 +31,7 @@ def dashboard(mode, meter_id):
 
     dashboard_data = get_dashboard_data(mode, request.args, meter_id, meter_data)
 
-    g.data = meter_data
+    g.dashboard = True
     return render_template('dashboard.html', **dashboard_data)
 
 
@@ -118,11 +118,13 @@ def get_dashboard_data(mode, args, meter_id, meter_data):
     prev_url = f"/dashboard/{mode}/{meter_id}?d={prev_day.strftime('%Y-%m-%d')}"
     response_dict = {
         'meter_id': meter_id,
+        'mode': mode,
         'min': min(energy_diffs),
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
-        'datetime': day.strftime('%A, %d. %B %Y'),
+        'datetime': day.strftime('%Y-%m-%d'),
+        'datetime_str': day.strftime('%A, %d. %B %Y'),
         'unit': unit,
         'tbl_title': 'Uhrzeit',
         'data_url': data_url,

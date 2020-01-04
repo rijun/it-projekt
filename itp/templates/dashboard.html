@@ -9,7 +9,7 @@
           <i class="fas fa-angle-left"></i>
         </a>
       {% endif %}
-      <span>{{ datetime }}</span>
+      <span>{{ datetime_str }}</span>
       {% if g.mode == 'day' or g.mode == 'month' %}
         <a href="{{ next_url }}">
           <i class="fas fa-angle-right"></i>
@@ -35,6 +35,10 @@
 {% block content_js %}
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
   <script>
-      initDashboard('{{ g.mode }}',  '{{ g.meter_id }}', '{{ g.datetime }}');
+      window.mode = '{{ mode }}';
+      window.meterId = '{{ meter_id }}';
+      window.date = '{{ datetime }}';
+      window.sum = parseFloat('{{ sum }};');
+      initDashboard();
   </script>
 {% endblock %}

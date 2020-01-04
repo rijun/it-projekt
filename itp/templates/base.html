@@ -19,8 +19,8 @@
     <img src="{{ url_for('static', filename='img/favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
          alt="">
   </a>
-  {# Show toolbar if the meter data is showed #}
-  {% if g.data is defined %}
+  {# Show toolbar if a dashboard is showed #}
+  {% if g.dashboard %}
     <div class="btn-toolbar d-md-none mb-1">
       {% include 'dashboard/toolbar.html' %}
     </div>
@@ -35,7 +35,7 @@
       <div
               class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h3 class="h3">Lastgang</h3>
-        {% if g.data is defined %}
+        {% if g.dashboard %}
           <div class="btn-toolbar mb-2 mb-md-0">
             <!-- Options buttons -->
             {% if g.mode == 'day' %}
