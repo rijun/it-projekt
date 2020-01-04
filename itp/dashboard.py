@@ -61,7 +61,6 @@ def meter(mode, meter_id):
     return jsonify(meter_data_list)
 
 
-
 def get_meter_data(mode, args, meter_id):
     """Return the stored meter data as a list."""
     db = get_db()

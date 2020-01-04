@@ -1,10 +1,20 @@
-document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
-document.getElementById('priceInput').oninput = priceInputChanged;
-document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
+function initDashboard(mode, meterId, date) {
+    if (mode === 'day') {
+        window.resolution = 60;
+    }
+    setEventHandlers();
+    getMeterData(mode, meterId, date);
+    makeChart();
+    buildTableData();
+    calcPrice(mode, document.getElementById('priceInput').value);
+}
 
-function setResInputEvents() {
-    const resInputList = document.getElementsByName('res');
-    for (let resInput of resInputList) {
+function setEventHandlers() {
+    document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
+    document.getElementById('priceInput').oninput = priceInputChanged;
+    document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
+
+    for (let resInput of document.getElementsByName('res')) {
         // Cannot use arrow function as "this" represents the function owner, not the function caller
         resInput.onchange = function () {
             setResolution(this.value);
@@ -24,18 +34,21 @@ function getMeterData(mode, meterId, date) {
                 throw new Error('Something went wrong');
             }
         })
-        .then(json => {
-            window.meterData = {};
-            window.meterData.loadDiffs = json['energy_diffs'];
-            window.meterData.meterReadings = json['meter_readings'];
-            window.meterData.datetimes = [];
-            let datetimeFormat = "";
-            if (mode === 'day') {
-                datetimeFormat = "YYYY-MM-DD HH:mm:SS";
-            } else {
-                datetimeFormat = "YYYY-MM-DD";
+        .then(json => {  // Clear meterData
+            if (typeof window.meterData != "undefined") {
+                console.log("Defined");
             }
-            window.meterData.datetimes.push(moment(json['datetime'], datetimeFormat));
+            window.meterData = {
+                loadDiffs: [],
+                meterReadings: [],
+                datetimes: []
+            };
+            json.forEach(data => {
+                window.meterData.loadDiffs.push(data['diff']);
+                window.meterData.meterReadings.push(data['reading']);
+                let datetimeFormat = mode === 'day' ? "YYYY-MM-DD HH:mm:SS" : "YYYY-MM-DD";
+                window.meterData.datetimes.push(moment(json['datetime'], datetimeFormat));
+            })
         })
         .catch((err) => {
             console.log(err);
@@ -302,14 +315,4 @@ function calcPrice(mode, val) {
 
         priceCollection[i].innerHTML = cost.toFixed(3)
     }
-}
-
-function initDashboard(mode, meterId, date) {
-    if (mode === 'day') {
-        window.resolution = 60;
-    }
-    getMeterData(mode, meterId, date);
-    makeChart();
-    buildTableData();
-    calcPrice(mode, document.getElementById('priceInput').value);
 }
