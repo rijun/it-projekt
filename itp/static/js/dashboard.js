@@ -2,7 +2,6 @@ const datetimeFormats = Object.freeze({'day': 'LT', 'interval': 'L', 'month': 'L
 
 function initDashboard() {
     moment.locale('de');    // Set Moment.js to german language
-    window.resolution = 60; // Used only in day mode
     setEventHandlers();
     setChartSettings();
     getMeterData();
@@ -54,7 +53,7 @@ function getMeterData() {
             storeMeterData(json);
             updateChart();
             buildTableData();
-            calcPrice(document.getElementById('priceInput').value);
+            calcPrice();
         })
         .catch((err) => {
             console.log(err);
@@ -62,54 +61,6 @@ function getMeterData() {
 }
 
 /* Chart functions */
-function updateChart() {
-    /**
-     * Update the chart according to the current response data
-     * **/
-    let datetimeData = window.meterData.datetimes;
-    let loadDiffsData = window.meterData.loadDiffs;
-    let meterReadingsData = window.meterData.meterReadings;
-
-    if (window.resolution === 60) {
-        let tempDatetime = [];
-        let tempLoadDiffs = [];
-        let tempMeterReadings = [];
-        // Filter meterData for hourly values
-        tempDatetime = datetimeData.filter((d, idx) => {
-            if (moment(d).minute() % 60 === 0) {
-                tempLoadDiffs.push(loadDiffsData[idx]);
-                tempMeterReadings.push(meterReadingsData[idx]);
-                return true;
-            }
-            return false;
-        });
-
-        datetimeData = tempDatetime;
-        loadDiffsData = tempLoadDiffs;
-        meterReadingsData = tempMeterReadings;
-    }
-
-    // x-Axis values and settings
-    let formattedLabels = [];
-    if (window.mode === 'interval' || window.mode === 'month') {
-        datetimeData.forEach(t => formattedLabels.push(moment(t).format("L")));
-    } else if (window.mode === 'year') {
-        datetimeData.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
-    } else {
-        datetimeData.forEach(t => formattedLabels.push(moment(t).format("LT")));
-    }
-    window.chart.data.labels = formattedLabels;
-
-    // y-Axis values and settings
-    if (document.getElementById('meterReadingsButton').classList.contains('active')) {
-        window.chart.data.datasets[0].data = meterReadingsData;  // Add meterReadings to chart
-        window.chart.data.datasets[1].data = loadDiffsData;  // Add loadDiffs to chart
-    } else {
-        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
-    }
-    window.chart.update();
-}
-
 function setChartSettings() {
     const ctx = document.getElementById("chart").getContext('2d');
     window.chart = new Chart(ctx, {
@@ -195,6 +146,54 @@ function setChartSettings() {
     });
 }
 
+function updateChart() {
+    /**
+     * Update the chart according to the current response data
+     * **/
+    let datetimeData = window.meterData.datetimes;
+    let loadDiffsData = window.meterData.loadDiffs;
+    let meterReadingsData = window.meterData.meterReadings;
+
+    if (window.resolution === 60) {
+        let tempDatetime = [];
+        let tempLoadDiffs = [];
+        let tempMeterReadings = [];
+        // Filter meterData for hourly values
+        tempDatetime = datetimeData.filter((d, idx) => {
+            if (moment(d).minute() % 60 === 0) {
+                tempLoadDiffs.push(loadDiffsData[idx]);
+                tempMeterReadings.push(meterReadingsData[idx]);
+                return true;
+            }
+            return false;
+        });
+
+        datetimeData = tempDatetime;
+        loadDiffsData = tempLoadDiffs;
+        meterReadingsData = tempMeterReadings;
+    }
+
+    // x-Axis values and settings
+    let formattedLabels = [];
+    if (window.mode === 'interval' || window.mode === 'month') {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("L")));
+    } else if (window.mode === 'year') {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
+    } else {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("LT")));
+    }
+    window.chart.data.labels = formattedLabels;
+
+    // y-Axis values and settings
+    if (document.getElementById('meterReadingsButton').classList.contains('active')) {
+        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
+        window.chart.data.datasets[1].data = meterReadingsData;  // Add meterReadings to chart
+    } else {
+        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
+    }
+    window.chart.update();
+}
+
 function meterReadingsChanged() {
     /**
      * Add and remove the meter_id value line graph from the chart
@@ -219,39 +218,31 @@ function meterReadingsChanged() {
         window.chart.data.datasets.pop();
         window.chart.options.scales.yAxes[1].display = false;
     }
-
     window.chart.update();
 }
 
-/* Resolution functions */
+/* Resolution change functions */
 function setResolution(res) {
     if (res === "60") {
-        window.meterData.datetimes = window.meterData.hour.datetimes;
-        window.meterData.loadDiffs = window.meterData.hour.loadDiffs;
-        window.meterData.meterReadings = window.meterData.hour.meterReadings;
+        window.resolution = 60;
+        window.unit = '60 min';
     } else {
-        window.meterData.datetimes = window.meterData.quarter.datetimes;
-        window.meterData.loadDiffs = window.meterData.quarter.loadDiffs;
-        window.meterData.meterReadings = window.meterData.quarter.meterReadings;
+        window.resolution = 15;
+        window.unit = '15 min';
     }
-    let formattedLabels = [];
-    window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
-    window.chart.data.labels = formattedLabels;
-    window.chart.data.datasets[0].data = window.meterData.loadDiffs;
-    if (window.chart.data.datasets.length === 2) {
-        window.chart.data.datasets[1].data = window.meterData.meterReadings;
-    }
-    window.chart.update();
-    buildTableData(res)
+    updateChart();
+    buildTableData();
+    calcPrice();
 }
 
-function buildTableData(res = "60") {
+function buildTableData() {
     let tableBody = document.getElementById('tbody');
+    tableBody.innerHTML = "";   // Clear table
 
     window.meterData.datetimes.forEach((date, idx) => {
 
         // Show only hourly values if resolution is set to 60 min
-        if (res === '60' && date.minute() % 60 !== 0) {
+        if (window.resolution === 60 && date.minute() % 60 !== 0) {
             return;
         }
 
@@ -283,10 +274,10 @@ function priceInputRangeChanged() {
     calcPrice(currentVal);
 }
 
-function calcPrice(val) {
+function calcPrice() {
     let priceCollection = document.getElementsByClassName('cost');
     const diffCollection = document.getElementsByClassName('diff');
-    const price = val / 100;
+    const price = document.getElementById('priceInput').value / 100;
 
     let priceSum = price * window.sum;
     document.getElementById('cost').innerText = `${priceSum.toFixed(2)} €`;

@@ -41,6 +41,9 @@
         window.date = '{{ datetime }}';
         window.sum = parseFloat('{{ sum }};');
         window.unit = '{{ unit }}';
+        {% if g.mode == 'day' %}
+            window.resolution = 60;
+        {% endif %}
         initDashboard();
     </script>
 {% endblock %}
