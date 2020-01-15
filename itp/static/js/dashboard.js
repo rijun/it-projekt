@@ -4,6 +4,7 @@ function initDashboard() {
     moment.locale('de');    // Set Moment.js to german language
     window.resolution = 60; // Used only in day mode
     setEventHandlers();
+    setChartSettings();
     getMeterData();
 }
 
@@ -21,11 +22,11 @@ function setEventHandlers() {
 }
 
 function getMeterData() {
-    const url = `/meters/${window.mode}/${window.meterId}?d=${window.date}`;
+    const url = `/api/${window.mode}/${window.meterId}?d=${window.date}`;
 
     function storeMeterData(json) {
         if (typeof window.meterData != "undefined") {
-            console.log("Defined");
+            alert("Defined");
         }
         window.meterData = {
             loadDiffs: [],
@@ -51,7 +52,7 @@ function getMeterData() {
         })
         .then(json => {
             storeMeterData(json);
-            makeChart();
+            updateChart();
             buildTableData();
             calcPrice(document.getElementById('priceInput').value);
         })
@@ -61,78 +62,55 @@ function getMeterData() {
 }
 
 /* Chart functions */
-function makeChart() {
+function updateChart() {
     /**
      * Update the chart according to the current response data
      * **/
-    return;
-    setChartSettings();
-
-    // let requestData = {{ g.data['meter_data']|tojson }};
-    window.meterData = {  // Object for storing meter_id data
-        datetimes: [],
-        loadDiffs: [],
-        meterReadings: [],
-        hour: {
-            datetimes: [],
-            loadDiffs: [],
-            meterReadings: []
-        },
-        quarter: {
-            datetimes: [],
-            loadDiffs: [],
-            meterReadings: []
-        }
-    };
-
-    requestData.forEach(d => {
-        window.meterData.quarter.datetimes.push(d.datetime);
-        window.meterData.quarter.loadDiffs.push(d.diff);
-        window.meterData.quarter.meterReadings.push(d.reading);
-
-        if (moment(d.datetime).minute() % 60 === 0) {
-            window.meterData.hour.datetimes.push(d.datetime);
-            window.meterData.hour.loadDiffs.push(d.diff);
-            window.meterData.hour.meterReadings.push(d.reading);
-        }
-    });
+    let datetimeData = window.meterData.datetimes;
+    let loadDiffsData = window.meterData.loadDiffs;
+    let meterReadingsData = window.meterData.meterReadings;
 
     if (window.resolution === 60) {
-        window.meterData.datetimes = window.meterData.hour.datetimes;
-        window.meterData.loadDiffs = window.meterData.hour.loadDiffs;
-        window.meterData.meterReadings = window.meterData.hour.meterReadings;
-    } else {
-        window.meterData.datetimes = window.meterData.quarter.datetimes;
-        window.meterData.loadDiffs = window.meterData.quarter.loadDiffs;
-        window.meterData.meterReadings = window.meterData.quarter.meterReadings;
-    }
+        let tempDatetime = [];
+        let tempLoadDiffs = [];
+        let tempMeterReadings = [];
+        // Filter meterData for hourly values
+        tempDatetime = datetimeData.filter((d, idx) => {
+            if (moment(d).minute() % 60 === 0) {
+                tempLoadDiffs.push(loadDiffsData[idx]);
+                tempMeterReadings.push(meterReadingsData[idx]);
+                return true;
+            }
+            return false;
+        });
 
-    setResInputEvents();
+        datetimeData = tempDatetime;
+        loadDiffsData = tempLoadDiffs;
+        meterReadingsData = tempMeterReadings;
+    }
 
     // x-Axis values and settings
     let formattedLabels = [];
-    // {% if g.mode == 'interval' or g.mode == 'month' %}
-    //     window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("L")));
-    // {% elif g.mode == 'year' %}
-    //     window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
-    // {% else %}
-    //     window.meterData.datetimes.forEach(t => formattedLabels.push(moment(t).format("LT")));
-    // {% endif %}
+    if (window.mode === 'interval' || window.mode === 'month') {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("L")));
+    } else if (window.mode === 'year') {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("MMMM")));
+    } else {
+        datetimeData.forEach(t => formattedLabels.push(moment(t).format("LT")));
+    }
     window.chart.data.labels = formattedLabels;
 
     // y-Axis values and settings
-    window.chart.data.datasets[0].data = window.meterData.loadDiffs;  // Add loadDiffs to chart
     if (document.getElementById('meterReadingsButton').classList.contains('active')) {
-        window.chart.data.datasets[1].data = window.meterData.meterReadings;  // Add meterReadings to chart
+        window.chart.data.datasets[0].data = meterReadingsData;  // Add meterReadings to chart
+        window.chart.data.datasets[1].data = loadDiffsData;  // Add loadDiffs to chart
+    } else {
+        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
     }
     window.chart.update();
 }
 
 function setChartSettings() {
-    /**
-     * Setup chart with the settings stored in the chart_settings.js file
-     * **/
-
     const ctx = document.getElementById("chart").getContext('2d');
     window.chart = new Chart(ctx, {
         type: "bar",
@@ -163,7 +141,7 @@ function setChartSettings() {
                     id: "y-axis-load",
                     scaleLabel: {
                         display: true,
-                        labelString: "Lastgang [{{ unit }}]",
+                        labelString: `Lastgang [${window.unit}]`,
                     },
                     ticks: {
                         beginAtZero: true
@@ -188,7 +166,7 @@ function setChartSettings() {
                 callbacks: {
                     label: function (tooltipItem, data) {
                         if (tooltipItem.datasetIndex === 0) {
-                            return tooltipItem.yLabel + ' {{ unit }}';
+                            return tooltipItem.yLabel +` ${window.unit}`;
                         } else {
                             return tooltipItem.yLabel + " kWh";
                         }

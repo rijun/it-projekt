@@ -34,11 +34,13 @@
 
 {% block content_js %}
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-  <script>
-      window.mode = '{{ mode }}';
-      window.meterId = '{{ meter_id }}';
-      window.date = '{{ datetime }}';
-      window.sum = parseFloat('{{ sum }};');
-      initDashboard();
-  </script>
+    <script>
+        // Set display parameters
+        window.mode = '{{ mode }}';
+        window.meterId = '{{ meter_id }}';
+        window.date = '{{ datetime }}';
+        window.sum = parseFloat('{{ sum }};');
+        window.unit = '{{ unit }}';
+        initDashboard();
+    </script>
 {% endblock %}

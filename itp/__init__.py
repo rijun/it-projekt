@@ -28,6 +28,9 @@ def create_app():
     from . import dashboard
     app.register_blueprint(dashboard.bp)
 
+    from . import api
+    app.register_blueprint(api.bp)
+
     app.jinja_env.filters['datetime'] = format_datetime
 
     return app
