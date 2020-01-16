@@ -24,4 +24,7 @@ def api(mode, meter_id):
     else:
         meter_data = get_meter_data(mode, request.args, meter_id)
 
+    if meter_data is None:
+        abort(400)
+
     return jsonify(meter_data)
