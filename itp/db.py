@@ -36,5 +36,5 @@ def init_db_command():
 
 
 def init_app(app):
-    app.teardown_appcontext(close_db)
+    app.teardown_appcontext(close_db)   # Close database connection at the end of the request
     app.cli.add_command(init_db_command)

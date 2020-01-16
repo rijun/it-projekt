@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 from math import floor
 from statistics import mean
+import uuid
 
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, session
 from werkzeug.exceptions import abort
 
 from itp.db import get_db
-import meter
+from itp.meterhandler import MeterHandler, get_meter_data
 
 bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -14,41 +15,30 @@ bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 @bp.route('/<mode>/<meter_id>')
 def dashboard(mode, meter_id):
     """Respond with dashboard page."""
-    meter_data = meter.get_meter_data(mode, request.args, meter_id)
+    meter_data, energy_diffs = get_meter_data(mode, request.args, meter_id, diffs=True)
 
     if meter_data is None:
         abort(400)  # Reply with bad request
+
+    session_id = uuid.uuid4().hex
+    mh = MeterHandler()
+    mh.push_session(session_id, meter_data)
+
+    # Add cookie with session id
+    session.clear()
+    session['session_id'] = session_id
 
     g.mode = mode
     g.meter_id = meter_id
     g.datetime = request.args['d']
 
-    dashboard_data = get_dashboard_data(mode, request.args, meter_id, meter_data)
+    dashboard_data = get_dashboard_data(mode, request.args, meter_id, energy_diffs)
 
     g.dashboard = True
     return render_template('dashboard.html', **dashboard_data)
 
 
-def get_dashboard_data(mode, args, meter_id, meter_data):
-    times = []
-    meter_readings = []
-    energy_diffs = []
-
-    for res in meter_data:
-        times.append(res['datum_zeit'])
-        meter_readings.append(float(res['obis_180']))
-
-    for i in range(len(times) - 1):
-        energy_diffs.append((floor(meter_readings[i + 1] * 100) - floor(meter_readings[i] * 100)) / 100)
-
-    # Remove last entries as times and meter_readings are larger than energy_diffs
-    times.pop()
-    meter_readings.pop()
-
-    # Create list of meter_id data tuples
-    meter_data_list = []
-    for i, time in enumerate(times):
-        meter_data_list.append({'datetime': time, 'reading': meter_readings[i], 'diff': energy_diffs[i]})
+def get_dashboard_data(mode, args, meter_id, energy_diffs):
 
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
