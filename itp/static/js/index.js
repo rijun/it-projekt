@@ -26,4 +26,8 @@ function setMeterSelectionButtonEvents() {
 function initSelection(availableMeters) {
     addMetersToStorage(availableMeters);
     setMeterSelectionButtonEvents();
+    setInterval(() => {
+        document.getElementById('time').innerHTML = new Date().toLocaleTimeString();
+        }, 1000
+    );
 }

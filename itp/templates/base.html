@@ -69,6 +69,10 @@
           </div>
         {% endif %}
       </div>
+      <!-- Error messages -->
+      {% for message in get_flashed_messages() %}
+        <div class="flash alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
     </div>
   </div>
   <!-- Content -->
