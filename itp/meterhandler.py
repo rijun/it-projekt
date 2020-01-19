@@ -36,9 +36,9 @@ def get_meter_data(mode, args, meter_id, diffs=False):
     QUERY_DICT = {
         'day': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND STRFTIME('%M', "
                "datum_zeit) % 15 = 0 AND zaehler_id = ? ORDER BY datum_zeit",
-        'interval': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE DATE(datum_zeit) BETWEEN ? AND ? AND "
-                    "TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY datum_zeit",  # Also used for month
-        'year': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE STRFTIME('%Y-%m', datum_zeit) BETWEEN ? AND ? AND "
+        'int_month': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
+                     "TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY datum_zeit",
+        'year': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
                 "STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY "
                 "datum_zeit "
     }
@@ -47,22 +47,17 @@ def get_meter_data(mode, args, meter_id, diffs=False):
         if mode == 'day':
             day = datetime.strptime(args['d'], "%Y-%m-%d")
             next_day = day + timedelta(days=1)
-            result = db.execute(QUERY_DICT[mode], (day, next_day, meter_id)).fetchall()
+            result = db.execute(QUERY_DICT['day'], (day, next_day, meter_id)).fetchall()
         elif mode == 'interval':
-            start = datetime.strptime(args['s'], "%Y-%m-%d")
-            end = datetime.strptime(args['e'], "%Y-%m-%d") + timedelta(days=1)
-            print(f"Start: args --> {args['s']}\tdt --> {start}")
-            print(f"Start: args --> {args['e']}\tdt --> {end}")
-            # strftime("%Y-%m-%d") required or else first day is missing?
-            result = db.execute(QUERY_DICT[mode], (start.strftime("%Y-%m-%d"), end, meter_id)).fetchall()
+            result = db.execute(QUERY_DICT['int_month'], (args['s'], args['e'], meter_id)).fetchall()
         elif mode == 'month':
             month = datetime.strptime(args['m'], "%Y-%m")
             next_month = month + relativedelta(months=1)
-            result = db.execute(QUERY_DICT['interval'], (month - timedelta(days=1), next_month, meter_id)).fetchall()
+            result = db.execute(QUERY_DICT['int_month'], (month, next_month, meter_id)).fetchall()
         elif mode == 'year':
             year = datetime.strptime(args['y'], "%Y")
             next_year = year + relativedelta(years=1)
-            result = db.execute(QUERY_DICT[mode], (year - timedelta(days=1), next_year, meter_id)).fetchall()
+            result = db.execute(QUERY_DICT['year'], (year, next_year, meter_id)).fetchall()
         else:
             return None
     except KeyError:
