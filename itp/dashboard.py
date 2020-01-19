@@ -17,8 +17,9 @@ def dashboard(mode, meter_id):
     """Respond with dashboard page."""
     meter_data, energy_diffs = get_meter_data(mode, request.args, meter_id, diffs=True)
 
-    if meter_data is None:
-        abort(400)  # Reply with bad request
+    if not meter_data:  # No results for sql query
+        flash("Keine Daten zu dieser Abfrage gefunden.")
+        return redirect(url_for('index'))
 
     session_id = uuid.uuid4().hex
     mh = MeterHandler()
@@ -30,16 +31,16 @@ def dashboard(mode, meter_id):
 
     g.mode = mode
     g.meter_id = meter_id
-    g.datetime = request.args['d']
 
     dashboard_data = get_dashboard_data(mode, request.args, meter_id, energy_diffs)
 
     g.dashboard = True
+
     return render_template('dashboard.html', **dashboard_data)
 
 
 def get_dashboard_data(mode, args, meter_id, energy_diffs):
-
+    """Gather and calculate the required data for display on the dashboard."""
     day = datetime.strptime(request.args['d'], "%Y-%m-%d")
     next_day = day + timedelta(days=1)
     prev_day = day - timedelta(days=1)
