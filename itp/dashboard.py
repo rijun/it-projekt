@@ -41,22 +41,34 @@ def dashboard(mode, meter_id):
 
 def get_dashboard_data(mode, args, meter_id, energy_diffs):
     """Gather and calculate the required data for display on the dashboard."""
-    day = datetime.strptime(request.args['d'], "%Y-%m-%d")
+    request_function = {
+        'day': day_request,
+        'interval': interval_request,
+        'month': month_request,
+        'year': year_request
+    }
+
+    return request_function[mode](args, meter_id, energy_diffs)
+
+
+def day_request(args, meter_id, energy_diffs):
+    day = datetime.strptime(args['d'], "%Y-%m-%d")
+    params = f"d={day}"
     next_day = day + timedelta(days=1)
     prev_day = day - timedelta(days=1)
     unit = "kWh / 60 min"
-    data_url = f"/meters/{mode}/{meter_id}?d={day}"
-    next_url = f"/dashboard/{mode}/{meter_id}?d={next_day.strftime('%Y-%m-%d')}"
-    prev_url = f"/dashboard/{mode}/{meter_id}?d={prev_day.strftime('%Y-%m-%d')}"
+    data_url = f"/meters/interval/{meter_id}?{params}"
+    next_url = f"/dashboard/day/{meter_id}?d={next_day.strftime('%Y-%m-%d')}"
+    prev_url = f"/dashboard/day/{meter_id}?d={prev_day.strftime('%Y-%m-%d')}"
     response_dict = {
         'meter_id': meter_id,
-        'mode': mode,
+        'mode': 'day',
         'min': min(energy_diffs),
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
-        'datetime': day.strftime('%Y-%m-%d'),
-        'datetime_str': day.strftime('%A, %d. %B %Y'),
+        'params': params,
+        'title': day.strftime('%A, %d. %B %Y'),
         'unit': unit,
         'tbl_title': 'Uhrzeit',
         'data_url': data_url,
@@ -66,12 +78,26 @@ def get_dashboard_data(mode, args, meter_id, energy_diffs):
     return response_dict
 
 
-def day_request(args):
-    abort(404, f"{args}")
-
-
-def interval_request(args):
-    abort(404, f"{args}")
+def interval_request(args, meter_id, energy_diffs):
+    start = datetime.strptime(args['s'], '%Y-%m-%d')
+    end = datetime.strptime(args['e'], '%Y-%m-%d')
+    params = f"s={start}&e={end}"
+    unit = "kWh / Tag"
+    data_url = f"/meters/interval/{meter_id}?{params}"
+    response_dict = {
+        'meter_id': meter_id,
+        'mode': 'interval',
+        'min': min(energy_diffs),
+        'max': max(energy_diffs),
+        'avg': round(mean(energy_diffs), 3),
+        'sum': round(sum(energy_diffs), 2),
+        'params': params,
+        'title': f"{start.strftime('%d.%m.%Y')} - {end.strftime('%d.%m.%Y')}",
+        'unit': unit,
+        'tbl_title': 'Datum',
+        'data_url': data_url,
+    }
+    return response_dict
 
 
 def month_request(args):

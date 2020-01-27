@@ -9,7 +9,7 @@
           <i class="fas fa-angle-left"></i>
         </a>
       {% endif %}
-      <span>{{ datetime_str }}</span>
+      <span>{{ title }}</span>
       {% if g.mode == 'day' or g.mode == 'month' %}
         <a href="{{ next_url }}">
           <i class="fas fa-angle-right"></i>
@@ -38,7 +38,7 @@
         // Set display parameters
         window.mode = '{{ mode }}';
         window.meterId = '{{ meter_id }}';
-        window.date = '{{ datetime }}';
+        window.params = '{{ params }}';
         window.sum = parseFloat('{{ sum }};');
         window.unit = '{{ unit }}';
         {% if g.mode == 'day' %}

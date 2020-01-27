@@ -21,7 +21,7 @@ function setEventHandlers() {
 }
 
 function getMeterData() {
-    const url = `/api/${window.mode}/${window.meterId}?d=${window.date}`;
+    const url = `/api/${window.mode}/${window.meterId}?${window.params}`;
 
     function storeMeterData(json) {
         if (typeof window.meterData != "undefined") {

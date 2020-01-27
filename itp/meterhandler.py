@@ -50,7 +50,7 @@ def get_meter_data(mode, args, meter_id, diffs=False):
             result = db.execute(QUERY_DICT['day'], (day, next_day, meter_id)).fetchall()
         elif mode == 'interval':
             start = datetime.strptime(args['s'], "%Y-%m-%d")
-            end = datetime.strptime(args['e'], "%Y-%m-%d")
+            end = datetime.strptime(args['e'], "%Y-%m-%d") + timedelta(days=1)
             result = db.execute(QUERY_DICT['int_month'], (start, end, meter_id)).fetchall()
         elif mode == 'month':
             month = datetime.strptime(args['m'], "%Y-%m")
