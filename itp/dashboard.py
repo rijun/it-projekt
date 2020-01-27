@@ -3,6 +3,7 @@ from math import floor
 from statistics import mean
 import uuid
 
+from dateutil.relativedelta import relativedelta
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, session
 from werkzeug.exceptions import abort
 
@@ -100,8 +101,31 @@ def interval_request(args, meter_id, energy_diffs):
     return response_dict
 
 
-def month_request(args):
-    abort(404, f"{args}")
+def month_request(args, meter_id, energy_diffs):
+    month = datetime.strptime(args['m'], "%Y-%m")
+    params = f"m={month}"
+    next_month = month + relativedelta(months=1)
+    prev_month = month - relativedelta(months=1)
+    unit = "kWh / Tag"
+    data_url = f"/meters/interval/{meter_id}?{params}"
+    next_url = f"/dashboard/month/{meter_id}?m={next_month.strftime('%Y-%m')}"
+    prev_url = f"/dashboard/month/{meter_id}?m={prev_month.strftime('%Y-%m')}"
+    response_dict = {
+        'meter_id': meter_id,
+        'mode': 'month',
+        'min': min(energy_diffs),
+        'max': max(energy_diffs),
+        'avg': round(mean(energy_diffs), 3),
+        'sum': round(sum(energy_diffs), 2),
+        'params': params,
+        'title': month.strftime('%B %Y'),
+        'unit': unit,
+        'tbl_title': 'Datum',
+        'data_url': data_url,
+        'next_url': next_url,
+        'prev_url': prev_url
+    }
+    return response_dict
 
 
 def year_request(args):
