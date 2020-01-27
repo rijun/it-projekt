@@ -25,6 +25,7 @@ class MeterHandler:
         return data
 
 
+# TODO: Add unit test
 def get_meter_data(mode, args, meter_id, diffs=False):
     """Return the stored meter data as a list."""
     db = get_db()

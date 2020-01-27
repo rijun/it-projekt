@@ -1,4 +1,4 @@
-const datetimeFormats = Object.freeze({'day': 'LT', 'interval': 'L', 'month': 'L', 'year': 'YYYY'});
+const datetimeFormats = Object.freeze({'day': 'LT', 'interval': 'L', 'month': 'L', 'year': 'MMMM'});
 
 function initDashboard() {
     moment.locale('de');    // Set Moment.js to german language

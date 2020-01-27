@@ -42,14 +42,7 @@ def dashboard(mode, meter_id):
 
 def get_dashboard_data(mode, args, meter_id, energy_diffs):
     """Gather and calculate the required data for display on the dashboard."""
-    request_function = {
-        'day': day_request,
-        'interval': interval_request,
-        'month': month_request,
-        'year': year_request
-    }
-
-    return request_function[mode](args, meter_id, energy_diffs)
+    return mode_function_dict[mode](args, meter_id, energy_diffs)
 
 
 def day_request(args, meter_id, energy_diffs):
@@ -128,8 +121,25 @@ def month_request(args, meter_id, energy_diffs):
     return response_dict
 
 
-def year_request(args):
-    abort(404, f"{args}")
+def year_request(args, meter_id, energy_diffs):
+    year = datetime.strptime(args['y'], "%Y")
+    params = f"y={year}"
+    unit = "kWh / Monat"
+    data_url = f"/meters/year/{meter_id}?{params}"
+    response_dict = {
+        'meter_id': meter_id,
+        'mode': 'year',
+        'min': min(energy_diffs),
+        'max': max(energy_diffs),
+        'avg': round(mean(energy_diffs), 3),
+        'sum': round(sum(energy_diffs), 2),
+        'params': params,
+        'title': year.strftime('%Y'),
+        'unit': unit,
+        'tbl_title': 'Monat',
+        'data_url': data_url
+    }
+    return response_dict
 
 
 mode_function_dict = {
