@@ -49,7 +49,9 @@ def get_meter_data(mode, args, meter_id, diffs=False):
             next_day = day + timedelta(days=1)
             result = db.execute(QUERY_DICT['day'], (day, next_day, meter_id)).fetchall()
         elif mode == 'interval':
-            result = db.execute(QUERY_DICT['int_month'], (args['s'], args['e'], meter_id)).fetchall()
+            start = datetime.strptime(args['s'], "%Y-%m-%d")
+            end = datetime.strptime(args['e'], "%Y-%m-%d")
+            result = db.execute(QUERY_DICT['int_month'], (start, end, meter_id)).fetchall()
         elif mode == 'month':
             month = datetime.strptime(args['m'], "%Y-%m")
             next_month = month + relativedelta(months=1)
