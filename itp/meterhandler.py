@@ -1,12 +1,6 @@
-import math
 from datetime import datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
-from math import floor
-from statistics import mean
-
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for, jsonify
-from werkzeug.exceptions import abort
 
 from itp.db import get_db
 
@@ -27,7 +21,6 @@ class MeterHandler:
         return data
 
 
-# TODO: Add unit test
 def get_meter_data(mode, args, meter_id, diffs=False):
     """Return the stored meter data as a list."""
     db = get_db()
