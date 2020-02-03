@@ -1,4 +1,6 @@
+import math
 from datetime import datetime, timedelta
+
 from dateutil.relativedelta import relativedelta
 from math import floor
 from statistics import mean
@@ -78,11 +80,15 @@ def __parse_db_result(db_result):
     times = []
     meter_readings = []
     energy_diffs = []
+
     for res in db_result:
         times.append(res['datum_zeit'])
-        meter_readings.append(float(res['obis_180']))
+        meter_readings.append(res['obis_180'])
+
     for i in range(len(times) - 1):
-        energy_diffs.append((floor(meter_readings[i + 1] * 100) - floor(meter_readings[i] * 100)) / 100)
+        diff = meter_readings[i + 1] - meter_readings[i]
+        energy_diffs.append(round(diff, 2))  # Round necessary to mitigate floating point error
+
     # Remove last entries from times and meter_readings as they are only required for the energy_diffs calculation
     times.pop()
     meter_readings.pop()
