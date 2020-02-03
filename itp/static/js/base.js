@@ -1,8 +1,3 @@
-// State enum
-const States = Object.freeze({"day": {}, "interval": {}, "month": {}, "year": {}});
-
-// Set event handlers
-document.getElementById('meterSelector').onchange = setSelectorRanges;
 window.onresize = () => {
     if (window.chart === undefined) {
         return;
@@ -19,8 +14,11 @@ window.onresize = () => {
 
 
 /* Query modal functions */
-function setupMeterSelector() {
+function initMeterSelector() {
     let meterSelector = document.getElementById('meterSelector');
+    // Set event handlers
+    meterSelector.onchange = setSelectorRanges;
+    // Add available meters to meter selector
     for (let meter in store.get('meters')) {
         let opt = document.createElement('option');
         opt.value = meter;
@@ -47,70 +45,4 @@ function setSelectorRanges() {
     // Year selector
     document.getElementById('yearSelector').innerHTML =
         "<option value=\"" + moment(meterDates.min).format("YYYY") + "\">" + moment(meterDates.min).format("YYYY") + "</option>";
-}
-
-// Run on startup
-window.onload = function () {
-    setupMeterSelector();
-    window.state = States.day;
-};
-
-function checkInputs() {
-    /**
-     * Check the value of each input before allowing a request to be sent
-     * **/
-
-    let inputsValid = [];
-
-    inputsValid.push(checkInputAvailable());
-    inputsValid.push(checkInputRange());
-
-    return inputsValid.indexOf(false) < 0;
-}
-
-// TODO: Refactor
-function checkInputAvailable() {
-    let valueList = [];
-
-    // Add all values to a list
-    valueList.push(document.getElementById("user-selector").value);
-    switch (state) {
-        case 1: // state = day
-            valueList.push(document.getElementById("date-selector").value);
-            break;
-        case 2: // state = interval
-            valueList.push(document.getElementById("first-date-selector").value);
-            valueList.push(document.getElementById("last-date-selector").value);
-            break;
-        case 3: // state = month
-            valueList.push(document.getElementById("month-selector").value);
-            break;
-        case 4: // state = year
-            valueList.push(document.getElementById("year-selector").value);
-            break;
-    }
-
-    return valueList.indexOf("") < 0;   // If at least one value is "", i.e. empty, the comparison returns false
-}
-
-function checkInputRange() {
-    let selector;
-
-    switch (state) {
-        case 1: // state = day
-            selector = document.getElementById("date-selector");
-            return selector.min <= selector.value && selector.value <= selector.max;
-        case 2: // state = interval
-            let firstSelector = document.getElementById("first-date-selector");
-            let lastSelector = document.getElementById("last-date-selector");
-            let firstSelectorValid = firstSelector.min <= firstSelector.value && firstSelector.value <= firstSelector.max;
-            let lastSelectorValid = lastSelector.min <= lastSelector.value && lastSelector.value <= lastSelector.max;
-            let selectorIntervalValid = firstSelector.value <= lastSelector.value;
-            return firstSelectorValid && lastSelectorValid && selectorIntervalValid;
-        case 3: // state = month
-            selector = document.getElementById("month-selector");
-            return selector.min <= selector.value && selector.value <= selector.max;
-        case 4: // state = year
-            return true;
-    }
 }

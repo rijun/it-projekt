@@ -1,4 +1,5 @@
 document.getElementById("queryForm").addEventListener( "submit", ev => {
+    // Prevent form element from submitting
     ev.preventDefault();
     sendData();
 });
