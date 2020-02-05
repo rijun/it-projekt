@@ -60,6 +60,11 @@ def get_meter_data(mode, args, meter_id, diffs=False):
             return None
     except KeyError:
         return None
+    except ValueError:
+        return None
+
+    if not result:
+        return None
 
     energy_diffs, meter_data_list = __parse_db_result(result)
 
