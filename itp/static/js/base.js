@@ -34,15 +34,31 @@ function setSelectorRanges() {
     document.getElementById('dateSelector').min = moment(meterDates.min).format("YYYY-MM-DD");
     document.getElementById('dateSelector').max = moment(meterDates.max).format("YYYY-MM-DD");
     document.getElementById('dateSelector').value = moment(meterDates.max).format("YYYY-MM-DD");
+    document.getElementById('dateSelector').disabled = false;
     // Interval selector
     document.getElementById('firstDateSelector').min = meterDates.min;
     document.getElementById('firstDateSelector').max = meterDates.max;
+    document.getElementById('firstDateSelector').disabled = false;
     document.getElementById('lastDateSelector').min = meterDates.min;
     document.getElementById('lastDateSelector').max = meterDates.max;
+    document.getElementById('lastDateSelector').disabled = false;
     // Month selector
     document.getElementById('monthSelector').min = moment(meterDates.min).format("YYYY-MM");
     document.getElementById('monthSelector').max = moment(meterDates.max).subtract(1, "months").format("YYYY-MM");
+    document.getElementById('monthSelector').disabled = false;
     // Year selector
-    document.getElementById('yearSelector').innerHTML =
-        "<option value=\"" + moment(meterDates.min).format("YYYY") + "\">" + moment(meterDates.min).format("YYYY") + "</option>";
+    const yearSelector = document.getElementById('yearSelector');
+    yearSelector.innerHTML = "";
+    const startYear = moment(meterDates.min);
+    const endYear = moment(meterDates.max);
+    while (endYear.diff(startYear, 'years') >= 0) {
+        const yearStr =  startYear.format("YYYY");
+        yearSelector.innerHTML += "<option value=\"" + yearStr + "\">" + yearStr + "</option>";
+        if (endYear.diff(startYear, 'years') === 0) {
+            break;
+        } else {
+             startYear.add(1, 'year');
+        }
+    }
+    document.getElementById('yearSelector').disabled = false;
 }
