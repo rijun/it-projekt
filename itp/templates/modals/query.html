@@ -13,8 +13,11 @@
           <div class="form-group">
             <label for="meterSelector">Zählernummer</label>
             <select class="form-control" name="id" id="meterSelector" required>
-              <option value="">Zähler auswählen...</option>
+              <option value="" disabled>Zähler auswählen...</option>
             </select>
+            <div class="invalid-feedback" id="invalidMeter">
+              Auswahl ungültig.
+            </div>
           </div>
           <!-- Mode selection -->
           <ul class="nav nav-tabs nav-fill" id="navLinks">
@@ -39,6 +42,9 @@
                 <div class="form-group col">
                   <label for="dateSelector">Datum</label>
                   <input type="date" class="form-control" name="d" id="dateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidDate">
+                    Auswahl ungültig.
+                  </div>
                 </div>
               </div>
             </div>
@@ -48,10 +54,16 @@
                 <div class="form-group col">
                   <label for="firstDateSelector">Startdatum</label>
                   <input type="date" class="form-control" name="s" id="firstDateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidStartDate">
+                    Auswahl ungültig.
+                  </div>
                 </div>
                 <div class="form-group col">
                   <label for="lastDateSelector">Enddatum</label>
                   <input type="date" class="form-control" name="e" id="lastDateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidLastDate">
+                    Auswahl ungültig.
+                  </div>
                 </div>
               </div>
             </div>
@@ -60,6 +72,9 @@
               <div class="form-group">
                 <label for="monthSelector">Monat</label>
                 <input type="month" class="form-control" name="m" id="monthSelector" disabled>
+                <div class="invalid-feedback" id="invalidMonth">
+                  Auswahl ungültig.
+                </div>
               </div>
             </div>
             <!-- Year form -->
@@ -67,6 +82,9 @@
               <div class="form-group">
                 <label for="yearSelector">Jahr</label>
                 <select class="form-control" name="y" id="yearSelector" disabled></select>
+                <div class="invalid-feedback" id="invalidYear">
+                  Auswahl ungültig.
+                </div>
               </div>
             </div>
           </div>

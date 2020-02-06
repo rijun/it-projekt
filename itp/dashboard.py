@@ -16,7 +16,11 @@ bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 @bp.route('/<mode>/<meter_id>')
 def dashboard(mode, meter_id):
     """Respond with dashboard page."""
-    meter_data, energy_diffs = get_meter_data(mode, request.args, meter_id, diffs=True)
+    try:
+        meter_data, energy_diffs = get_meter_data(mode, request.args, meter_id, diffs=True)
+    except TypeError:
+        flash("Abfragefehler!")
+        return redirect(url_for('index'))
 
     if not meter_data:  # No results for sql query
         flash("Keine Daten zu dieser Abfrage gefunden.")

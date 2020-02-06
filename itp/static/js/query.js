@@ -17,6 +17,8 @@ function sendData() {
         }
     }
 
+    if (checkInput(selectedMode) === false) { return; }
+
     let url = `/dashboard/${selectedMode}/${formData.get('id')}?`;
 
     switch (selectedMode) {
@@ -35,4 +37,49 @@ function sendData() {
     }
 
     window.location = url;
+}
+
+function checkInput(mode) {
+    let checkResult = true;     // Be optimistic
+    switch (mode) {
+        case 'day':
+            if (document.getElementById('dateSelector').value === "") {
+                checkResult = false;
+                document.getElementById('invalidDate').style.display = 'block';
+            } else {
+                document.getElementById('invalidDate').style.display = 'none';
+            }
+            break;
+        case 'interval':
+            if (document.getElementById('firstDateSelector').value === "") {
+                checkResult = false;
+                document.getElementById('invalidStartDate').style.display = 'block';
+            } else {
+                document.getElementById('invalidStartDate').style.display = 'none';
+            }
+            if (document.getElementById('lastDateSelector').value === "") {
+                checkResult = false;
+                document.getElementById('invalidLastDate').style.display = 'block';
+            } else {
+                document.getElementById('invalidLastDate').style.display = 'none';
+            }
+            break;
+        case 'month':
+            if (document.getElementById('monthSelector').value === "") {
+                checkResult = false;
+                document.getElementById('invalidMonth').style.display = 'block';
+            } else {
+                document.getElementById('invalidMonth').style.display = 'none';
+            }
+            break;
+        case 'year':
+            if (document.getElementById('yearSelector').value === "") {
+                checkResult = false;
+                document.getElementById('invalidYear').style.display = 'block';
+            } else {
+                document.getElementById('invalidYear').style.display = 'none';
+            }
+            break;
+    }
+    return checkResult;
 }
