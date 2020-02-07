@@ -155,7 +155,7 @@ function updateChart() {
     let meterReadingsData = window.meterData.meterReadings;
 
     if (window.resolution === 60) {
-        let tempDatetime = [];
+        let tempDatetime;
         let tempLoadDiffs = [];
         let tempMeterReadings = [];
         // Filter meterData for hourly values
