@@ -11,6 +11,10 @@ function setEventHandlers() {
     document.getElementById('meterReadingsButton').onclick = meterReadingsChanged;
     document.getElementById('priceInput').oninput = priceInputChanged;
     document.getElementById('priceInputRange').oninput = priceInputRangeChanged;
+    $('#queryModal').on('show.bs.modal', e => {
+        document.getElementById('meterSelector').value = window.meterId;
+        setSelectorRanges();    // Manual invocation as changing the value doesn't trigger the onchange event
+    });
 
     for (let resSelector of document.getElementsByName('res')) {
         // Cannot use arrow function as "this" represents the function owner, not the function caller
