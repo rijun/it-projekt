@@ -114,15 +114,15 @@ function sendData() {
         document.getElementById('monthSelector').value = `${year}-${month}`;
     }
 
+    // Bind the FormData object and the form element
+    const formData = new FormData(document.getElementById("queryForm"));
     console.log("Checking input...");
-    if (checkInput(selectedMode) === false) {
+    if (checkInput(selectedMode, formData) === false) {
         console.log("Check failed...");
         return;
     }
     console.log("Check successful!");
     console.log("Building URL...");
-    // Bind the FormData object and the form element
-    const formData = new FormData(document.getElementById("queryForm"));
 
     let url = `/dashboard/${selectedMode}/${formData.get('id')}?`;
 
@@ -144,11 +144,11 @@ function sendData() {
     window.location = url;
 }
 
-function checkInput(mode) {
-    let checkResult = true;     // Be optimistic
+function checkInput(mode, formData) {
+    let checkResult = true;  // Be optimistic
     switch (mode) {
         case 'day':
-            if (document.getElementById('dateSelector').value === "") {
+            if (formData.get('d') === "") {
                 checkResult = false;
                 document.getElementById('invalidDate').style.display = 'block';
             } else {
@@ -156,13 +156,13 @@ function checkInput(mode) {
             }
             break;
         case 'interval':
-            if (document.getElementById('firstDateSelector').value === "") {
+            if (formData.get('s') === "") {
                 checkResult = false;
                 document.getElementById('invalidStartDate').style.display = 'block';
             } else {
                 document.getElementById('invalidStartDate').style.display = 'none';
             }
-            if (document.getElementById('lastDateSelector').value === "") {
+            if (formData.get('e') === "") {
                 checkResult = false;
                 document.getElementById('invalidLastDate').style.display = 'block';
             } else {
@@ -170,7 +170,9 @@ function checkInput(mode) {
             }
             break;
         case 'month':
-            if (document.getElementById('monthSelector').value === "") {
+            const monthSelector = document.getElementById('monthSelector');
+            const month = formData.get('m');
+            if (month === "" || month < monthSelector.min || month > monthSelector.max) {
                 checkResult = false;
                 document.getElementById('invalidMonth').style.display = 'block';
             } else {
@@ -178,7 +180,7 @@ function checkInput(mode) {
             }
             break;
         case 'year':
-            if (document.getElementById('yearSelector').value === "") {
+            if (formData.get('y') === "") {
                 checkResult = false;
                 document.getElementById('invalidYear').style.display = 'block';
             } else {
