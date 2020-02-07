@@ -12,7 +12,7 @@
           <!-- Meter selection -->
           <div class="form-group">
             <label for="meterSelector">Zählernummer</label>
-            <select class="form-control" name="id" id="meterSelector" required>
+            <select class="custom-select" name="id" id="meterSelector" required>
               <option value="">Zähler auswählen...</option>
             </select>
             <div class="invalid-feedback" id="invalidMeter">
@@ -75,8 +75,8 @@
               </div>
               <div class="form-row d-none" id="monthFallback">
                 <div class="form-group col">
-                  <label for="monthSelectorFallback">Monat:</label>
-                  <select class="form-control" id="monthSelectorFallback" name="mf" disabled>
+                  <label for="monthSelectorFallback">Monat</label>
+                  <select class="custom-select" id="monthSelectorFallback" name="mf" disabled>
                     <option value="01" selected>Januar</option>
                     <option value="02">Februar</option>
                     <option value="03">März</option>
@@ -90,22 +90,21 @@
                     <option value="11">November</option>
                     <option value="12">Dezember</option>
                   </select>
-                  <div class="form-group col">
-                    <label for="yearSelectorFallback">Jahr:</label>
-                    <select class="form-control" id="yearSelectorFallback" name="yf" disabled>
-                    </select>
+                  <div class="invalid-feedback" id="invalidMonth">
+                    Auswahl ungültig.
                   </div>
                 </div>
-              </div>
-              <div class="invalid-feedback" id="invalidMonth">
-                Auswahl ungültig.
+                <div class="form-group col">
+                  <label for="yearSelectorFallback">Jahr</label>
+                  <select class="custom-select" id="yearSelectorFallback" name="yf" disabled></select>
+                </div>
               </div>
             </div>
             <!-- Year form -->
             <div class="tab-pane fade" id="year" role="tabpanel">
               <div class="form-group">
                 <label for="yearSelector">Jahr</label>
-                <select class="form-control" name="y" id="yearSelector" disabled></select>
+                <select class="custom-select" name="y" id="yearSelector" disabled></select>
                 <div class="invalid-feedback" id="invalidYear">
                   Auswahl ungültig.
                 </div>

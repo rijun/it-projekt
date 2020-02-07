@@ -4,20 +4,18 @@ function initQueryModal() {
         ev.preventDefault();
         sendData();
     });
+    document.getElementById('meterSelector').onchange = setSelectorRanges;
     populateMeterSelector();
     checkNativeMonthSelector();
 }
 
 function populateMeterSelector() {
-    let meterSelector = document.getElementById('meterSelector');
-    // Set event handlers
-    meterSelector.onchange = setSelectorRanges;
     // Add available meters to meter selector
     for (let meter in store.get('meters')) {
         let opt = document.createElement('option');
         opt.value = meter;
         opt.innerHTML = meter;
-        meterSelector.add(opt);
+        document.getElementById('meterSelector').add(opt);
     }
 }
 
