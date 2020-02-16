@@ -679,3 +679,4 @@ ASALocalRun/
 *.db
 
 !tests/json/*
+log.txt
