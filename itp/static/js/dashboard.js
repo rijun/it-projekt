@@ -28,20 +28,38 @@ function getMeterData() {
     const url = `/api/${window.mode}/${window.meterId}?${window.params}`;
 
     function storeMeterData(json) {
-        if (typeof window.meterData != "undefined") {
-            alert("Defined");
+        if (typeof (window.meterData) != "undefined") {
+            alert("Defined");   // Debugging output
         }
+        window.interpolatedDataAvailable = false;
         window.meterData = {
             loadDiffs: [],
             meterReadings: [],
             datetimes: []
         };
-        json.forEach(data => {
-            window.meterData.loadDiffs.push(data['diff']);
-            window.meterData.meterReadings.push(data['reading']);
+
+        function storeJsonData(d) {
+            window.meterData.loadDiffs.push(d['diff']);
+            window.meterData.meterReadings.push(d['reading']);
             let datetimeFormat = window.mode === 'day' ? "YYYY-MM-DD HH:mm:SS" : "YYYY-MM-DD";
-            window.meterData.datetimes.push(moment(data['datetime'], datetimeFormat));
-        });
+            window.meterData.datetimes.push(moment(d['datetime'], datetimeFormat));
+        }
+
+        // Differentiate between data with or without interpolated data
+        if (Array.isArray(json[0])) {   // Interpolated data available, json[0] is an array
+            json[0].forEach(data => {
+                storeJsonData(data)
+            });
+            window.interpolatedDataAvailable = true;
+            window.interpolatedData = [];
+            json[1].forEach(data => {
+                window.interpolatedData.push(data['diff']);
+            });
+        } else {    // No interpolated data available
+            json.forEach(data => {
+                storeJsonData(data)
+            });
+        }
     }
 
     fetch(url, {method: 'get'})
@@ -121,7 +139,7 @@ function setChartSettings() {
                 callbacks: {
                     label: function (tooltipItem, data) {
                         if (tooltipItem.datasetIndex === 0) {
-                            return tooltipItem.yLabel +` ${window.unit}`;
+                            return tooltipItem.yLabel + ` ${window.unit}`;
                         } else {
                             return tooltipItem.yLabel + " kWh";
                         }
@@ -157,16 +175,21 @@ function updateChart() {
     let datetimeData = window.meterData.datetimes;
     let loadDiffsData = window.meterData.loadDiffs;
     let meterReadingsData = window.meterData.meterReadings;
+    let interpolatedData = window.interpolatedData;
 
     if (window.resolution === 60) {
         let tempDatetime;
         let tempLoadDiffs = [];
         let tempMeterReadings = [];
+        let tempInterpolatedData = [];
         // Filter meterData for hourly values
         tempDatetime = datetimeData.filter((d, idx) => {
             if (moment(d).minute() % 60 === 0) {
                 tempLoadDiffs.push(loadDiffsData[idx]);
                 tempMeterReadings.push(meterReadingsData[idx]);
+                if (window.interpolatedDataAvailable) {
+                    tempInterpolatedData.push(interpolatedData[idx]);
+                }
                 return true;
             }
             return false;
@@ -175,6 +198,7 @@ function updateChart() {
         datetimeData = tempDatetime;
         loadDiffsData = tempLoadDiffs;
         meterReadingsData = tempMeterReadings;
+        interpolatedData = tempInterpolatedData;
     }
 
     // x-Axis values and settings
@@ -189,11 +213,19 @@ function updateChart() {
     window.chart.data.labels = formattedLabels;
 
     // y-Axis values and settings
+    window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
     if (document.getElementById('meterReadingsButton').classList.contains('active')) {
-        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
         window.chart.data.datasets[1].data = meterReadingsData;  // Add meterReadings to chart
-    } else {
-        window.chart.data.datasets[0].data = loadDiffsData;  // Add loadDiffs to chart
+    }
+    if (interpolatedDataAvailable) {
+        window.chart.data.datasets.push({
+            label: "Lastgang Interpoliert",
+            data: window.interpolatedData,
+            backgroundColor: "rgba(255, 0, 0, 0.2)",
+            borderColor: "rgb(255,0,0)",
+            borderWidth: 1,
+            yAxisID: "y-axis-load",
+        })
     }
     window.chart.update();
 }
@@ -208,8 +240,8 @@ function meterReadingsChanged() {
             window.chart.data.datasets.push({
                 label: 'Zählerstand',
                 data: window.meterData.meterReadings,
-                backgroundColor: "rgba(255, 0, 0, 0.2)",
-                borderColor: "rgb(255, 0, 0)",
+                backgroundColor: "rgba(0, 0, 255, 0.2)",
+                borderColor: "rgb(0,0,255)",
                 borderWidth: 1,
                 type: "line",
                 yAxisID: 'y-axis-energy'
