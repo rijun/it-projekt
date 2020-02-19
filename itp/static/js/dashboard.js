@@ -1,5 +1,17 @@
 const datetimeFormats = Object.freeze({'day': 'LT', 'interval': 'L', 'month': 'L', 'year': 'MMMM'});
 
+// Arrays for chart color storage, will be filled later
+window.chartColors = {
+    redBorder: "rgb(255, 0, 0)",
+    redBackground: "rgba(255, 0, 0, 0.2)",
+    orangeBorder: "rgb(255, 128, 0)",
+    orangeBackground: "rgba(255, 128, 0, 0.2)",
+    blueBorder: "rgb(0, 0, 255)",
+    blueBackground: "rgba(0, 0, 255, 0.2)",
+    barBackground: [],
+    barBorder: [],
+};
+
 function initDashboard() {
     moment.locale('de');    // Set Moment.js to german language
     setEventHandlers();
@@ -45,7 +57,7 @@ function getMeterData() {
             window.meterData.datetimes.push(moment(d['datetime'], datetimeFormat));
         }
 
-        // Differentiate between data with or without interpolated data
+        // Differentiate between data with or without interpolated data and store the data
         if (Array.isArray(json[0])) {   // Interpolated data available, json[0] is an array
             json[0].forEach(data => {
                 storeJsonData(data)
@@ -59,6 +71,15 @@ function getMeterData() {
             json.forEach(data => {
                 storeJsonData(data)
             });
+        }
+
+        // Merge interpolated data with load diffs when necessary
+        if (interpolatedDataAvailable) {
+            window.interpolatedData.forEach((data, idx) => {
+                if (data !== 0) {
+                    window.meterData.loadDiffs[idx] = data;
+                }
+            })
         }
     }
 
@@ -90,8 +111,8 @@ function setChartSettings() {
         data: {
             datasets: [{
                 label: "Lastgang",
-                backgroundColor: "rgba(255, 128, 0, 0.2)",
-                borderColor: "rgb(255, 128, 0)",
+                backgroundColor: window.chartColors.barBackground,
+                borderColor: window.chartColors.barBorder,
                 borderWidth: 1,
                 yAxisID: "y-axis-load",
             }]
@@ -175,30 +196,35 @@ function updateChart() {
     let datetimeData = window.meterData.datetimes;
     let loadDiffsData = window.meterData.loadDiffs;
     let meterReadingsData = window.meterData.meterReadings;
-    let interpolatedData = window.interpolatedData;
+    let interpolatedData;   // Necessary for chart color settings
+    if (interpolatedDataAvailable) {
+        interpolatedData = window.interpolatedData;   // Used only when data is available
+    }
 
+    // Filter meterData for hourly values
     if (window.resolution === 60) {
         let tempDatetime;
         let tempLoadDiffs = [];
         let tempMeterReadings = [];
-        let tempInterpolatedData = [];
         // Filter meterData for hourly values
         tempDatetime = datetimeData.filter((d, idx) => {
             if (moment(d).minute() % 60 === 0) {
                 tempLoadDiffs.push(loadDiffsData[idx]);
                 tempMeterReadings.push(meterReadingsData[idx]);
-                if (window.interpolatedDataAvailable) {
-                    tempInterpolatedData.push(interpolatedData[idx]);
-                }
                 return true;
             }
             return false;
         });
+        // Filter interpolated data
+        if (window.interpolatedDataAvailable) {
+            interpolatedData = interpolatedData.filter((d, idx) => {
+                return moment(datetimeData[idx]).minute() % 60 === 0;
+            });
+        }
 
         datetimeData = tempDatetime;
         loadDiffsData = tempLoadDiffs;
         meterReadingsData = tempMeterReadings;
-        interpolatedData = tempInterpolatedData;
     }
 
     // x-Axis values and settings
@@ -217,15 +243,16 @@ function updateChart() {
     if (document.getElementById('meterReadingsButton').classList.contains('active')) {
         window.chart.data.datasets[1].data = meterReadingsData;  // Add meterReadings to chart
     }
-    if (interpolatedDataAvailable) {
-        window.chart.data.datasets.push({
-            label: "Lastgang Interpoliert",
-            data: window.interpolatedData,
-            backgroundColor: "rgba(255, 0, 0, 0.2)",
-            borderColor: "rgb(255,0,0)",
-            borderWidth: 1,
-            yAxisID: "y-axis-load",
-        })
+
+    // Set chart colors
+    for (let i = 0; i < loadDiffsData.length; i++) {
+        if (interpolatedDataAvailable && interpolatedData[i] !== 0) {
+            window.chartColors.barBorder.push(window.chartColors.redBorder);
+            window.chartColors.barBackground.push(window.chartColors.redBackground);
+        } else {
+            window.chartColors.barBorder.push(window.chartColors.orangeBorder);
+            window.chartColors.barBackground.push(window.chartColors.orangeBackground);
+        }
     }
     window.chart.update();
 }
@@ -240,8 +267,8 @@ function meterReadingsChanged() {
             window.chart.data.datasets.push({
                 label: 'Zählerstand',
                 data: window.meterData.meterReadings,
-                backgroundColor: "rgba(0, 0, 255, 0.2)",
-                borderColor: "rgb(0,0,255)",
+                backgroundColor: window.chartColors.blueBackground,
+                borderColor: window.chartColors.blueBorder,
                 borderWidth: 1,
                 type: "line",
                 yAxisID: 'y-axis-energy'
