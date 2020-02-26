@@ -18,13 +18,16 @@ def api(mode, meter_id):
 
     if session_id is not None:
         mh = MeterHandler()
-        meter_data = mh.pop_session(session_id)
+        meter_data, interpolation = mh.pop_session(session_id)
         if meter_data is None:
-            meter_data = get_meter_data(mode, request.args, meter_id)
+            meter_data, interpolation = get_meter_data(mode, request.args, meter_id)
     else:
-        meter_data = get_meter_data(mode, request.args, meter_id)
+        meter_data, interpolation = get_meter_data(mode, request.args, meter_id)
 
     if meter_data is None:
         abort(400)
 
-    return jsonify(meter_data)
+    if interpolation['necessary']:
+        return jsonify(meter_data, interpolation['values'])
+    else:
+        return jsonify(meter_data)

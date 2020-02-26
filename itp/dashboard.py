@@ -17,9 +17,9 @@ bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 def dashboard(mode, meter_id):
     """Respond with dashboard page."""
     try:
-        meter_data, energy_diffs = get_meter_data(mode, request.args, meter_id, diffs=True)
-    except TypeError:
-        flash("Abfragefehler!")
+        meter_data, energy_diffs, interpolation = get_meter_data(mode, request.args, meter_id, diffs=True)
+    except (ValueError, TypeError):
+        flash("Fehler in der Abfrage!")
         return redirect(url_for('index'))
 
     if not meter_data:  # No results for sql query
@@ -28,7 +28,7 @@ def dashboard(mode, meter_id):
 
     session_id = uuid.uuid4().hex
     mh = MeterHandler()
-    mh.push_session(session_id, meter_data)
+    mh.push_session(session_id, meter_data, interpolation)
 
     # Add cookie with session id
     session.clear()
