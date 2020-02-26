@@ -18,8 +18,8 @@ def dashboard(mode, meter_id):
     """Respond with dashboard page."""
     try:
         meter_data, energy_diffs, interpolation = get_meter_data(mode, request.args, meter_id, diffs=True)
-    except TypeError:
-        flash("Abfragefehler!")
+    except (ValueError, TypeError):
+        flash("Fehler in der Abfrage!")
         return redirect(url_for('index'))
 
     if not meter_data:  # No results for sql query
