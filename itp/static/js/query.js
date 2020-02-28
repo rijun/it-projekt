@@ -19,13 +19,12 @@ function populateMeterSelector() {
     }
 }
 
-function setSelectorRanges() {
+function setSelectorRanges(index = false) {
     const selectorOption = document.getElementById('meterSelector').value;
     const meterDates = store.get('meters')[selectorOption].date;
     // Date selector
     document.getElementById('dateSelector').min = moment(meterDates.min).format("YYYY-MM-DD");
     document.getElementById('dateSelector').max = moment(meterDates.max).format("YYYY-MM-DD");
-    document.getElementById('dateSelector').value = moment(meterDates.max).format("YYYY-MM-DD");
     document.getElementById('dateSelector').disabled = false;
     // Interval selector
     document.getElementById('firstDateSelector').min = meterDates.min;
@@ -39,41 +38,66 @@ function setSelectorRanges() {
     const maxDate = moment(meterDates.max).subtract(1, 'months');
     document.getElementById('monthSelector').min = minDate.format("YYYY-MM");
     document.getElementById('monthSelector').max = maxDate.format("YYYY-MM");
-    // Delete all children from fallback year selector
-    const fallbackYearSelector = document.getElementById('yearSelectorFallback');
-    while (fallbackYearSelector.firstChild) {
-        fallbackYearSelector.removeChild(fallbackYearSelector.firstChild);
-    }
-    for (let year = minDate.year(); year <= maxDate.year(); year++) {
-        const option = document.createElement('option');
-        option.textContent = year;
-        option.value = year;
-        fallbackYearSelector.appendChild(option);
-    }
+    setupFallbackMonthSelector(minDate, maxDate);
     document.getElementById('monthSelector').disabled = false;
     document.getElementById('monthSelectorFallback').disabled = false;
-    document.getElementById('yearSelectorFallback').disabled = false;
     /* Year selector */
-    const yearSelector = document.getElementById('yearSelector');
-    // Delete all children from year selector
-    while (yearSelector.firstChild) {
-        yearSelector.removeChild(yearSelector.firstChild);
-    }
-    const startYear = moment(meterDates.min);
-    const endYear = moment(meterDates.max);
-    while (endYear.diff(startYear, 'years') >= 0) {
-        const option = document.createElement('option');
-        const yearStr =  startYear.format("YYYY");
-        option.textContent = yearStr;
-        option.value = yearStr;
-        yearSelector.appendChild(option);
-        if (endYear.diff(startYear, 'years') === 0) {
-            break;
-        } else {
-             startYear.add(1, 'year');
-        }
-    }
+    setupYearSelector(minDate, maxDate);
     document.getElementById('yearSelector').disabled = false;
+
+    // Set the default selector values
+    if (index) {
+        setDefaultSelectorValues(maxDate);
+    } else {
+        setDefaultSelectorValues()
+    }
+}
+
+function setupYearSelector(minDate, maxDate) {
+    const yearSelector = document.getElementById('yearSelector');
+    // Reset contents of year selector
+    yearSelector.innerHTML = "";
+
+    // Add available years to selector
+    let yearList = [];
+    let y = moment(minDate);
+    do {
+        const yearStr = y.format('YYYY');
+        if (yearList.indexOf(yearStr) === -1) { // Year not added yet to selector
+            const option = document.createElement('option');
+            option.textContent = yearStr;
+            option.value = yearStr;
+            yearSelector.appendChild(option);
+            yearList.push(yearStr);
+        }
+        y.add(1, 'month');
+    } while (!y.isAfter(maxDate, 'months'))
+}
+
+function setupFallbackMonthSelector(minDate, maxDate) {
+    const fallbackMonthSelector = document.getElementById('monthSelectorFallback');
+    // Reset contents of fallback month selector
+    fallbackMonthSelector.innerHTML = "";
+
+    // Add available months and years to fallback selector
+    let m = moment(minDate);
+    do {
+        const option = document.createElement('option');
+        option.textContent = m.format('MMMM YYYY');
+        option.value = m.format('YYYY-MM');
+        option.style += 'month-option';
+        fallbackMonthSelector.appendChild(option);
+        m.add(1, 'month');
+    } while (!m.isAfter(maxDate, 'month'))
+}
+
+function setDefaultSelectorValues(d = moment()) {
+    document.getElementById('dateSelector').value = d.format("YYYY-MM-DD");
+    document.getElementById('firstDateSelector').value = d.subtract(1, 'days').format("YYYY-MM-DD");
+    document.getElementById('lastDateSelector').value = d.format("YYYY-MM-DD");
+    document.getElementById('monthSelector').value = d.format("YYYY-MM");
+    document.getElementById('monthSelectorFallback').value = d.format("YYYY-MM");
+    document.getElementById('yearSelector').value = d.format("YYYY");
 }
 
 function checkNativeMonthSelector() {

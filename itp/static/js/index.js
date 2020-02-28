@@ -18,7 +18,7 @@ function setMeterSelectionButtonEvents() {
         // Cannot use arrow function as "this" represents the function owner, not the function caller
         meterButton.onclick = function () {
             document.getElementById('meterSelector').value = this.id;
-            setSelectorRanges();    // Manual invocation as changing the value doesn't trigger the onchange event
+            setSelectorRanges(true);    // Manual invocation as changing the value doesn't trigger the onchange event
         }
     }
 }
@@ -31,3 +31,4 @@ function initSelection(availableMeters) {
         }, 1000
     );
 }
+

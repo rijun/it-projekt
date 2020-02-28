@@ -13,7 +13,6 @@ window.chartColors = {
 };
 
 function initDashboard() {
-    moment.locale('de');    // Set Moment.js to german language
     setEventHandlers();
     setChartSettings();
     getMeterData();
