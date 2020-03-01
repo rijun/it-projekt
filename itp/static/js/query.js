@@ -85,13 +85,22 @@ function setupFallbackMonthSelector(minDate, maxDate) {
         const option = document.createElement('option');
         option.textContent = m.format('MMMM YYYY');
         option.value = m.format('YYYY-MM');
-        option.style += 'month-option';
+        option.classList.add('month-option');
         fallbackMonthSelector.appendChild(option);
         m.add(1, 'month');
     } while (!m.isAfter(maxDate, 'month'))
 }
 
-function setDefaultSelectorValues(d = moment()) {
+function setDefaultSelectorValues(d = null) {
+    if (d === null) {
+        let re = window.params.match(/\d{4}-\d{2}-\d{2}/g);
+        if (window.params.indexOf('s=') !== -1) {
+            d = moment(re[1]);  // Use second element in regex result if mode is set to interval
+        } else {
+            d = moment(re[0]);
+        }
+    }
+
     document.getElementById('dateSelector').value = d.format("YYYY-MM-DD");
     document.getElementById('firstDateSelector').value = d.subtract(1, 'days').format("YYYY-MM-DD");
     document.getElementById('lastDateSelector').value = d.format("YYYY-MM-DD");
@@ -131,9 +140,8 @@ function sendData() {
     // Set month selector value to selected values
     const usingFallback = document.getElementById('monthNative').classList.contains('d-none');
     if (selectedMode === 'month' && usingFallback) {
-        const month = document.getElementById('monthSelectorFallback').value;
-        const year = document.getElementById('yearSelectorFallback').value;
-        document.getElementById('monthSelector').value = `${year}-${month}`;
+        const monthYear = document.getElementById('monthSelectorFallback').value;
+        document.getElementById('monthSelector').value = `${monthYear}`;
     }
 
     // Bind the FormData object and the form element
