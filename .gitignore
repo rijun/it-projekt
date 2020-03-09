@@ -680,3 +680,4 @@ ASALocalRun/
 
 !tests/json/*
 log.txt
+run_itp.sh
