@@ -7,111 +7,64 @@ command_exists() {
   command -v "$@" >/dev/null 2>&1
 }
 
-setup_modules() {
-  printf "Install in a virtual environment? [Y/n] "
-  read -r VIRTUAL
-  case "$VIRTUAL" in
-  y* | Y* | "")
-    if [ -f venv ] || [ -h venv ]; then
-      echo "Virtual environment already present, using that one."
-    else
-      printf "Creating virtual environment...\n"
-      python3 -m venv venv
-    fi
-    VENV=true
-    ;;
-  n* | N*)
-    printf "Using system python...\n"
-    VENV=false
-    ;;
-  *)
-    printf "Invalid choice. Aborting."
-    return
-    ;;
-  esac
-
-  # Get pip3 path
-  if [ "$VENV" = true ]; then
-    PIP_PATH=venv/bin/pip3
+install_itp() {
+  if [ -f venv ] || [ -h venv ]; then
+    echo "Virtual environment already present, using that one."
   else
-    PIP_PATH=pip3
+    echo "Creating virtual environment..."
+    python3 -m venv venv
   fi
-  echo
-  printf "Install as a module? [Y/n] "
-  read -r PROMPT
-  printf "Installing IT-Projekt...\n"
-  case "$PROMPT" in
-  y* | Y* | "")
-    $PIP_PATH install .
-    MODULE=true
-    ;;
-  n* | N*)
-    $PIP_PATH -f requirements.txt
-    MODULE=false
-    ;;
-  *) printf "%s" "Invalid choice. Aborting." return ;;
-  esac
 
-  echo "Installation successful!"
-}
+  echo "Installing IT-Projekt..."
+  venv/bin/pip3 install -r requirements.txt
 
-setup_itp() {
-  if [ "$VENV" = true ]; then
-    cat >run_itp.sh <<EOF
+  # Create run_itp.sh script
+  cat >run_itp.sh <<EOF
 #!/bin/bash
 source venv/bin/activate
 waitress-serve --call "itp:create_app"
 deactivate
 EOF
-  else
-    cat >run_itp.sh <<EOF
-#!/bin/bash
-waitress-serve --call "itp:create_app"
-EOF
-  fi
-
   chmod +x run_itp.sh
 
+  echo "Installation successful!"
+}
+
+init_itp() {
   printf "Create empty database? [Y/n] "
   read -r PROMPT
   case "$PROMPT" in
   y* | Y* | "")
-    if [ "$VENV" = true ]; then
-      source venv/bin/activate
-      flask init-db
-      deactivate
-      if [ "$MODULE" = true ]; then
-        printf "Database created in %s\n" "venv/var/itp-instance/"
-      else
-        printf "Database created in %s\n" "instance/"
-      fi
-    else
-      flask init-db
-      if [ "$MODULE" = true ]; then
-        printf "Database created in %s\n" "venv/var/itp-instance/"
-      else
-        printf "Database created in %s\n" "instance/"
-      fi
-    fi
+    source venv/bin/activate
+    export FLASK_APP=itp/__init__.py
+    flask init-db
+    deactivate
     ;;
   n* | N*)
-  ;;
-  *) echo "Invalid choice. Aborting." return ;;
+    echo "Database has to be copied to instance/"
+    ;;
+  *)
+    echo "Invalid choice. Aborting."
+    return
+    ;;
   esac
 }
 
 main() {
+  # Check if Python3 is installed
   if ! command_exists python3; then
-    printf "%s" "python3 is not installed. Please install python3 first."
+    printf "python3 is not installed. Please install python3 first."
     exit 1
   fi
-  if ! command_exists pip3; then
-    printf "%s" "pip3 is not installed. Please install pip3 first."
-    exit 1
-  fi
-  setup_modules
-  setup_itp
 
+  # Check if Pip3 is installed
+  if ! command_exists pip3; then
+    echo "pip3 is not installed. Please install pip3 first."
+    exit 1
+  fi
+
+  install_itp
+  init_itp
 }
 
-main "$@"
+main
