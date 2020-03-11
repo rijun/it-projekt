@@ -16,7 +16,7 @@ install_itp() {
   fi
 
   echo "Installing IT-Projekt..."
-  venv/bin/pip3 install -r requirements.txt
+  venv/bin/pip3 install -rq requirements.txt
 
   SECRET_KEY=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 24 ; echo '')
   echo "Secret key: $SECRET_KEY"
@@ -36,7 +36,7 @@ deactivate
 EOF
   chmod +x run_itp.sh
 
-  echo "Installation successful!"
+  echo "Installation completed!"
 }
 
 init_itp() {
@@ -50,7 +50,7 @@ init_itp() {
     deactivate
     ;;
   n* | N*)
-    echo "Database has to be copied to instance/"
+    echo "Database has to be present in the instance/ folder."
     ;;
   *)
     echo "Invalid choice. Aborting."
