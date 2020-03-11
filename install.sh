@@ -18,6 +18,12 @@ install_itp() {
   echo "Installing IT-Projekt..."
   venv/bin/pip3 install -r requirements.txt
 
+  # Create .env file
+  cat > .env <<EOF
+FLASK_ENV=production
+SECRET_KEY=$(python -c 'import os; print(os.urandom(16))')
+EOF
+
   # Create run_itp.sh script
   cat > run_itp.sh <<EOF
 #!/bin/bash
