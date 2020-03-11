@@ -19,10 +19,10 @@ install_itp() {
   venv/bin/pip3 install -r requirements.txt
 
   # Create run_itp.sh script
-  cat >run_itp.sh <<EOF
+  cat > run_itp.sh <<EOF
 #!/bin/bash
 source venv/bin/activate
-waitress-serve --call "itp:create_app"
+python3 wsgi.py
 deactivate
 EOF
   chmod +x run_itp.sh
