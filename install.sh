@@ -16,7 +16,7 @@ install_itp() {
   fi
 
   echo "Installing IT-Projekt..."
-  venv/bin/pip3 install -rq requirements.txt
+  venv/bin/pip3 install -q -r requirements.txt
 
   SECRET_KEY=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 24 ; echo '')
   echo "Secret key: $SECRET_KEY"

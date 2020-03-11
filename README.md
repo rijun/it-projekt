@@ -12,7 +12,7 @@ The following python modules are necessary:
 
 Run the following command
 ```
-sh -c "$(wget -O- https://raw.githubusercontent.com/rijun/itp/master/install.sh)"
+sh -c "$(wget -O- https://raw.githubusercontent.com/rijun/IT-Projekt/develop/install.sh)"
 ```
 
 ##### Old version:
