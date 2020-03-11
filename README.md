@@ -4,8 +4,18 @@
 The following python modules are necessary:
 * flask
 * python-dateutil
+* python-dotenv
 
 ## Setup
+
+##### New version:
+
+Run the following command
+```
+sh -c "$(wget -O- https://raw.githubusercontent.com/rijun/itp/master/install.sh)"
+```
+
+##### Old version:
 The program will look for the `itp.db` database the `instance` folder, which has to be created before running the program. 
 If one of the two, or both, are missing, the program will create the missing files. If the database file is missing,
 the newly created database will be empty and has to be filled manually according to the given schema.

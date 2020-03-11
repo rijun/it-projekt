@@ -60,17 +60,27 @@ init_itp() {
 }
 
 main() {
+  if ! command_exists git; then
+    error "git is not installed. Please install git first."
+    exit 1
+  fi
+
   # Check if Python3 is installed
   if ! command_exists python3; then
-    printf "python3 is not installed. Please install python3 first."
+    error "python3 is not installed. Please install python3 first."
     exit 1
   fi
 
   # Check if Pip3 is installed
   if ! command_exists pip3; then
-    echo "pip3 is not installed. Please install pip3 first."
+    error "pip3 is not installed. Please install pip3 first."
     exit 1
   fi
+
+  git clone https://github.com/rijun/it-projekt
+  cd it-projekt || exit
+  # Only for development
+  git checkout develop
 
   install_itp
   init_itp
