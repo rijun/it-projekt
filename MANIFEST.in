@@ -1,4 +1,0 @@
-include itp/schema.sql
-graft itp/static
-graft itp/templates
-global-exclude *.pyc
