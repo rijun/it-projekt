@@ -8,7 +8,7 @@ command_exists() {
 }
 
 install_itp() {
-  if [ -f venv ] || [ -h venv ]; then
+  if [ -d venv ]; then
     echo "Virtual environment already present, using that one."
   else
     echo "Creating virtual environment..."
@@ -18,10 +18,13 @@ install_itp() {
   echo "Installing IT-Projekt..."
   venv/bin/pip3 install -r requirements.txt
 
+  SECRET_KEY=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 24 ; echo '')
+  echo "Secret key: $SECRET_KEY"
+
   # Create .env file
   cat > .env <<EOF
 FLASK_ENV=production
-SECRET_KEY=$(python -c 'import os; print(os.urandom(16))')
+SECRET_KEY=$SECRET_KEY
 EOF
 
   # Create run_itp.sh script
