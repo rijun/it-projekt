@@ -1,3 +1,4 @@
+from sqlite3 import OperationalError
 from datetime import datetime, timedelta
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -19,8 +20,12 @@ def index():
     meter_list = []
     db = get_db()
     error = None
+    stored_meters = None
 
-    stored_meters = db.execute("SELECT * FROM zaehlpunkte").fetchall()
+    try:
+        stored_meters = db.execute("SELECT * FROM zaehlpunkte").fetchall()
+    except OperationalError:
+        error = "Fehler! Es sind keine Einträge in der Datenbank vorhanden."
 
     if not stored_meters:
         error = "Fehler! Es sind keine Einträge in der Datenbank vorhanden."
