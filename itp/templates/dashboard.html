@@ -33,17 +33,20 @@
 {% include "modals/price.html" %}
 
 {% block content_js %}
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-    <script>
-        // Set display parameters
-        window.mode = '{{ mode }}';
-        window.meterId = '{{ meter_id }}';
-        window.params = '{{ params }}';
-        window.sum = parseFloat('{{ sum }};');
-        window.unit = '{{ unit }}';
-        {% if g.mode == 'day' %}
-            window.resolution = 60;
-        {% endif %}
-        initDashboard();
-    </script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  <script>
+      // Set display parameters
+      window.mode = '{{ mode }}';
+      window.meterId = '{{ meter_id }}';
+      window.params = '{{ params }}';
+      window.sum = parseFloat('{{ sum }};');
+      window.unit = '{{ unit }}';
+      {% if g.mode == 'day' %}
+          window.resolution = 60;
+          setTimeout(function () {
+              document.getElementById('hourSelect').classList.add('active');  // Necessary fix, otherwise button will not be active
+          }, 500);
+      {% endif %}
+      initDashboard();
+  </script>
 {% endblock %}
