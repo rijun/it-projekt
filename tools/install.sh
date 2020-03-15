@@ -81,7 +81,7 @@ main() {
   git clone https://github.com/rijun/it-projekt
   cd it-projekt || exit
   # Only for development
-  git checkout develop
+  # git checkout develop
 
   install_itp
   init_itp
