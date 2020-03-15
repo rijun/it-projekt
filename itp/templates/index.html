@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content_main %}
+  <div class="list-group" id="meterSelection">
+    {% for meter in meters %}
+      <button type="button" class="list-group-item list-group-item-action meter" id="{{ meter.id }}" data-toggle="modal" data-target="#queryModal">
+        {{ meter.id }}<br>
+        {{ meter.firstname }} {{ meter.lastname }}<br>
+        {{ meter.zipcode }}, {{ meter.city }}<br>
+        Min: {{ meter.min }}<br>
+        Max: {{ meter.max }}
+      </button>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block content_js %}
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+  <script>
+      initSelection({{ meters | tojson }});
+  </script>
+{% endblock %}

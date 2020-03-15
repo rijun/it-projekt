@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8"/>
+  <title>Lastgangsdarstellung</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bs4.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fa5.css') }}">
+</head>
+
+<body>
+<!-- Header -->
+<nav class="navbar d-md-none navbar-dark bg-dark shadow">
+  <a class="navbar-brand p-0 m-0" href="#">
+    <img src="{{ url_for('static', filename='img/favicon.png') }}" width="40" height="40" class="d-inline-block align-top"
+         alt="">
+  </a>
+  {# Show toolbar if a dashboard is showed #}
+  {% if g.dashboard %}
+    <div class="btn-toolbar d-md-none mb-1">
+      {% include 'dashboard/toolbar.html' %}
+    </div>
+  {% endif %}
+</nav>
+<img class="d-none d-md-block p-0" src="{{ url_for('static', filename='img/header.png') }}" alt="logo.png" width="100%"/>
+<!-- Content -->
+<main class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <!-- Header -->
+      <div
+              class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h3 class="h3">Lastgang</h3>
+        {% if g.dashboard %}
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <!-- Options buttons -->
+            {% if g.mode == 'day' %}
+            <div class="btn-group btn-group-toggle mr-2" data-toggle="buttons">
+              <label class="btn btn-icon btn-outline-secondary">
+                <input type="radio" name="res" value=15>
+                <span class="d-md-none">15</span>
+                <span class="d-none d-md-block">15 min</span>
+              </label>
+              <label class="btn btn-icon btn-outline-secondary" id="hourSelect">
+                <input type="radio" name="res" value=60>
+                <span class="d-md-none">60</span>
+                <span class="d-none d-md-block">60 min</span>
+              </label>
+            </div>
+            {% endif %}
+            <div class="btn-group">
+              <button type="button" class="btn btn-icon btn-outline-secondary" id="priceModalButton" data-toggle="modal" data-target="#priceModal">
+                <i class="d-md-none fas fa-money-bill-wave"></i>
+                <span class="d-none d-md-block"><i class="mr-2 fas fa-money-bill-wave"></i>Preis anpassen</span>
+              </button>
+              <button type="button" class="btn btn-icon btn-outline-secondary" id="meterReadingsButton" data-toggle="button">
+                <i class="d-md-none fas fa-chart-area"></i>
+                <span class="d-none d-md-block"><i class="mr-2 fas fa-chart-area"></i>Zählerstand</span>
+              </button>
+            </div>
+            <!-- Query button -->
+            <div class="d-none d-md-block ml-2">
+              {% include 'dashboard/toolbar.html' %}
+            </div>
+          </div>
+        {% else %}
+          <span class="h5" id="time"></span>
+        {% endif %}
+      </div>
+      <!-- Error messages -->
+      {% for message in get_flashed_messages() %}
+        <div class="flash alert alert-danger" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  <!-- Content -->
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      {% block content_main %}{% endblock %}
+    </div>
+  </div>
+</main>
+{% include 'modals/query.html' %}
+<!-- Scripts -->
+<!-- Bootstrap -->
+<script src="{{ url_for('static', filename='js/assets/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='js/assets/popper.js') }}"></script>
+<script src="{{ url_for('static', filename='js/assets/bootstrap.js') }}"></script>
+<!-- Moment.js -->
+<script src="{{ url_for('static', filename='js/assets/moment-with-locales.js') }}"></script>
+<!-- Chart.js -->
+<script src="{{ url_for('static', filename='js/assets/chart.js') }}"></script>
+<!-- Store.js -->
+<script src="{{ url_for('static', filename='js/assets/store.js') }}"></script>
+<!-- Custom -->
+{% block content_js %}{% endblock %}
+<script src="{{ url_for('static', filename='js/base.js') }}"></script>
+<script src="{{ url_for('static', filename='js/query.js') }}"></script>
+<script>
+  moment.locale('de');    // Set Moment.js to german language
+  initQueryModal();
+</script>
+</body>
+
+</html>

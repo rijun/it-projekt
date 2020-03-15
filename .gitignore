@@ -676,3 +676,8 @@ ASALocalRun/
 *.json
 
 *.zip
+*.db
+
+!tests/json/*
+log.txt
+run_itp.sh

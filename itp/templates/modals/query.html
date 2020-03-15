@@ -1,0 +1,105 @@
+<div class="modal fade" id="queryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Abfrageoptionen</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="queryForm">
+          <!-- Meter selection -->
+          <div class="form-group">
+            <label for="meterSelector">Zählernummer</label>
+            <select class="custom-select" name="id" id="meterSelector" required>
+              <option value="">Zähler auswählen...</option>
+            </select>
+            <div class="invalid-feedback" id="invalidMeter">
+              Auswahl ungültig.
+            </div>
+          </div>
+          <!-- Mode selection -->
+          <ul class="nav nav-tabs nav-fill" id="navLinks">
+            <li class="nav-item">
+              <a class="nav-link active" id="dayTab" data-toggle="tab" href="#day" role="tab">Tag</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="intervalTab" data-toggle="tab" href="#interval" role="tab">Intervall</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="monthTab" data-toggle="tab" href="#month" role="tab">Monat</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="yearTab" data-toggle="tab" href="#year" role="tab">Jahr</a>
+            </li>
+          </ul>
+          <div class="tab-content mt-2" id="modeTabContent">
+            <!-- Date form -->
+            <div class="tab-pane fade show active" id="day" role="tabpanel">
+              <div class="form-row">
+                <!-- Date selector -->
+                <div class="form-group col">
+                  <label for="dateSelector">Datum</label>
+                  <input type="date" class="form-control" name="d" id="dateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidDate">
+                    Auswahl ungültig.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Interval form -->
+            <div class="tab-pane fade" id="interval" role="tabpanel">
+              <div class="form-row">
+                <div class="form-group col">
+                  <label for="firstDateSelector">Startdatum</label>
+                  <input type="date" class="form-control" name="s" id="firstDateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidStartDate">
+                    Auswahl ungültig.
+                  </div>
+                </div>
+                <div class="form-group col">
+                  <label for="lastDateSelector">Enddatum</label>
+                  <input type="date" class="form-control" name="e" id="lastDateSelector" disabled>
+                  <div class="invalid-feedback" id="invalidLastDate">
+                    Auswahl ungültig.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Month form -->
+            <div class="tab-pane fade" id="month" role="tabpanel">
+              <div class="form-group" id="monthNative">
+                <label for="monthSelector">Monat</label>
+                <input type="month" class="form-control" name="m" id="monthSelector" disabled>
+              </div>
+              <div class="form-row d-none" id="monthFallback">
+                <div class="form-group col">
+                  <label for="monthSelectorFallback">Monat</label>
+                  <select class="custom-select" id="monthSelectorFallback" name="mf" disabled></select>
+                  <div class="invalid-feedback" id="invalidMonth">
+                    Auswahl ungültig.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Year form -->
+            <div class="tab-pane fade" id="year" role="tabpanel">
+              <div class="form-group">
+                <label for="yearSelector">Jahr</label>
+                <select class="custom-select" name="y" id="yearSelector" disabled></select>
+                <div class="invalid-feedback" id="invalidYear">
+                  Auswahl ungültig.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+            <button type="submit" class="btn btn-primary">Abrufen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
