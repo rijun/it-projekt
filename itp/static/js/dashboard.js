@@ -186,6 +186,12 @@ function setChartSettings() {
             }
         }
     });
+
+    // Hide legend on small screens
+    if (window.outerWidth < 768) {
+        window.chart.options.scales.xAxes[0].scaleLabel.display = false;
+        window.chart.options.scales.yAxes.forEach(yA => {yA.scaleLabel.display = false;});
+    }
 }
 
 function updateChart() {
