@@ -21,6 +21,12 @@ function populateMeterSelector() {
 
 function setSelectorRanges(index = false) {
     const selectorOption = document.getElementById('meterSelector').value;
+    // Redirect to index if no selectorOption is found (direct dashboard visit)
+    if (selectorOption === "") {
+        if (confirm("Die Startseite wurde vor dieser Ansicht nicht besucht, es konnten keine Zähler geladen werden. Weiterleiten zur Startseite?")) {
+            window.location.replace('/');
+        }
+    }
     const meterDates = store.get('meters')[selectorOption].date;
     // Date selector
     document.getElementById('dateSelector').min = moment(meterDates.min).format("YYYY-MM-DD");
