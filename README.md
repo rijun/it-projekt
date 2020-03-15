@@ -36,7 +36,7 @@ SECRET_KEY=<choose a secret key>
 To start the server, install the required modules and enter `flask run` into a terminal of your choice.
 
 ### Database schema
-The sqlite3 database consists of two tables, _zaehlpunkte_ and _zaehlwerte_.
+The sqlite3 database consists of two tables, _zaehlpunkte_ and _zaehlwerte_. [Sample database](https://github.com/rijun/IT-Projekt/releases/tag/v2.0-sqlite) 
 
 ###### zaehlpunkte
 zaehler_id|kunde_name|kunde_vorname|plz    |ort
