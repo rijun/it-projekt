@@ -18,7 +18,7 @@ manual installation has been done.
 
 You can install the IT Projekt via the following command
 ```
-bash -c "$(wget -O- https://raw.githubusercontent.com/rijun/IT-Projekt/master/install.sh)"
+bash -c "$(wget -O- https://raw.githubusercontent.com/rijun/IT-Projekt/master/tools/install.sh)"
 ```
 To start the IT Projekt execute the script `run_itp.sh`. Alternatively, `wsgi.py` can be invoked manually or by a production server. 
 
