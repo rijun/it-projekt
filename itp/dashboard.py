@@ -37,19 +37,19 @@ def dashboard(mode, meter_id):
     g.mode = mode
     g.meter_id = meter_id
 
-    dashboard_data = get_dashboard_data(mode, request.args, meter_id, energy_diffs)
+    dashboard_data = get_dashboard_data(mode, request.args, meter_id, energy_diffs, interpolation['necessary'])
 
     g.dashboard = True
 
     return render_template('dashboard.html', **dashboard_data)
 
 
-def get_dashboard_data(mode, args, meter_id, energy_diffs):
+def get_dashboard_data(mode, args, meter_id, energy_diffs, interpolated):
     """Gather and calculate the required data for display on the dashboard."""
-    return mode_function_dict[mode](args, meter_id, energy_diffs)
+    return mode_function_dict[mode](args, meter_id, energy_diffs, interpolated)
 
 
-def day_request(args, meter_id, energy_diffs):
+def day_request(args, meter_id, energy_diffs, interpolated):
     day = datetime.strptime(args['d'], "%Y-%m-%d")
     params = f"d={day}"
     next_day = day + timedelta(days=1)
@@ -61,7 +61,7 @@ def day_request(args, meter_id, energy_diffs):
     response_dict = {
         'meter_id': meter_id,
         'mode': 'day',
-        'min': min(energy_diffs),
+        'min': min(energy_diffs) if not interpolated else [x for x in sorted(energy_diffs) if x != 0][0],
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
@@ -76,7 +76,7 @@ def day_request(args, meter_id, energy_diffs):
     return response_dict
 
 
-def interval_request(args, meter_id, energy_diffs):
+def interval_request(args, meter_id, energy_diffs, interpolated):
     start = datetime.strptime(args['s'], '%Y-%m-%d')
     end = datetime.strptime(args['e'], '%Y-%m-%d')
     params = f"s={start}&e={end}"
@@ -85,7 +85,7 @@ def interval_request(args, meter_id, energy_diffs):
     response_dict = {
         'meter_id': meter_id,
         'mode': 'interval',
-        'min': min(energy_diffs),
+        'min': min(energy_diffs) if not interpolated else [x for x in sorted(energy_diffs) if x != 0][0],
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
@@ -98,7 +98,7 @@ def interval_request(args, meter_id, energy_diffs):
     return response_dict
 
 
-def month_request(args, meter_id, energy_diffs):
+def month_request(args, meter_id, energy_diffs, interpolated):
     month = datetime.strptime(args['m'], "%Y-%m")
     params = f"m={month}"
     next_month = month + relativedelta(months=1)
@@ -110,7 +110,7 @@ def month_request(args, meter_id, energy_diffs):
     response_dict = {
         'meter_id': meter_id,
         'mode': 'month',
-        'min': min(energy_diffs),
+        'min': min(energy_diffs) if not interpolated else [x for x in sorted(energy_diffs) if x != 0][0],
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
@@ -125,7 +125,7 @@ def month_request(args, meter_id, energy_diffs):
     return response_dict
 
 
-def year_request(args, meter_id, energy_diffs):
+def year_request(args, meter_id, energy_diffs, interpolated):
     year = datetime.strptime(args['y'], "%Y")
     params = f"y={year}"
     unit = "kWh / Monat"
@@ -133,7 +133,7 @@ def year_request(args, meter_id, energy_diffs):
     response_dict = {
         'meter_id': meter_id,
         'mode': 'year',
-        'min': min(energy_diffs),
+        'min': min(energy_diffs) if not interpolated else [x for x in sorted(energy_diffs) if x != 0][0],
         'max': max(energy_diffs),
         'avg': round(mean(energy_diffs), 3),
         'sum': round(sum(energy_diffs), 2),
