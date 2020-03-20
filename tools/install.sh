@@ -12,7 +12,7 @@ install_itp() {
     echo "Virtual environment already present, using that one."
   else
     echo "Creating virtual environment..."
-    python3 -m venv venv
+    python3 -m venv venv || { echo 'virtualenv is not installed. Please install virtualenv first.' ; exit 1; }
   fi
 
   echo "Installing IT-Projekt..."

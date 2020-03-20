@@ -1,7 +1,7 @@
 # IT Projekt
 
 ## Requirements
-For the automatic installation `python3`, `pip3`, `wget` and `git` have to be installed on the system.
+For the automatic installation `python3`, `pip3`, `virtualenv`, `wget` and `git` have to be installed on the system.
 
 In case of a manual installation the following python modules are required:
 * flask
