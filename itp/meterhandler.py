@@ -24,7 +24,12 @@ class MeterHandler:
 
     def pop_session(self, session_id):
         """Returns the meter data from the session storage and removes it."""
-        data, interpolation = self.__meter_sessions.pop(session_id, None)
+        res = self.__meter_sessions.pop(session_id, None)
+        if res is None:
+            data = None
+            interpolation = None
+        else:
+            data, interpolation = res
         return data, interpolation
 
 

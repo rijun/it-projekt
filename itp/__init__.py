@@ -11,7 +11,12 @@ def create_app(test_config=None):
     app.config.from_mapping(
         DATABASE=os.path.join(app.instance_path, 'itp.db')
     )
-    locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+    try:
+        locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+    except locale.Error:
+        pass    # Use default locale
+
+    print(f"Using locale: {locale.getlocale()}")
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
