@@ -19,3 +19,6 @@ CREATE TABLE zaehlwerte
     obis_280   REAL default 0.0,
     obis_270   REAL default 0.0
 );
+
+-- Add index to speed up querying
+CREATE INDEX idx_zahler_datum ON zaehlwerte (datum_zeit, zaehler_id);
