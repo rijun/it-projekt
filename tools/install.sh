@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Random string: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 24 ; echo ''
-# From: https://unix.stackexchange.com/questions/230673/how-to-generate-a-random-string
-
 command_exists() {
   command -v "$@" >/dev/null 2>&1
 }
