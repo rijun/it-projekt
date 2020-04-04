@@ -196,7 +196,7 @@ function setChartSettings() {
 
 function updateChart() {
     /**
-     * Update the chart according to the current response data
+     * Updates the chart according to the current response data.
      * **/
     let datetimeData = window.meterData.datetimes;
     let loadDiffsData = window.meterData.loadDiffs;
@@ -264,7 +264,7 @@ function updateChart() {
 
 function meterReadingsChanged() {
     /**
-     * Add and remove the meter_id value line graph from the chart
+     * Adds and removes the meter_id value line graph from the chart.
      * **/
 
     if (!document.getElementById('meterReadingsButton').classList.contains('active')) { // Add line graph
