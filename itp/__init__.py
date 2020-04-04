@@ -19,10 +19,10 @@ def create_app(test_config=None):
     print(f"Using locale: {locale.getlocale()}")
 
     if test_config is None:
-        # load the instance config, if it exists, when not testing
+        # Load the instance config, if it exists, when not testing
         app.config.from_object('config.Config')
     else:
-        # load the test config if passed in
+        # Load the test config if passed in
         app.config.from_mapping(test_config)
 
     # Ensure the instance folder exists
@@ -50,7 +50,7 @@ def create_app(test_config=None):
 
 
 def format_datetime(value, fmt='hour'):
-    """Custom filter for datetimes"""
+    """Custom filter for datetimes."""
     dt = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
     if fmt == 'hour':
         fmt = '%H:%M'

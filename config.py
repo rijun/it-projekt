@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 
 class Config:
-    """Set Flask configuration vars from .env file."""
+    """Set Flask configuration variables from .env file."""
     load_dotenv()
 
     # General Config

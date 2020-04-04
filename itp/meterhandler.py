@@ -33,24 +33,27 @@ class MeterHandler:
         return data, interpolation
 
 
+QUERY_DICT = {
+    'day': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND STRFTIME('%M', "
+           "datum_zeit) % 15 = 0 AND zaehler_id = ? ORDER BY datum_zeit",
+    'int_month': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
+                 "TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY datum_zeit",
+    'year': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
+            "STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY "
+            "datum_zeit "
+}
+
+
 def get_meter_data(mode, args, meter_id, diffs=False):
-    """Return the stored meter data as a list."""
+    """Returns the stored meter data as a list."""
     db = get_db()
 
+    # Check if meter exists in database
     stored_meters = [meter['zaehler_id'] for meter in db.execute("SELECT * FROM zaehlpunkte").fetchall()]
     if meter_id not in stored_meters:
         return None, None, None
 
-    QUERY_DICT = {
-        'day': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND STRFTIME('%M', "
-               "datum_zeit) % 15 = 0 AND zaehler_id = ? ORDER BY datum_zeit",
-        'int_month': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
-                     "TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY datum_zeit",
-        'year': "SELECT datum_zeit, obis_180 FROM zaehlwerte WHERE datum_zeit BETWEEN ? AND ? AND "
-                "STRFTIME('%d', datum_zeit) = '01' AND TIME(datum_zeit) = '00:00:00' AND zaehler_id = ? ORDER BY "
-                "datum_zeit "
-    }
-
+    # Do query
     if mode == 'day':
         day = datetime.strptime(args['d'], "%Y-%m-%d")
         next_day = day + timedelta(days=1)
@@ -75,13 +78,15 @@ def get_meter_data(mode, args, meter_id, diffs=False):
 
     energy_diffs, meter_data_list, interpolation = __parse_db_result(result, mode)
 
-    if diffs:
+    if diffs:   # Only on API request
         return meter_data_list, energy_diffs, interpolation
     else:
         return meter_data_list, interpolation
 
 
 def __parse_db_result(db_result, query_mode):
+    """Parses the result of the query."""
+
     # Initialize variables for storing the data
     times = []
     meter_readings = []
@@ -101,6 +106,7 @@ def __parse_db_result(db_result, query_mode):
 
         if next_datetime_entry != next_expected_datetime:   # Found missing data if true
             interpolation['necessary'] = True
+
             # Gather required data for interpolation
             last_datetime_entry = __str2dt(db_result[i]['datum_zeit'])
             last_meter_reading_entry = db_result[i]['obis_180']
@@ -109,22 +115,22 @@ def __parse_db_result(db_result, query_mode):
             gen_meter_readings = __generate_missing_meter_readings(last_meter_reading_entry, next_meter_reading_entry,
                                                                    len(gen_datetimes))
             gen_energy_diffs = __generate_missing_energy_diffs(gen_meter_readings, next_meter_reading_entry)
+
             # Add generated data to the lists
             times.extend(gen_datetimes[:-1])
             meter_readings.extend(gen_meter_readings[:-1])
-
             for j in range(len(gen_datetimes)):
                 energy_diffs.append(0)
                 interpolation['values'].append({'datetime': gen_datetimes[j], 'diff': gen_energy_diffs[j]})
 
-            next_expected_datetime = next_datetime_entry + __add_dict[query_mode]
+            next_expected_datetime = next_datetime_entry + __add_dict[query_mode]   # Calculate next expected date
         else:
             diff = next_meter_reading_entry - meter_readings[-1]
             energy_diffs.append(round(diff, 2))  # Round necessary to mitigate floating point error
             interpolation['values'].append({'datetime': times[-1], 'diff': 0})  # Use zero as value if data is valid
-            next_expected_datetime += __add_dict[query_mode]
+            next_expected_datetime += __add_dict[query_mode]    # Calculate next expected date
 
-    # Create list of meter_id data tuples
+    # Create list of meter_data dictionaries
     meter_data_list = []
     for i, time in enumerate(times):
         meter_data_list.append({'datetime': time, 'reading': meter_readings[i], 'diff': energy_diffs[i]})
@@ -133,7 +139,7 @@ def __parse_db_result(db_result, query_mode):
 
 
 def __generate_missing_datetimes(start, end, query_mode):
-    """Return a list of datetimes between the start and end values."""
+    """Returns a list of datetimes between the start and end values."""
     next_date = start + __add_dict[query_mode]
     date_list = []
     # Populate date_list with the missing dates
@@ -144,7 +150,7 @@ def __generate_missing_datetimes(start, end, query_mode):
 
 
 def __generate_missing_meter_readings(start, end, amount):
-    """Return a list of meter readings between the start and end values and a specified length."""
+    """Returns a list of meter readings between the start and end values and a specified length."""
     meter_reading_delta = round((end - start) / (amount + 1), 2)
     meter_readings_list = []
     # Populate meter_readings_list with interpolated data
@@ -154,7 +160,7 @@ def __generate_missing_meter_readings(start, end, amount):
 
 
 def __generate_missing_energy_diffs(meter_reading_list, next_reading):
-    """Return a list of energy differences."""
+    """Returns a list of energy differences."""
     energy_diff_list = []
     # Populate energy_diff_list with interpolated data
     for i in range(len(meter_reading_list) - 1):
@@ -167,4 +173,5 @@ def __generate_missing_energy_diffs(meter_reading_list, next_reading):
 
 
 def __str2dt(string):
+    """Returns a datetime object from the passed string."""
     return datetime.strptime(string, "%Y-%m-%d %H:%M:%S")

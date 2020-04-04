@@ -1,13 +1,10 @@
-from datetime import datetime, timedelta
-from math import floor
-from statistics import mean
 import uuid
+from datetime import datetime, timedelta
+from statistics import mean
 
 from dateutil.relativedelta import relativedelta
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for, jsonify, session
-from werkzeug.exceptions import abort
+from flask import Blueprint, flash, g, redirect, render_template, request, url_for, session
 
-from itp.db import get_db
 from itp.meterhandler import MeterHandler, get_meter_data
 
 bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
@@ -15,7 +12,7 @@ bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
 @bp.route('/<mode>/<meter_id>')
 def dashboard(mode, meter_id):
-    """Respond with dashboard page."""
+    """Returns the website which serves as the dashboard page."""
     try:
         meter_data, energy_diffs, interpolation = get_meter_data(mode, request.args, meter_id, diffs=True)
     except (ValueError, TypeError):
@@ -26,6 +23,7 @@ def dashboard(mode, meter_id):
         flash("Keine Daten zu dieser Abfrage gefunden.")
         return redirect(url_for('index'))
 
+    # Generate session id and store query result
     session_id = uuid.uuid4().hex
     mh = MeterHandler()
     mh.push_session(session_id, meter_data, interpolation)
@@ -39,17 +37,18 @@ def dashboard(mode, meter_id):
 
     dashboard_data = get_dashboard_data(mode, request.args, meter_id, energy_diffs, interpolation['necessary'])
 
-    g.dashboard = True
+    g.dashboard = True  # Show dashboard related fields and buttons
 
     return render_template('dashboard.html', **dashboard_data)
 
 
 def get_dashboard_data(mode, args, meter_id, energy_diffs, interpolated):
-    """Gather and calculate the required data for display on the dashboard."""
+    """Gathers and calculates the required data for display on the dashboard."""
     return mode_function_dict[mode](args, meter_id, energy_diffs, interpolated)
 
 
 def day_request(args, meter_id, energy_diffs, interpolated):
+    """Collects the data for a day request."""
     day = datetime.strptime(args['d'], "%Y-%m-%d")
     params = f"d={day}"
     next_day = day + timedelta(days=1)
@@ -77,6 +76,7 @@ def day_request(args, meter_id, energy_diffs, interpolated):
 
 
 def interval_request(args, meter_id, energy_diffs, interpolated):
+    """Collects the data for an interval request."""
     start = datetime.strptime(args['s'], '%Y-%m-%d')
     end = datetime.strptime(args['e'], '%Y-%m-%d')
     params = f"s={start}&e={end}"
@@ -99,6 +99,7 @@ def interval_request(args, meter_id, energy_diffs, interpolated):
 
 
 def month_request(args, meter_id, energy_diffs, interpolated):
+    """Collects the data for a month request."""
     month = datetime.strptime(args['m'], "%Y-%m")
     params = f"m={month}"
     next_month = month + relativedelta(months=1)
@@ -126,6 +127,7 @@ def month_request(args, meter_id, energy_diffs, interpolated):
 
 
 def year_request(args, meter_id, energy_diffs, interpolated):
+    """Collects the data for a year request."""
     year = datetime.strptime(args['y'], "%Y")
     params = f"y={year}"
     unit = "kWh / Monat"
