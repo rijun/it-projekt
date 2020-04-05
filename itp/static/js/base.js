@@ -1,3 +1,4 @@
+// Hide chart labels if screen is to small
 window.onresize = () => {
     if (window.chart === undefined) {
         return;

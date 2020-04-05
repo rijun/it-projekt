@@ -1,7 +1,7 @@
-from sqlite3 import OperationalError
 from datetime import datetime, timedelta
+from sqlite3 import OperationalError
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, render_template
 
 from itp.db import get_db
 
@@ -10,13 +10,7 @@ bp = Blueprint('index', __name__)
 
 @bp.route('/')
 def index():
-    """
-    This function returns the website which serves as the frontend for this application.
-
-    :return: Website index.html
-    :rtype: HTML file
-    """
-
+    """Returns the website which serves as the start page for this application."""
     meter_list = []
     db = get_db()
     error = None
@@ -25,9 +19,9 @@ def index():
     try:
         stored_meters = db.execute("SELECT * FROM zaehlpunkte").fetchall()
     except OperationalError:
-        error = "Fehler! Es sind keine Einträge in der Datenbank vorhanden."
+        error = "Fehler bei der Datenbankabfrage!"
 
-    if not stored_meters:
+    if not stored_meters:   # No results for sql query
         error = "Fehler! Es sind keine Einträge in der Datenbank vorhanden."
 
     if error is None:
